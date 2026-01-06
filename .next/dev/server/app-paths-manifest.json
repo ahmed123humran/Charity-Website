@@ -1,0 +1,19 @@
+{
+  "/[locale]/[...slug]/page": "app/[locale]/[...slug]/page.js",
+  "/[locale]/admin/menus/page": "app/[locale]/admin/menus/page.js",
+  "/[locale]/admin/page": "app/[locale]/admin/page.js",
+  "/[locale]/admin/pages/[id]/editor/page": "app/[locale]/admin/pages/[id]/editor/page.js",
+  "/[locale]/admin/pages/page": "app/[locale]/admin/pages/page.js",
+  "/[locale]/admin/snippets/page": "app/[locale]/admin/snippets/page.js",
+  "/[locale]/admin/users/page": "app/[locale]/admin/users/page.js",
+  "/[locale]/admin/websites/page": "app/[locale]/admin/websites/page.js",
+  "/[locale]/page": "app/[locale]/page.js",
+  "/api/auth/me/route": "app/api/auth/me/route.js",
+  "/api/menus/route": "app/api/menus/route.js",
+  "/api/pages/[id]/route": "app/api/pages/[id]/route.js",
+  "/api/pages/route": "app/api/pages/route.js",
+  "/api/snippets/route": "app/api/snippets/route.js",
+  "/api/users/route": "app/api/users/route.js",
+  "/api/websites/[id]/route": "app/api/websites/[id]/route.js",
+  "/api/websites/route": "app/api/websites/route.js"
+}

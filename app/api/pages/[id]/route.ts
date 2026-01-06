@@ -1,0 +1,95 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { updatePageSchema } from '@/app/utils/validiton';
+import prisma from '@/app/utils/db';
+
+interface Props {
+    params: Promise<{ id: string }>;
+}
+
+/**
+ * @method GET
+ * @route ~/api/pages/[id]
+ * @desc Get a single page by id
+ * @access Public
+ */
+export async function GET(request: NextRequest, { params }: Props) {
+    try {
+        const { id } = await params;
+        const page = await prisma.page.findUnique({
+            where: { id },
+            include: {
+                website: true,
+                user: true
+            }
+        });
+
+        if (!page) {
+            return NextResponse.json({ message: 'Page not found' }, { status: 404 });
+        }
+
+        return NextResponse.json(page, { status: 200 });
+    } catch (error) {
+        return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+    }
+}
+
+/**
+ * @method PUT
+ * @route ~/api/pages/[id]
+ * @desc Update a page
+ * @access Public
+ */
+export async function PUT(request: NextRequest, { params }: Props) {
+    try {
+        const { id } = await params;
+        const body = await request.json();
+        const validation = updatePageSchema.safeParse(body);
+
+        if (!validation.success) {
+            return NextResponse.json({ message: validation.error.message }, { status: 400 });
+        }
+
+        const page = await prisma.page.findUnique({ where: { id } });
+        if (!page) {
+            return NextResponse.json({ message: 'Page not found' }, { status: 404 });
+        }
+
+        const updatedPage = await prisma.page.update({
+            where: { id },
+            data: {
+                title: validation.data.title as any,
+                url: validation.data.url,
+                content: validation.data.content as any,
+                websiteId: validation.data.websiteId,
+                userId: validation.data.userId
+            }
+        });
+
+        return NextResponse.json(updatedPage, { status: 200 });
+    } catch (error) {
+        console.error(error);
+        return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+    }
+}
+
+/**
+ * @method DELETE
+ * @route ~/api/pages/[id]
+ * @desc Delete a page
+ * @access Public
+ */
+export async function DELETE(request: NextRequest, { params }: Props) {
+    try {
+        const { id } = await params;
+        const page = await prisma.page.findUnique({ where: { id } });
+        if (!page) {
+            return NextResponse.json({ message: 'Page not found' }, { status: 404 });
+        }
+
+        await prisma.page.delete({ where: { id } });
+
+        return NextResponse.json({ message: 'Page deleted successfully' }, { status: 200 });
+    } catch (error) {
+        return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+    }
+}

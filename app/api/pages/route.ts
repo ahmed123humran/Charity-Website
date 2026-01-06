@@ -1,0 +1,71 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { CreatePageDto } from '@/app/utils/page_dto';
+import { createPageSchema } from '@/app/utils/validiton';
+import prisma from '@/app/utils/db';
+
+/**
+ * @method GET
+ * @route ~/api/pages
+ * @desc Get all pages
+ * @access Public
+ */
+export async function GET(request: NextRequest) {
+    try {
+        const pages = await prisma.page.findMany({
+            include: {
+                website: true,
+                user: true
+            }
+        });
+        return NextResponse.json(pages, { status: 200 });
+    }
+    catch (error) {
+        return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+    }
+}
+
+
+/**
+ * @method POST
+ * @route ~/api/pages
+ * @desc Create a new page
+ * @access Public
+ */
+export async function POST(request: NextRequest) {
+    try {
+        const body = (await request.json()) as CreatePageDto;
+        const validation = createPageSchema.safeParse(body);
+        if (!validation.success) {
+            return NextResponse.json({ message: validation.error.message }, { status: 400 });
+        }
+
+        const { url, websiteId, title, content, userId } = validation.data;
+
+        const exists = await prisma.page.findUnique({
+            where: { url },
+        });
+
+        if (exists) {
+            return NextResponse.json(
+                { message: 'URL already exists' },
+                { status: 409 }
+            );
+        }
+
+        const newPage = await prisma.page.create({
+            data: {
+                title: title as any,
+                url,
+                content: content as any,
+                websiteId,
+                userId
+            }
+        });
+
+        return NextResponse.json(newPage, { status: 201 });
+    }
+    catch (error) {
+        console.error(error);
+        return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+    }
+}

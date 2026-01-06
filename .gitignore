@@ -53,6 +53,7 @@ Generated\ Files/
 [Bb]uild[Ll]og.*
 *.trx
 
+<<<<<<< Updated upstream
 # NUnit
 *.VisualState.xml
 TestResult.xml
@@ -416,3 +417,10 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+=======
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+/app/generated/prisma
+>>>>>>> Stashed changes

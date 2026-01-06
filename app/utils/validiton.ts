@@ -1,0 +1,81 @@
+import { z } from 'zod';
+
+const localizedString = z.object({
+    en: z.string().min(1, "English name is required"),
+    ar: z.string().min(1, "Arabic name is required"),
+});
+
+export const createPageSchema = z.object({
+    title: localizedString,
+    url: z.string().min(1),
+    content: z.any().optional(), // Json object
+    websiteId: z.string().min(1),
+    userId: z.number().optional(),
+});
+
+export const updatePageSchema = z.object({
+    title: localizedString.optional(),
+    url: z.string().min(1).optional(),
+    content: z.any().optional(), // Json object
+    isPublished: z.boolean().optional(),
+    websiteId: z.string().optional(),
+    userId: z.number().optional(),
+});
+
+export const createUserSchema = z.object({
+    email: z.string().email(),
+    name: z.string().optional(),
+    password: z.string().min(6).optional(),
+});
+
+export const updateUserSchema = z.object({
+    email: z.string().email().optional(),
+    name: z.string().optional(),
+    password: z.string().min(6).optional(),
+});
+
+export const createWebsiteSchema = z.object({
+    name: localizedString,
+    domain: z.string().optional(),
+    themeColor: z.string().optional(),
+    language: z.string().optional(),
+});
+
+export const updateWebsiteSchema = z.object({
+    name: localizedString.optional(),
+    domain: z.string().optional(),
+    themeColor: z.string().optional(),
+    language: z.string().optional(),
+});
+
+export const createMenuSchema = z.object({
+    name: localizedString,
+    url: z.string().min(1),
+    pageId: z.string().optional(),
+    sequence: z.number().optional(),
+    parentId: z.string().optional(),
+    websiteId: z.string().min(1),
+});
+
+export const updateMenuSchema = z.object({
+    name: localizedString.optional(),
+    url: z.string().min(1).optional(),
+    pageId: z.string().optional(),
+    sequence: z.number().optional(),
+    parentId: z.string().optional(),
+    websiteId: z.string().min(1).optional(),
+});
+
+export const createSnippetSchema = z.object({
+    name: z.string().min(1),
+    category: z.string().min(1),
+    htmlContent: z.string().min(1),
+    thumbnail: z.string().optional(),
+});
+
+export const updateSnippetSchema = z.object({
+    name: z.string().min(1).optional(),
+    category: z.string().min(1).optional(),
+    htmlContent: z.string().min(1).optional(),
+    thumbnail: z.string().optional(),
+});
