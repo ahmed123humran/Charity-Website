@@ -142,6 +142,7 @@ function AdminSidebar() {
     const commonT = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2d$intl$2f$dist$2f$esm$2f$development$2f$react$2d$client$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useTranslations"])('Common');
     const router = (0, __TURBOPACK__imported__module__$5b$project$5d2f$navigation$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRouter"])();
     const [user, setUser] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
+    const [website, setWebsite] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
     const navItems = [
         {
             label: t('dashboard'),
@@ -176,16 +177,30 @@ function AdminSidebar() {
     ];
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "AdminSidebar.useEffect": ()=>{
-            const fetchUser = {
-                "AdminSidebar.useEffect.fetchUser": async ()=>{
-                    const res = await fetch('/api/auth/me');
-                    if (res.ok) {
-                        const data = await res.json();
-                        setUser(data);
+            const fetchData = {
+                "AdminSidebar.useEffect.fetchData": async ()=>{
+                    // Fetch user info
+                    const userRes = await fetch('/api/auth/me');
+                    if (userRes.ok) {
+                        const userData = await userRes.json();
+                        setUser(userData);
+                    }
+                    // Fetch website info
+                    const websiteRes = await fetch('/api/websites/current');
+                    if (websiteRes.ok) {
+                        const websiteData = await websiteRes.json();
+                        setWebsite(websiteData);
                     }
                 }
-            }["AdminSidebar.useEffect.fetchUser"];
-            fetchUser();
+            }["AdminSidebar.useEffect.fetchData"];
+            // Initial fetch
+            fetchData();
+            // Poll for updates every 5 seconds
+            const intervalId = setInterval(fetchData, 5000);
+            // Cleanup interval on unmount
+            return ({
+                "AdminSidebar.useEffect": ()=>clearInterval(intervalId)
+            })["AdminSidebar.useEffect"];
         }
     }["AdminSidebar.useEffect"], []);
     const handleLogout = async ()=>{
@@ -204,37 +219,46 @@ function AdminSidebar() {
         children: [
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                 className: "p-6",
-                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
-                    className: "text-2xl font-bold tracking-tight text-white flex items-center gap-2",
-                    children: [
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                            className: "w-8 h-8 bg-white rounded-lg flex items-center justify-center",
-                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                className: "w-4 h-4 rounded-xs",
-                                style: {
-                                    backgroundColor: 'var(--primary-dark)'
-                                }
+                children: [
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
+                        className: "text-2xl font-bold tracking-tight text-white flex items-center gap-2",
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                className: "w-8 h-8 bg-white rounded-lg flex items-center justify-center",
+                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    className: "w-4 h-4 rounded-xs",
+                                    style: {
+                                        backgroundColor: 'var(--primary-dark)'
+                                    }
+                                }, void 0, false, {
+                                    fileName: "[project]/app/components/AdminSidebar.tsx",
+                                    lineNumber: 82,
+                                    columnNumber: 25
+                                }, this)
                             }, void 0, false, {
                                 fileName: "[project]/app/components/AdminSidebar.tsx",
-                                lineNumber: 61,
-                                columnNumber: 25
-                            }, this)
-                        }, void 0, false, {
-                            fileName: "[project]/app/components/AdminSidebar.tsx",
-                            lineNumber: 60,
-                            columnNumber: 21
-                        }, this),
-                        commonT('title'),
-                        " OS"
-                    ]
-                }, void 0, true, {
-                    fileName: "[project]/app/components/AdminSidebar.tsx",
-                    lineNumber: 59,
-                    columnNumber: 17
-                }, this)
-            }, void 0, false, {
+                                lineNumber: 81,
+                                columnNumber: 21
+                            }, this),
+                            website?.name?.[locale] || commonT('title')
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/app/components/AdminSidebar.tsx",
+                        lineNumber: 80,
+                        columnNumber: 17
+                    }, this),
+                    website && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                        className: "text-xs text-white/50 mt-1 ps-10 truncate",
+                        children: t('managingWebsite')
+                    }, void 0, false, {
+                        fileName: "[project]/app/components/AdminSidebar.tsx",
+                        lineNumber: 87,
+                        columnNumber: 21
+                    }, this)
+                ]
+            }, void 0, true, {
                 fileName: "[project]/app/components/AdminSidebar.tsx",
-                lineNumber: 58,
+                lineNumber: 79,
                 columnNumber: 13
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("nav", {
@@ -247,7 +271,7 @@ function AdminSidebar() {
                                 className: "w-5 h-5 group-hover:text-white transition-colors"
                             }, void 0, false, {
                                 fileName: "[project]/app/components/AdminSidebar.tsx",
-                                lineNumber: 74,
+                                lineNumber: 100,
                                 columnNumber: 25
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -255,18 +279,18 @@ function AdminSidebar() {
                                 children: item.label
                             }, void 0, false, {
                                 fileName: "[project]/app/components/AdminSidebar.tsx",
-                                lineNumber: 75,
+                                lineNumber: 101,
                                 columnNumber: 25
                             }, this)
                         ]
                     }, item.label, true, {
                         fileName: "[project]/app/components/AdminSidebar.tsx",
-                        lineNumber: 69,
+                        lineNumber: 95,
                         columnNumber: 21
                     }, this))
             }, void 0, false, {
                 fileName: "[project]/app/components/AdminSidebar.tsx",
-                lineNumber: 67,
+                lineNumber: 93,
                 columnNumber: 13
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -276,7 +300,7 @@ function AdminSidebar() {
                         className: "flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 text-indigo-100/70 transition-colors w-full group font-medium"
                     }, void 0, false, {
                         fileName: "[project]/app/components/AdminSidebar.tsx",
-                        lineNumber: 81,
+                        lineNumber: 107,
                         columnNumber: 17
                     }, this),
                     user && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -287,7 +311,7 @@ function AdminSidebar() {
                                 children: user.name || 'Admin'
                             }, void 0, false, {
                                 fileName: "[project]/app/components/AdminSidebar.tsx",
-                                lineNumber: 86,
+                                lineNumber: 112,
                                 columnNumber: 25
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -295,13 +319,13 @@ function AdminSidebar() {
                                 children: user.email
                             }, void 0, false, {
                                 fileName: "[project]/app/components/AdminSidebar.tsx",
-                                lineNumber: 87,
+                                lineNumber: 113,
                                 columnNumber: 25
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/components/AdminSidebar.tsx",
-                        lineNumber: 85,
+                        lineNumber: 111,
                         columnNumber: 21
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -312,7 +336,7 @@ function AdminSidebar() {
                                 className: "w-5 h-5 rtl:rotate-180"
                             }, void 0, false, {
                                 fileName: "[project]/app/components/AdminSidebar.tsx",
-                                lineNumber: 94,
+                                lineNumber: 120,
                                 columnNumber: 21
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -320,29 +344,29 @@ function AdminSidebar() {
                                 children: commonT('logout')
                             }, void 0, false, {
                                 fileName: "[project]/app/components/AdminSidebar.tsx",
-                                lineNumber: 95,
+                                lineNumber: 121,
                                 columnNumber: 21
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/components/AdminSidebar.tsx",
-                        lineNumber: 90,
+                        lineNumber: 116,
                         columnNumber: 17
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/app/components/AdminSidebar.tsx",
-                lineNumber: 80,
+                lineNumber: 106,
                 columnNumber: 13
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/app/components/AdminSidebar.tsx",
-        lineNumber: 54,
+        lineNumber: 75,
         columnNumber: 9
     }, this);
 }
-_s(AdminSidebar, "KGskb0h/7NXgZt8BPlWxSUeDCNI=", false, function() {
+_s(AdminSidebar, "mLNY8FtsYg7CM0pWaLWkNW+3o40=", false, function() {
     return [
         __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$use$2d$intl$2f$dist$2f$esm$2f$development$2f$react$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useLocale"],
         __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2d$intl$2f$dist$2f$esm$2f$development$2f$react$2d$client$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useTranslations"],

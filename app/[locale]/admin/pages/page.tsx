@@ -145,7 +145,7 @@ export default function PagesManagement() {
                         setIsEditing(false);
                         setShowModal(true);
                     }}
-                    className="flex items-center gap-2 bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-indigo-700 transition-colors shadow-sm"
+                    className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-primary-dark transition-colors shadow-sm"
                 >
                     <Plus className="w-5 h-5" />
                     {t('newPage')}
@@ -159,7 +159,7 @@ export default function PagesManagement() {
                         <input
                             type="text"
                             placeholder={t('searchPages')}
-                            className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 rtl:pl-4 rtl:pr-10 text-start"
+                            className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-primary/20 rtl:pl-4 rtl:pr-10 text-start"
                         />
                     </div>
                 </div>
@@ -199,7 +199,7 @@ export default function PagesManagement() {
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 text-slate-500 text-sm">
-                                        <code className="bg-slate-100 px-2 py-1 rounded text-indigo-600">/{page.url}</code>
+                                        <code className="bg-slate-100 px-2 py-1 rounded text-primary">/{page.url}</code>
                                     </td>
                                     <td className="px-6 py-4">
                                         <div className="text-sm font-medium text-slate-700">{getLocalizedName(page.website?.name, locale)}</div>
@@ -224,21 +224,21 @@ export default function PagesManagement() {
                                     <td className="px-6 py-4 text-end">
                                         <div className="flex justify-end gap-2">
                                             <button
-                                                className="p-2 text-slate-400 hover:text-indigo-600 transition-colors"
+                                                className="p-2 text-slate-400 hover:text-primary transition-colors"
                                                 title={commonT('about')}
                                             >
                                                 <ArrowUpRight className="w-4 h-4" />
                                             </button>
                                             <button
                                                 onClick={() => router.push(`/admin/pages/${page.id}/editor`)}
-                                                className="p-2 text-slate-400 hover:text-indigo-600 transition-colors"
+                                                className="p-2 text-slate-400 hover:text-primary transition-colors"
                                                 title={t('designPage')}
                                             >
                                                 <Layout className="w-4 h-4" />
                                             </button>
                                             <button
                                                 onClick={() => openEditModal(page)}
-                                                className="p-2 text-slate-400 hover:text-indigo-600 transition-colors"
+                                                className="p-2 text-slate-400 hover:text-primary transition-colors"
                                                 title={commonT('edit')}
                                             >
                                                 <Edit2 className="w-4 h-4" />
@@ -276,7 +276,7 @@ export default function PagesManagement() {
                                     value={websiteId}
                                     onChange={(e) => setWebsiteId(e.target.value)}
                                     required
-                                    className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 text-start"
+                                    className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 text-start"
                                 >
                                     {websites.map(site => (
                                         <option key={site.id} value={site.id}>{getLocalizedName(site.name, locale)}</option>
@@ -292,7 +292,7 @@ export default function PagesManagement() {
                                         value={titleEn}
                                         onChange={(e) => setTitleEn(e.target.value)}
                                         required
-                                        className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 ltr"
+                                        className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 ltr"
                                         placeholder="e.g. About Us"
                                     />
                                 </div>
@@ -303,7 +303,7 @@ export default function PagesManagement() {
                                         value={titleAr}
                                         onChange={(e) => setTitleAr(e.target.value)}
                                         required
-                                        className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 rtl"
+                                        className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 rtl"
                                         placeholder="مثال: من نحن"
                                     />
                                 </div>
@@ -319,7 +319,7 @@ export default function PagesManagement() {
                                         value={url}
                                         onChange={(e) => setUrl(e.target.value)}
                                         required
-                                        className="flex-1 w-full px-4 py-2 border border-slate-200 rounded-e-lg focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 shadow-xs text-start"
+                                        className="flex-1 w-full px-4 py-2 border border-slate-200 rounded-e-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 shadow-xs text-start"
                                         placeholder="about-us"
                                     />
                                 </div>
@@ -334,7 +334,7 @@ export default function PagesManagement() {
                                 </button>
                                 <button
                                     type="submit"
-                                    className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors"
+                                    className="flex-1 px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary-dark transition-colors"
                                 >
                                     {isEditing ? commonT('saveChanges') : commonT('create')}
                                 </button>

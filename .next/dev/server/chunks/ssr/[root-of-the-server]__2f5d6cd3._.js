@@ -116,10 +116,7 @@ async function Header() {
                         className: "flex items-center gap-2",
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                className: "w-10 h-10 rounded-xl flex items-center justify-center",
-                                style: {
-                                    backgroundColor: 'var(--primary-color)'
-                                },
+                                className: "w-10 h-10 rounded-xl flex items-center justify-center bg-primary",
                                 children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                     className: "w-5 h-5 bg-white rounded-xs rotate-45"
                                 }, void 0, false, {
@@ -133,7 +130,7 @@ async function Header() {
                                 columnNumber: 25
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                className: "text-2xl font-bold bg-linear-to-r from-[var(--primary-color)] to-[var(--primary-dark)] bg-clip-text text-transparent",
+                                className: "text-2xl font-bold bg-linear-to-r from-primary to-primary-dark bg-clip-text text-transparent",
                                 children: t('title')
                             }, void 0, false, {
                                 fileName: "[project]/app/components/Header.tsx",
@@ -151,7 +148,7 @@ async function Header() {
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$navigation$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["Link"], {
                                 href: "/",
-                                className: "text-slate-600 hover:text-[var(--primary-color)] font-medium transition-colors",
+                                className: "text-slate-600 hover:text-primary font-medium transition-colors",
                                 children: t('home')
                             }, void 0, false, {
                                 fileName: "[project]/app/components/Header.tsx",
@@ -160,7 +157,7 @@ async function Header() {
                             }, this),
                             menus.length > 0 ? menus.map((menu)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$navigation$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["Link"], {
                                     href: `/${menu.url}`,
-                                    className: "text-slate-600 hover:text-[var(--primary-color)] font-medium transition-colors",
+                                    className: "text-slate-600 hover:text-primary font-medium transition-colors",
                                     children: (0, __TURBOPACK__imported__module__$5b$project$5d2f$app$2f$utils$2f$locale$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["getLocalizedName"])(menu.name, locale)
                                 }, menu.id, false, {
                                     fileName: "[project]/app/components/Header.tsx",
@@ -171,7 +168,7 @@ async function Header() {
                                 children: [
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$navigation$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["Link"], {
                                         href: "#",
-                                        className: "text-slate-600 hover:text-[var(--primary-color)] font-medium transition-colors",
+                                        className: "text-slate-600 hover:text-primary font-medium transition-colors",
                                         children: t('charities')
                                     }, void 0, false, {
                                         fileName: "[project]/app/components/Header.tsx",
@@ -180,7 +177,7 @@ async function Header() {
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$navigation$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["Link"], {
                                         href: "#",
-                                        className: "text-slate-600 hover:text-[var(--primary-color)] font-medium transition-colors",
+                                        className: "text-slate-600 hover:text-primary font-medium transition-colors",
                                         children: t('impact')
                                     }, void 0, false, {
                                         fileName: "[project]/app/components/Header.tsx",
@@ -189,7 +186,7 @@ async function Header() {
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$navigation$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["Link"], {
                                         href: "#",
-                                        className: "text-slate-600 hover:text-[var(--primary-color)] font-medium transition-colors",
+                                        className: "text-slate-600 hover:text-primary font-medium transition-colors",
                                         children: t('about')
                                     }, void 0, false, {
                                         fileName: "[project]/app/components/Header.tsx",
@@ -214,17 +211,13 @@ async function Header() {
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$navigation$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["Link"], {
                                 href: "/login",
-                                className: "flex items-center gap-2 text-white px-6 py-2.5 rounded-full font-bold transition-all hover:scale-105 active:scale-95 shadow-lg",
-                                style: {
-                                    backgroundColor: 'var(--primary-color)',
-                                    boxShadow: '0 10px 15px -3px var(--primary-glow)'
-                                },
+                                className: "flex items-center gap-2 text-white px-6 py-2.5 rounded-full font-bold transition-all hover:scale-105 active:scale-95 shadow-lg bg-primary shadow-primary-glow",
                                 children: [
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$log$2d$in$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$export__default__as__LogIn$3e$__["LogIn"], {
                                         className: "w-4 h-4"
                                     }, void 0, false, {
                                         fileName: "[project]/app/components/Header.tsx",
-                                        lineNumber: 58,
+                                        lineNumber: 57,
                                         columnNumber: 29
                                     }, this),
                                     t('signIn')

@@ -7,6 +7,7 @@ import { getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { locales } from '@/navigation';
 import ToastProvider from '@/app/components/ToastProvider';
+import ReduxProvider from '@/app/components/ReduxProvider';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -55,10 +56,12 @@ export default async function RootLayout({
           '--primary-surface': `color-mix(in srgb, ${themeColor}, transparent 95%)`,
         } as React.CSSProperties}
       >
-        <NextIntlClientProvider messages={messages}>
-          <ToastProvider />
-          {children}
-        </NextIntlClientProvider>
+        <ReduxProvider>
+          <NextIntlClientProvider messages={messages}>
+            <ToastProvider />
+            {children}
+          </NextIntlClientProvider>
+        </ReduxProvider>
       </body>
     </html>
   );

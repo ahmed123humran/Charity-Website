@@ -12,16 +12,22 @@ import {
 } from 'lucide-react';
 
 import { useRouter } from '@/navigation';
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import LanguageSwitcher from './LanguageSwitcher';
+import { useAppSelector, useAppDispatch } from '@/app/store/hooks';
+import { logoutUser } from '@/app/store/slices/userSlice';
 
 export default function AdminSidebar() {
     const locale = useLocale();
     const t = useTranslations('Admin');
     const commonT = useTranslations('Common');
     const router = useRouter();
-    const [user, setUser] = useState<{ name: string | null, email: string } | null>(null);
+    const dispatch = useAppDispatch();
+
+    // Get state from Redux
+    const { name: websiteName } = useAppSelector((state) => state.website);
+    const { name: userName, email: userEmail } = useAppSelector((state) => state.user);
 
     const navItems = [
         { label: t('dashboard'), href: '/admin', icon: LayoutDashboard },
@@ -32,23 +38,15 @@ export default function AdminSidebar() {
         { label: t('users'), href: '/admin/users', icon: Users },
     ];
 
-    useEffect(() => {
-        const fetchUser = async () => {
-            const res = await fetch('/api/auth/me');
-            if (res.ok) {
-                const data = await res.json();
-                setUser(data);
-            }
-        };
-        fetchUser();
-    }, []);
-
     const handleLogout = async () => {
-        const res = await fetch('/api/auth/logout', { method: 'POST' });
-        if (res.ok) {
+        const result = await dispatch(logoutUser());
+        if (logoutUser.fulfilled.match(result)) {
             router.push('/login');
         }
     };
+
+    // Get the localized website name
+    const displayName = websiteName?.[locale as 'en' | 'ar'] || commonT('title');
 
     return (
         <aside
@@ -60,8 +58,13 @@ export default function AdminSidebar() {
                     <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
                         <div className="w-4 h-4 rounded-xs" style={{ backgroundColor: 'var(--primary-dark)' }} />
                     </div>
-                    {commonT('title')} OS
+                    {displayName}
                 </h2>
+                {websiteName && (
+                    <p className="text-xs text-white/50 mt-1 ps-10 truncate">
+                        {t('managingWebsite')}
+                    </p>
+                )}
             </div>
 
             <nav className="flex-1 mt-6 px-4 space-y-2">
@@ -81,10 +84,10 @@ export default function AdminSidebar() {
                 <LanguageSwitcher
                     className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 text-indigo-100/70 transition-colors w-full group font-medium"
                 />
-                {user && (
+                {userEmail && (
                     <div className="px-4 py-3 bg-white/5 rounded-xl border border-white/10 text-start">
-                        <p className="text-sm font-bold text-white truncate">{user.name || 'Admin'}</p>
-                        <p className="text-xs text-white/50 truncate">{user.email}</p>
+                        <p className="text-sm font-bold text-white truncate">{userName || 'Admin'}</p>
+                        <p className="text-xs text-white/50 truncate">{userEmail}</p>
                     </div>
                 )}
                 <button

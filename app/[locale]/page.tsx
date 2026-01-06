@@ -15,14 +15,14 @@ export default async function Home() {
         {/* Hero Section */}
         <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full -z-10 opacity-15 pointer-events-none">
-            <div className="absolute top-0 left-1/4 w-96 h-96 rounded-full blur-3xl animate-pulse" style={{ backgroundColor: 'var(--primary-color)' }} />
-            <div className="absolute bottom-0 right-1/4 w-96 h-96 rounded-full blur-3xl animate-pulse delay-700" style={{ backgroundColor: 'var(--primary-accent)' }} />
+            <div className="absolute top-0 left-1/4 w-96 h-96 rounded-full blur-3xl animate-pulse bg-primary" />
+            <div className="absolute bottom-0 right-1/4 w-96 h-96 rounded-full blur-3xl animate-pulse delay-700 bg-primary-accent" />
           </div>
 
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h1 className="text-5xl lg:text-7xl font-extrabold text-slate-900 tracking-tight leading-tight">
               {t('heroTitle')} <br />
-              <span className="bg-linear-to-r from-[var(--primary-color)] to-[var(--primary-accent)] bg-clip-text text-transparent">
+              <span className="bg-linear-to-r from-primary to-primary-accent bg-clip-text text-transparent">
                 {t('heroTitleAccent')}
               </span>
             </h1>
@@ -32,8 +32,7 @@ export default async function Home() {
             <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-6">
               <Link
                 href="/login"
-                className="w-full sm:w-auto px-8 py-4 text-white rounded-2xl font-bold text-lg transition-all hover:scale-105 shadow-xl flex items-center justify-center gap-2 group"
-                style={{ backgroundColor: 'var(--primary-color)', boxShadow: '0 20px 25px -5px var(--primary-glow)' }}
+                className="w-full sm:w-auto px-8 py-4 text-white rounded-2xl font-bold text-lg transition-all hover:scale-105 shadow-xl flex items-center justify-center gap-2 group bg-primary shadow-primary-glow"
               >
                 {t('joinMission')}
                 <ArrowRight className="w-5 h-5 rtl:rotate-180 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
@@ -53,19 +52,19 @@ export default async function Home() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
               <div className="text-center">
-                <div className="text-4xl font-extrabold" style={{ color: 'var(--primary-color)' }}>150+</div>
+                <div className="text-4xl font-extrabold text-primary">150+</div>
                 <div className="mt-2 text-slate-500 font-medium">Active Projects</div>
               </div>
               <div className="text-center">
-                <div className="text-4xl font-extrabold" style={{ color: 'var(--primary-color)' }}>12k+</div>
+                <div className="text-4xl font-extrabold text-primary">12k+</div>
                 <div className="mt-2 text-slate-500 font-medium">Families Supported</div>
               </div>
               <div className="text-center">
-                <div className="text-4xl font-extrabold" style={{ color: 'var(--primary-color)' }}>$2.5M+</div>
+                <div className="text-4xl font-extrabold text-primary">$2.5M+</div>
                 <div className="mt-2 text-slate-500 font-medium">Donations Raised</div>
               </div>
               <div className="text-center">
-                <div className="text-4xl font-extrabold" style={{ color: 'var(--primary-color)' }}>45</div>
+                <div className="text-4xl font-extrabold text-primary">45</div>
                 <div className="mt-2 text-slate-500 font-medium">Charity Partners</div>
               </div>
             </div>
@@ -84,7 +83,7 @@ export default async function Home() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
               <div className="p-10 bg-white rounded-3xl border border-slate-100 shadow-xs hover:shadow-xl transition-all hover:-translate-y-2">
-                <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-8" style={{ backgroundColor: 'var(--primary-glow)', color: 'var(--primary-color)' }}>
+                <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-8 bg-primary-glow text-primary">
                   <Heart className="w-8 h-8" />
                 </div>
                 <h3 className="text-2xl font-bold text-slate-900 mb-4">{t('directImpact')}</h3>
@@ -94,7 +93,7 @@ export default async function Home() {
               </div>
 
               <div className="p-10 bg-white rounded-3xl border border-slate-100 shadow-xs hover:shadow-xl transition-all hover:-translate-y-2">
-                <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-8" style={{ backgroundColor: 'var(--primary-glow)', color: 'var(--primary-color)' }}>
+                <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-8 bg-primary-glow text-primary">
                   <Users className="w-8 h-8" />
                 </div>
                 <h3 className="text-2xl font-bold text-slate-900 mb-4">{t('communityDriven')}</h3>
@@ -104,7 +103,7 @@ export default async function Home() {
               </div>
 
               <div className="p-10 bg-white rounded-3xl border border-slate-100 shadow-xs hover:shadow-xl transition-all hover:-translate-y-2">
-                <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-8" style={{ backgroundColor: 'var(--primary-glow)', color: 'var(--primary-color)' }}>
+                <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-8 bg-primary-glow text-primary">
                   <Target className="w-8 h-8" />
                 </div>
                 <h3 className="text-2xl font-bold text-slate-900 mb-4">{t('strategicGrowth')}</h3>
@@ -119,7 +118,7 @@ export default async function Home() {
         {/* CTA Section */}
         <section className="py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="rounded-[3rem] p-12 lg:p-24 text-center text-white relative overflow-hidden shadow-2xl" style={{ backgroundColor: 'var(--primary-dark)' }}>
+            <div className="rounded-[3rem] p-12 lg:p-24 text-center text-white relative overflow-hidden shadow-2xl bg-primary-dark">
               <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
               <div className="relative z-10 max-w-2xl mx-auto">
                 <h2 className="text-4xl lg:text-6xl font-bold mb-8 leading-tight">{t('ctaTitle')}</h2>
@@ -128,8 +127,7 @@ export default async function Home() {
                 </p>
                 <Link
                   href="/login"
-                  className="inline-block px-10 py-5 bg-white rounded-2xl font-bold text-xl hover:bg-slate-50 transition-all hover:scale-105"
-                  style={{ color: 'var(--primary-color)' }}
+                  className="inline-block px-10 py-5 bg-white rounded-2xl font-bold text-xl hover:bg-slate-50 transition-all hover:scale-105 text-primary"
                 >
                   {t('ctaBtn')}
                 </Link>

@@ -167,7 +167,7 @@ export default function MenusManagement() {
                         setIsEditing(false);
                         setShowModal(true);
                     }}
-                    className="flex items-center gap-2 bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-indigo-700 transition-colors shadow-sm"
+                    className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-primary-dark transition-colors shadow-sm"
                 >
                     <Plus className="w-5 h-5" />
                     {t('newMenuItem')}
@@ -181,7 +181,7 @@ export default function MenusManagement() {
                         <input
                             type="text"
                             placeholder={t('searchMenus')}
-                            className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 rtl:pl-4 rtl:pr-10 text-start"
+                            className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-primary/20 rtl:pl-4 rtl:pr-10 text-start"
                         />
                     </div>
                 </div>
@@ -236,7 +236,7 @@ export default function MenusManagement() {
                                         <div className="flex justify-end gap-2">
                                             <button
                                                 onClick={() => openEditModal(menu)}
-                                                className="p-2 text-slate-400 hover:text-indigo-600 transition-colors"
+                                                className="p-2 text-slate-400 hover:text-primary transition-colors"
                                                 title={commonT('edit')}
                                             >
                                                 <Edit2 className="w-4 h-4" />
@@ -274,7 +274,7 @@ export default function MenusManagement() {
                                     value={websiteId}
                                     onChange={(e) => setWebsiteId(e.target.value)}
                                     required
-                                    className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 text-start bg-white"
+                                    className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 text-start bg-white"
                                 >
                                     {websites.map(site => (
                                         <option key={site.id} value={site.id}>{getLocalizedName(site.name, locale)}</option>
@@ -289,7 +289,7 @@ export default function MenusManagement() {
                                 <select
                                     value={pageId}
                                     onChange={(e) => handlePageSelect(e.target.value)}
-                                    className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 text-start bg-white"
+                                    className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 text-start bg-white"
                                 >
                                     <option value="">{t('customUrl')}</option>
                                     {availablePages.map(page => (
@@ -309,7 +309,7 @@ export default function MenusManagement() {
                                         value={nameEn}
                                         onChange={(e) => setNameEn(e.target.value)}
                                         required
-                                        className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 ltr"
+                                        className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 ltr"
                                         placeholder="e.g. Home"
                                     />
                                 </div>
@@ -320,7 +320,7 @@ export default function MenusManagement() {
                                         value={nameAr}
                                         onChange={(e) => setNameAr(e.target.value)}
                                         required
-                                        className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 rtl"
+                                        className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 rtl"
                                         placeholder="مثال: الرئيسية"
                                     />
                                 </div>
@@ -332,7 +332,7 @@ export default function MenusManagement() {
                                     value={url}
                                     onChange={(e) => setUrl(e.target.value)}
                                     required
-                                    className={`w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 shadow-xs text-start ${pageId ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : ''}`}
+                                    className={`w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 shadow-xs text-start ${pageId ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : ''}`}
                                     placeholder="/home or https://..."
                                     readOnly={!!pageId} // Lock URL if page is selected
                                     disabled={!!pageId} // Also disable it to make it clear
@@ -345,7 +345,7 @@ export default function MenusManagement() {
                                     value={sequence}
                                     onChange={(e) => setSequence(Number(e.target.value))}
                                     required
-                                    className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 shadow-xs text-start"
+                                    className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 shadow-xs text-start"
                                 />
                             </div>
                             <div className="flex gap-3 pt-4">
@@ -358,7 +358,7 @@ export default function MenusManagement() {
                                 </button>
                                 <button
                                     type="submit"
-                                    className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors"
+                                    className="flex-1 px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary-dark transition-colors"
                                 >
                                     {isEditing ? commonT('saveChanges') : commonT('create')}
                                 </button>

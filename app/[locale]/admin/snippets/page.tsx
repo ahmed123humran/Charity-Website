@@ -102,7 +102,7 @@ export default function SnippetsManagement() {
                         setIsEditing(false);
                         setShowModal(true);
                     }}
-                    className="flex items-center gap-2 bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-indigo-700 transition-colors shadow-sm"
+                    className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-primary-dark transition-colors shadow-sm"
                 >
                     <Plus className="w-5 h-5" />
                     {t('newSnippet')}
@@ -127,7 +127,7 @@ export default function SnippetsManagement() {
                                 {snippet.htmlContent.substring(0, 100)}...
                             </div>
                             <div className="absolute top-3 right-3 rtl:left-3 rtl:right-auto">
-                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-white text-indigo-600 shadow-xs border border-indigo-50">
+                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-white text-primary shadow-xs border border-primary/20">
                                     <Tag className="w-2.5 h-2.5" />
                                     {snippet.category}
                                 </span>
@@ -144,7 +144,7 @@ export default function SnippetsManagement() {
                             <div className="flex gap-1">
                                 <button
                                     onClick={() => openEditModal(snippet)}
-                                    className="p-2 text-slate-400 hover:text-indigo-600 transition-colors"
+                                    className="p-2 text-slate-400 hover:text-primary transition-colors"
                                     title={commonT('edit')}
                                 >
                                     <Edit2 className="w-4 h-4" />
@@ -181,7 +181,7 @@ export default function SnippetsManagement() {
                                         value={name}
                                         onChange={(e) => setName(e.target.value)}
                                         required
-                                        className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 text-start"
+                                        className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 text-start"
                                         placeholder="e.g. Hero Section"
                                     />
                                 </div>
@@ -190,7 +190,7 @@ export default function SnippetsManagement() {
                                     <select
                                         value={category}
                                         onChange={(e) => setCategory(e.target.value)}
-                                        className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 text-start"
+                                        className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 text-start"
                                     >
                                         <option value="Intro">Intro</option>
                                         <option value="Content">Content</option>
@@ -207,7 +207,7 @@ export default function SnippetsManagement() {
                                     onChange={(e) => setHtmlContent(e.target.value)}
                                     required
                                     rows={8}
-                                    className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 font-mono text-sm bg-slate-50 text-start"
+                                    className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 font-mono text-sm bg-slate-50 text-start"
                                     placeholder="<section>...</section>"
                                 />
                             </div>
@@ -221,7 +221,7 @@ export default function SnippetsManagement() {
                                 </button>
                                 <button
                                     type="submit"
-                                    className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors"
+                                    className="flex-1 px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary-dark transition-colors"
                                 >
                                     {isEditing ? commonT('saveChanges') : commonT('create')}
                                 </button>

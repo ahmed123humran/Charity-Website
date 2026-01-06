@@ -204,6 +204,12 @@
       "regex": "^/api/websites(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/api/websites(?:/)?$"
+    },
+    {
+      "page": "/api/websites/current",
+      "regex": "^/api/websites/current(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/websites/current(?:/)?$"
     }
   ],
   "dataRoutes": [],

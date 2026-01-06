@@ -204,7 +204,7 @@ function MenusManagement() {
                             setIsEditing(false);
                             setShowModal(true);
                         },
-                        className: "flex items-center gap-2 bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-indigo-700 transition-colors shadow-sm",
+                        className: "flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-primary-dark transition-colors shadow-sm",
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$plus$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Plus$3e$__["Plus"], {
                                 className: "w-5 h-5"
@@ -244,7 +244,7 @@ function MenusManagement() {
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
                                     type: "text",
                                     placeholder: t('searchMenus'),
-                                    className: "w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 rtl:pl-4 rtl:pr-10 text-start"
+                                    className: "w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-primary/20 rtl:pl-4 rtl:pr-10 text-start"
                                 }, void 0, false, {
                                     fileName: "[project]/app/[locale]/admin/menus/page.tsx",
                                     lineNumber: 181,
@@ -453,7 +453,7 @@ function MenusManagement() {
                                                         children: [
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                                                 onClick: ()=>openEditModal(menu),
-                                                                className: "p-2 text-slate-400 hover:text-indigo-600 transition-colors",
+                                                                className: "p-2 text-slate-400 hover:text-primary transition-colors",
                                                                 title: commonT('edit'),
                                                                 children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$pen$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Edit2$3e$__["Edit2"], {
                                                                     className: "w-4 h-4"
@@ -571,7 +571,7 @@ function MenusManagement() {
                                             value: websiteId,
                                             onChange: (e)=>setWebsiteId(e.target.value),
                                             required: true,
-                                            className: "w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 text-start bg-white",
+                                            className: "w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 text-start bg-white",
                                             children: [
                                                 websites.map((site)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
                                                         value: site.id,
@@ -614,7 +614,7 @@ function MenusManagement() {
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
                                             value: pageId,
                                             onChange: (e)=>handlePageSelect(e.target.value),
-                                            className: "w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 text-start bg-white",
+                                            className: "w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 text-start bg-white",
                                             children: [
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
                                                     value: "",
@@ -678,7 +678,10 @@ function MenusManagement() {
                                                     value: nameEn,
                                                     onChange: (e)=>setNameEn(e.target.value),
                                                     required: true,
-                                                    className: "w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 ltr",
+                                                    value: nameEn,
+                                                    onChange: (e)=>setNameEn(e.target.value),
+                                                    required: true,
+                                                    className: "w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 ltr",
                                                     placeholder: "e.g. Home"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/[locale]/admin/menus/page.tsx",
@@ -701,7 +704,7 @@ function MenusManagement() {
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/[locale]/admin/menus/page.tsx",
-                                                    lineNumber: 317,
+                                                    lineNumber: 320,
                                                     columnNumber: 37
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -709,17 +712,20 @@ function MenusManagement() {
                                                     value: nameAr,
                                                     onChange: (e)=>setNameAr(e.target.value),
                                                     required: true,
-                                                    className: "w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 rtl",
+                                                    value: nameAr,
+                                                    onChange: (e)=>setNameAr(e.target.value),
+                                                    required: true,
+                                                    className: "w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 rtl",
                                                     placeholder: "مثال: الرئيسية"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/[locale]/admin/menus/page.tsx",
-                                                    lineNumber: 318,
+                                                    lineNumber: 321,
                                                     columnNumber: 37
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/[locale]/admin/menus/page.tsx",
-                                            lineNumber: 316,
+                                            lineNumber: 319,
                                             columnNumber: 33
                                         }, this)
                                     ]
@@ -735,7 +741,7 @@ function MenusManagement() {
                                             children: t('urlHint')
                                         }, void 0, false, {
                                             fileName: "[project]/app/[locale]/admin/menus/page.tsx",
-                                            lineNumber: 329,
+                                            lineNumber: 335,
                                             columnNumber: 33
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -743,19 +749,22 @@ function MenusManagement() {
                                             value: url,
                                             onChange: (e)=>setUrl(e.target.value),
                                             required: true,
-                                            className: `w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 shadow-xs text-start ${pageId ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : ''}`,
+                                            value: url,
+                                            onChange: (e)=>setUrl(e.target.value),
+                                            required: true,
+                                            className: `w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 shadow-xs text-start ${pageId ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : ''}`,
                                             placeholder: "/home or https://...",
                                             readOnly: !!pageId,
                                             disabled: !!pageId
                                         }, void 0, false, {
                                             fileName: "[project]/app/[locale]/admin/menus/page.tsx",
-                                            lineNumber: 330,
+                                            lineNumber: 336,
                                             columnNumber: 33
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/[locale]/admin/menus/page.tsx",
-                                    lineNumber: 328,
+                                    lineNumber: 334,
                                     columnNumber: 29
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -765,7 +774,7 @@ function MenusManagement() {
                                             children: t('sequence')
                                         }, void 0, false, {
                                             fileName: "[project]/app/[locale]/admin/menus/page.tsx",
-                                            lineNumber: 342,
+                                            lineNumber: 351,
                                             columnNumber: 33
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -773,16 +782,19 @@ function MenusManagement() {
                                             value: sequence,
                                             onChange: (e)=>setSequence(Number(e.target.value)),
                                             required: true,
-                                            className: "w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 shadow-xs text-start"
+                                            value: sequence,
+                                            onChange: (e)=>setSequence(Number(e.target.value)),
+                                            required: true,
+                                            className: "w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 shadow-xs text-start"
                                         }, void 0, false, {
                                             fileName: "[project]/app/[locale]/admin/menus/page.tsx",
-                                            lineNumber: 343,
+                                            lineNumber: 352,
                                             columnNumber: 33
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/[locale]/admin/menus/page.tsx",
-                                    lineNumber: 341,
+                                    lineNumber: 350,
                                     columnNumber: 29
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -795,22 +807,22 @@ function MenusManagement() {
                                             children: commonT('cancel')
                                         }, void 0, false, {
                                             fileName: "[project]/app/[locale]/admin/menus/page.tsx",
-                                            lineNumber: 352,
+                                            lineNumber: 364,
                                             columnNumber: 33
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                             type: "submit",
-                                            className: "flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors",
+                                            className: "flex-1 px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary-dark transition-colors",
                                             children: isEditing ? commonT('saveChanges') : commonT('create')
                                         }, void 0, false, {
                                             fileName: "[project]/app/[locale]/admin/menus/page.tsx",
-                                            lineNumber: 359,
+                                            lineNumber: 371,
                                             columnNumber: 33
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/[locale]/admin/menus/page.tsx",
-                                    lineNumber: 351,
+                                    lineNumber: 363,
                                     columnNumber: 29
                                 }, this)
                             ]

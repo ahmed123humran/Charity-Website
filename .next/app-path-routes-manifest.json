@@ -23,5 +23,6 @@
   "/api/users/[id]/route": "/api/users/[id]",
   "/api/users/route": "/api/users",
   "/api/websites/[id]/route": "/api/websites/[id]",
+  "/api/websites/current/route": "/api/websites/current",
   "/api/websites/route": "/api/websites"
 }

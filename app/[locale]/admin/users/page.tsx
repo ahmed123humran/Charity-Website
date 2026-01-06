@@ -112,7 +112,7 @@ export default function UsersManagement() {
                         setIsEditing(false);
                         setShowModal(true);
                     }}
-                    className="flex items-center gap-2 bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-indigo-700 transition-colors shadow-sm"
+                    className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-primary-dark transition-colors shadow-sm"
                 >
                     <Plus className="w-5 h-5" />
                     {t('newUser')}
@@ -134,7 +134,7 @@ export default function UsersManagement() {
                             <tr key={user.id} className="hover:bg-slate-50 transition-colors group">
                                 <td className="px-6 py-4">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center font-bold">
+                                        <div className="w-10 h-10 bg-primary/10 text-primary rounded-full flex items-center justify-center font-bold">
                                             {user.name?.[0] || user.email[0].toUpperCase()}
                                         </div>
                                         <span className="font-semibold text-slate-900">{user.name || 'Admin'}</span>
@@ -153,7 +153,7 @@ export default function UsersManagement() {
                                     <div className="flex justify-end gap-2">
                                         <button
                                             onClick={() => openEditModal(user)}
-                                            className="p-2 text-slate-400 hover:text-indigo-600 transition-colors"
+                                            className="p-2 text-slate-400 hover:text-primary transition-colors"
                                             title={commonT('edit')}
                                         >
                                             <Edit2 className="w-4 h-4" />
@@ -191,7 +191,7 @@ export default function UsersManagement() {
                                         type="text"
                                         value={name}
                                         onChange={(e) => setName(e.target.value)}
-                                        className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-hidden rtl:pl-4 rtl:pr-10 text-start"
+                                        className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary outline-hidden rtl:pl-4 rtl:pr-10 text-start"
                                         placeholder="John Doe"
                                     />
                                 </div>
@@ -205,7 +205,7 @@ export default function UsersManagement() {
                                         required
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
-                                        className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-hidden rtl:pl-4 rtl:pr-10 text-start"
+                                        className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary outline-hidden rtl:pl-4 rtl:pr-10 text-start"
                                         placeholder="user@example.com"
                                     />
                                 </div>
@@ -221,7 +221,7 @@ export default function UsersManagement() {
                                         required={!isEditing}
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
-                                        className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-hidden rtl:pl-4 rtl:pr-10 text-start"
+                                        className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary outline-hidden rtl:pl-4 rtl:pr-10 text-start"
                                         placeholder="••••••••"
                                     />
                                 </div>
@@ -236,7 +236,7 @@ export default function UsersManagement() {
                                 </button>
                                 <button
                                     type="submit"
-                                    className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-500/20"
+                                    className="flex-1 px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary-dark transition-colors shadow-lg shadow-primary/20"
                                 >
                                     {isEditing ? commonT('saveChanges') : t('createAccount')}
                                 </button>
