@@ -1,9 +1,15 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, memo } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from '@/navigation';
-import { Save, ArrowLeft, Plus, Move, Trash2, Layout, Type, Image as ImageIcon, Copy, MousePointer2, X } from 'lucide-react';
+import {
+    Save, ArrowLeft, Plus, Move, Trash2, Layout, Type,
+    Image as ImageIcon, Copy, MousePointer2, X,
+    Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight, Palette,
+    Type as TypeIcon, Minus, Plus as PlusIcon, PaintBucket, Settings,
+    Eye, EyeOff, Monitor, Laptop, Smartphone
+} from 'lucide-react';
 import { getLocalizedName } from '@/app/utils/locale';
 import toast from 'react-hot-toast';
 
@@ -29,6 +35,37 @@ interface DroppedSnippet {
     name: string;
 }
 
+// Memoized Snippet Component to prevent unnecessary re-renders that kill focus
+const StableSnippet = memo(({
+    item,
+    isActive,
+    previewMode,
+    onContentClick,
+    isBeingEdited
+}: {
+    item: DroppedSnippet,
+    isActive: boolean,
+    previewMode: boolean,
+    onContentClick: (e: React.MouseEvent, id: string) => void,
+    isBeingEdited: boolean
+}) => {
+    return (
+        <div
+            id={`snippet-content-${item.id}`}
+            dangerouslySetInnerHTML={{ __html: item.htmlContent }}
+            onClick={(e) => onContentClick(e, item.id)}
+            className={`transition-all duration-300 min-h-[50px] ${!previewMode ? 'hover:outline-2 hover:outline-dashed hover:outline-indigo-300 cursor-text' : ''} ${!previewMode && isActive ? 'outline-2 outline outline-indigo-500 shadow-xl z-10' : ''}`}
+        />
+    );
+}, (prev, next) => {
+    // CRITICAL: If the snippet is actively being edited, we NEVER re-render it from state
+    // This allows the user to type freely without React overwriting the DOM nodes
+    if (next.isBeingEdited) return true;
+    return prev.item.htmlContent === next.item.htmlContent &&
+        prev.isActive === next.isActive &&
+        prev.previewMode === next.previewMode;
+});
+
 export default function VisualEditor({ params }: { params: Promise<{ id: string }> }) {
     const t = useTranslations('Admin');
     const commonT = useTranslations('Common');
@@ -42,11 +79,22 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
     const [saving, setSaving] = useState(false);
     const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
     const [editorLocale, setEditorLocale] = useState('en');
+    const [previewMode, setPreviewMode] = useState(false);
+
+    // States for persistent content
     const [contentEn, setContentEn] = useState<DroppedSnippet[]>([]);
     const [contentAr, setContentAr] = useState<DroppedSnippet[]>([]);
 
-    const [activeElement, setActiveElement] = useState<HTMLElement | null>(null);
     const [activeSnippetId, setActiveSnippetId] = useState<string | null>(null);
+    const activeElementRef = useRef<HTMLElement | null>(null);
+    const [activeTagName, setActiveTagName] = useState<string | null>(null);
+
+    const [activeStyles, setActiveStyles] = useState({
+        fontSize: '16px',
+        color: '#000000',
+        backgroundColor: 'transparent',
+        textAlign: 'left'
+    });
 
     const canvasRef = useRef<HTMLDivElement>(null);
 
@@ -70,9 +118,11 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                         if (typeof parsed === 'string') parsed = JSON.parse(parsed);
 
                         if (typeof parsed === 'object' && !Array.isArray(parsed)) {
-                            setContentEn(parsed.en || []);
-                            setContentAr(parsed.ar || []);
-                            setDroppedSnippets(editorLocale === 'en' ? (parsed.en || []) : (parsed.ar || []));
+                            const en = parsed.en || [];
+                            const ar = parsed.ar || [];
+                            setContentEn(en);
+                            setContentAr(ar);
+                            setDroppedSnippets(editorLocale === 'en' ? en : ar);
                         }
                     } catch (e) { console.log('Content parse error', e); }
                 }
@@ -93,22 +143,35 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
 
     const switchLocale = (newLocale: string) => {
         if (newLocale === editorLocale) return;
-        if (editorLocale === 'en') setContentEn(droppedSnippets);
-        else setContentAr(droppedSnippets);
-        setDroppedSnippets(newLocale === 'en' ? contentEn : contentAr);
+        if (activeSnippetId) commitChanges(activeSnippetId);
+
+        if (editorLocale === 'en') {
+            setContentEn(droppedSnippets);
+            setDroppedSnippets(contentAr);
+        } else {
+            setContentAr(droppedSnippets);
+            setDroppedSnippets(contentEn);
+        }
+
         setEditorLocale(newLocale);
+        setActiveSnippetId(null);
+        activeElementRef.current = null;
+        setActiveTagName(null);
     };
 
     const handleDragStart = (e: React.DragEvent, snippet: Snippet) => {
+        if (previewMode) return;
         e.dataTransfer.setData('text/plain', JSON.stringify(snippet));
     };
 
     const handleDragOver = (e: React.DragEvent, index?: number) => {
+        if (previewMode) return;
         e.preventDefault();
         setDragOverIndex(index !== undefined ? index : droppedSnippets.length);
     };
 
     const handleDrop = (e: React.DragEvent) => {
+        if (previewMode) return;
         const snippetData = e.dataTransfer.getData('text/plain');
         if (!snippetData) return;
         try {
@@ -126,6 +189,7 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                 return newList;
             });
         } catch (err) { console.error('Drop failed', err); }
+        setDragOverIndex(null);
     };
 
     const commitChanges = (id: string) => {
@@ -133,42 +197,90 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
         if (wrapper) {
             const clone = wrapper.cloneNode(true) as HTMLElement;
             clone.querySelectorAll('*').forEach(el => {
-                (el as HTMLElement).style.outline = '';
-                (el as HTMLElement).style.outlineOffset = '';
+                const htmlEl = el as HTMLElement;
+                htmlEl.style.outline = '';
+                htmlEl.style.outlineOffset = '';
                 el.removeAttribute('contenteditable');
             });
             setDroppedSnippets(prev => prev.map(s => s.id === id ? { ...s, htmlContent: clone.innerHTML } : s));
         }
     };
 
+    const updateActiveStyles = (el: HTMLElement) => {
+        const computed = window.getComputedStyle(el);
+        setActiveStyles({
+            fontSize: computed.fontSize,
+            color: computed.color,
+            backgroundColor: computed.backgroundColor,
+            textAlign: computed.textAlign
+        });
+        setActiveTagName(el.tagName.toLowerCase());
+    };
+
     const handleContentClick = (e: React.MouseEvent, snippetId: string) => {
+        if (previewMode) return;
         let target = e.target as HTMLElement;
         const wrapper = document.getElementById(`snippet-content-${snippetId}`);
-        const smartTarget = target.closest('p, h1, h2, h3, h4, h5, h6, span, a, li, button, img');
+
+        // Target editable elements
+        const smartTarget = target.closest('p, h1, h2, h3, h4, h5, h6, span, a, li, button, img, section, div:not([id^="snippet-content-"])');
         if (smartTarget && wrapper?.contains(smartTarget)) target = smartTarget as HTMLElement;
 
         e.stopPropagation();
-        if (activeElement && activeElement !== target && activeSnippetId) {
-            activeElement.style.outline = '';
+
+        // If clicking a new element, commit old one
+        if (activeElementRef.current && activeElementRef.current !== target && activeSnippetId) {
+            activeElementRef.current.style.outline = '';
+            activeElementRef.current.style.outlineOffset = '';
             commitChanges(activeSnippetId);
         }
 
-        setActiveElement(target);
+        activeElementRef.current = target;
         setActiveSnippetId(snippetId);
+        updateActiveStyles(target);
 
-        if (target.tagName !== 'IMG') {
+        if (target.tagName !== 'IMG' && !target.classList.contains('no-edit')) {
             target.contentEditable = 'true';
             target.style.outline = '2px solid #3b82f6';
-            target.focus();
-            const handleBlur = () => {
+            target.style.outlineOffset = '2px';
+
+            // We only commit on blur or when clicking away to stay efficient
+            const onBlur = () => {
                 target.contentEditable = 'false';
                 target.style.outline = '';
                 commitChanges(snippetId);
-                target.removeEventListener('blur', handleBlur);
+                target.removeEventListener('blur', onBlur);
             };
-            target.addEventListener('blur', handleBlur);
+            target.addEventListener('blur', onBlur);
         } else {
             target.style.outline = '2px solid #3b82f6';
+            target.style.outlineOffset = '2px';
+        }
+    };
+
+    const applyStyle = (command: string, value?: string) => {
+        if (!activeElementRef.current) return;
+        const el = activeElementRef.current;
+
+        if (command === 'backgroundColor') {
+            el.style.backgroundColor = value || '';
+        } else if (command === 'fontSize') {
+            el.style.fontSize = value || '';
+        } else if (command === 'textAlign') {
+            el.style.textAlign = value || '';
+        } else if (command === 'foreColor') {
+            document.execCommand('styleWithCSS', false, 'true');
+            document.execCommand('foreColor', false, value);
+        } else {
+            document.execCommand(command, false, value);
+        }
+
+        updateActiveStyles(el);
+        if (activeSnippetId) {
+            // Colors and discrete styles are committed immediately
+            if (command === 'foreColor' || command === 'backgroundColor' || command === 'fontSize' || command === 'textAlign') {
+                commitChanges(activeSnippetId);
+            }
         }
     };
 
@@ -176,16 +288,15 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
         if (activeSnippetId) commitChanges(activeSnippetId);
         setSaving(true);
         try {
-            const contentToSave = {
-                en: editorLocale === 'en' ? droppedSnippets : contentEn,
-                ar: editorLocale === 'ar' ? droppedSnippets : contentAr
-            };
+            const latestEn = editorLocale === 'en' ? droppedSnippets : contentEn;
+            const latestAr = editorLocale === 'ar' ? droppedSnippets : contentAr;
+            const contentToSave = { en: latestEn, ar: latestAr };
             await fetch(`/api/pages/${page?.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ content: JSON.stringify(contentToSave) })
             });
-            toast.success(commonT('saved'));
+            toast.success(commonT('saved'), { id: 'save-progress' });
         } catch (error) { toast.error('Save failed'); }
         finally { setSaving(false); }
     };
@@ -201,140 +312,144 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
 
     if (loading) return <div className="p-8 text-center text-slate-500">Loading Editor...</div>;
 
+    const swatchColors = [
+        '#10B981', '#3B82F6', '#EF4444', '#000000',
+        '#6366F1', '#64748B', '#8B5CF6', '#F59E0B',
+        '#EC4899', '#14B8A6', '#828282', '#FFFFFF'
+    ];
+
+    const bgColors = [
+        '#EF4444', '#1E293B', '#F59E0B', '#0EA5E9',
+        '#8B5CF6', '#10B981', '#3182CE', '#000000'
+    ];
+
     return (
-        <div className="flex flex-col h-[calc(100vh-theme(spacing.16))] -m-8">
-            {/* Minimal Header */}
-            <div className="h-14 bg-white border-b border-slate-200 flex justify-between items-center px-6 z-20 shadow-sm">
-                <div className="flex items-center gap-4">
-                    <button onClick={() => router.back()} className="p-2 hover:bg-slate-50 rounded-lg"><ArrowLeft className="w-4 h-4 text-slate-600" /></button>
-                    <span className="font-bold text-slate-800">{getLocalizedName(page?.title, locale)}</span>
-                    <div className="flex gap-1 ml-4 bg-slate-100 p-1 rounded-lg">
-                        <button onClick={() => switchLocale('en')} className={`px-3 py-1 text-[10px] font-black uppercase rounded ${editorLocale === 'en' ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-400'}`}>EN</button>
-                        <button onClick={() => switchLocale('ar')} className={`px-3 py-1 text-[10px] font-black uppercase rounded ${editorLocale === 'ar' ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-400'}`}>AR</button>
+        <div className="flex flex-col h-screen bg-slate-100 overflow-hidden font-sans">
+            <div className="h-14 bg-[#1E293B] flex justify-between items-center px-6 z-50 text-white shadow-xl">
+                <div className="flex items-center gap-6">
+                    <button onClick={handleSave} disabled={saving} className="bg-[#3B82F6] hover:bg-blue-600 text-white px-6 py-2 rounded-lg text-xs font-bold transition-all shadow-lg flex items-center gap-2">
+                        <Save className="w-3.5 h-3.5" /> {saving ? '...' : commonT('saveChanges')}
+                    </button>
+                    <button onClick={() => setPreviewMode(!previewMode)} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${previewMode ? 'bg-amber-500 text-white' : 'hover:bg-slate-800'}`}>
+                        {previewMode ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />} Preview
+                    </button>
+                </div>
+                <div className="flex items-center gap-6">
+                    <div className="flex bg-[#0F172A] p-1 rounded-lg">
+                        <button onClick={() => switchLocale('ar')} className={`px-4 py-1 rounded text-[10px] font-bold transition-all ${editorLocale === 'ar' ? 'bg-[#3B82F6] text-white shadow-lg' : 'text-slate-400'}`}>AR</button>
+                        <button onClick={() => switchLocale('en')} className={`px-4 py-1 rounded text-[10px] font-bold transition-all ${editorLocale === 'en' ? 'bg-[#3B82F6] text-white shadow-lg' : 'text-slate-400'}`}>EN</button>
+                    </div>
+                    <div className="flex items-center gap-3 border-l border-slate-700 pl-6">
+                        <span className="text-xs font-bold text-slate-300">{getLocalizedName(page?.title, locale)}</span>
+                        <button onClick={() => router.back()} className="p-2 hover:bg-slate-800 rounded-lg"><ArrowLeft className="w-4 h-4" /></button>
                     </div>
                 </div>
-                <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 bg-indigo-600 text-white px-5 py-1.5 rounded-full text-sm font-bold hover:bg-indigo-700 disabled:opacity-50 transition-all shadow-md">
-                    <Save className="w-4 h-4" /> {saving ? '...' : commonT('saveChanges')}
-                </button>
             </div>
 
-            <div className="flex flex-1 overflow-hidden">
-                {/* Left Sidebar - Snippets */}
-                <div className="w-64 bg-slate-50 border-r border-slate-100 overflow-y-auto p-4 space-y-3">
-                    <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                        <Layout className="w-3 h-3" /> {t('snippetsLibrary')}
+            <div className="flex flex-1 overflow-hidden relative">
+                <div className={`w-72 bg-white border-r border-slate-200 overflow-y-auto z-40 flex flex-col transition-all duration-300 ${previewMode ? '-ml-72' : 'ml-0'}`}>
+                    <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Style Designer</span>
+                        <Settings className="w-3.5 h-3.5 text-indigo-500" />
                     </div>
-                    {snippets.map(s => (
-                        <div key={s.id} draggable onDragStart={(e) => handleDragStart(e, s)} className="p-4 bg-white border border-slate-200 rounded-2xl cursor-move hover:border-indigo-400 hover:shadow-xl transition-all group">
-                            <div className="text-xs font-bold text-slate-800">{s.name}</div>
-                            <div className="text-[10px] text-slate-400 mt-1 uppercase tracking-tighter">{s.category}</div>
+
+                    <div className="p-5 space-y-8">
+                        <div className="bg-slate-50 p-4 rounded-xl border border-dashed border-slate-200">
+                            <div className="text-[9px] text-slate-400 font-bold uppercase mb-2 text-center flex items-center justify-center gap-1">
+                                <MousePointer2 className="w-2.5 h-2.5" /> Active Element
+                            </div>
+                            <div className="text-center font-black text-indigo-600 text-xs py-1 px-3 bg-white border border-slate-200 rounded-lg shadow-sm uppercase">
+                                {activeTagName || 'None'}
+                            </div>
                         </div>
-                    ))}
+
+                        <div className="space-y-4">
+                            <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                <TypeIcon className="w-3 h-3" /> Typography
+                            </div>
+                            <div className="space-y-3">
+                                <div className="flex justify-between items-center px-1"><span className="text-[10px] font-bold text-slate-500 uppercase">Size</span><span className="text-[11px] font-black text-indigo-600">{activeStyles.fontSize}</span></div>
+                                <input type="range" min="8" max="120" value={parseInt(activeStyles.fontSize) || 16} onChange={(e) => applyStyle('fontSize', `${e.target.value}px`)} className="w-full h-1.5 bg-indigo-100 rounded-lg appearance-none cursor-pointer accent-indigo-600" />
+                            </div>
+                            <div className="grid grid-cols-4 gap-1 p-1 bg-slate-100 rounded-xl">
+                                <button onMouseDown={(e) => { e.preventDefault(); applyStyle('textAlign', 'left'); }} className={`p-2 rounded-lg flex justify-center transition-all ${activeStyles.textAlign.includes('left') ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-400'}`}><AlignLeft className="w-4 h-4" /></button>
+                                <button onMouseDown={(e) => { e.preventDefault(); applyStyle('textAlign', 'center'); }} className={`p-2 rounded-lg flex justify-center transition-all ${activeStyles.textAlign.includes('center') ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-400'}`}><AlignCenter className="w-4 h-4" /></button>
+                                <button onMouseDown={(e) => { e.preventDefault(); applyStyle('textAlign', 'right'); }} className={`p-2 rounded-lg flex justify-center transition-all ${activeStyles.textAlign.includes('right') ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-400'}`}><AlignRight className="w-4 h-4" /></button>
+                                <button onMouseDown={(e) => { e.preventDefault(); applyStyle('textAlign', 'justify'); }} className={`p-2 rounded-lg flex justify-center transition-all ${activeStyles.textAlign.includes('justify') ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-400'}`}><Layout className="w-4 h-4" /></button>
+                            </div>
+                            <div className="space-y-3">
+                                <span className="text-[10px] font-bold text-slate-500 uppercase px-1">Text Color</span>
+                                <div className="grid grid-cols-4 gap-2">
+                                    {swatchColors.map(c => (
+                                        <button key={c} onMouseDown={(e) => { e.preventDefault(); applyStyle('foreColor', c); }} className="w-8 h-8 rounded-full border-2 border-white shadow-md hover:scale-110 transition-transform" style={{ backgroundColor: c }} />
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="space-y-4 pt-4 border-t border-slate-100">
+                            <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2"><PaintBucket className="w-3 h-3" /> Background</div>
+                            <div className="space-y-3">
+                                <span className="text-[10px] font-bold text-slate-500 uppercase px-1">Color</span>
+                                <div className="grid grid-cols-4 gap-2">
+                                    {bgColors.map(c => (
+                                        <button key={c} onMouseDown={(e) => { e.preventDefault(); applyStyle('backgroundColor', c); }} className="w-8 h-8 rounded-full border-2 border-white shadow-md hover:scale-110 transition-transform" style={{ backgroundColor: c }} />
+                                    ))}
+                                    <button onMouseDown={(e) => { e.preventDefault(); applyStyle('backgroundColor', 'transparent'); }} className="w-8 h-8 rounded-full bg-white border-2 border-slate-100 shadow-md flex items-center justify-center relative"><div className="absolute w-full h-[1px] bg-red-400 rotate-45" /></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                {/* Main Canvas Area */}
-                <div
-                    ref={canvasRef}
-                    onDragOver={(e) => handleDragOver(e)}
-                    onDrop={handleDrop}
-                    onClick={() => { setActiveElement(null); setActiveSnippetId(null); }}
-                    className="flex-1 bg-slate-200 p-8 overflow-y-auto scroll-smooth relative"
-                >
-                    {/* Floating Component Toolbar */}
-                    {activeElement && (
-                        <div
-                            className="fixed z-50 flex flex-col gap-2"
-                            style={{
-                                top: `${activeElement.getBoundingClientRect().top - 45}px`,
-                                left: `${activeElement.getBoundingClientRect().left + activeElement.getBoundingClientRect().width / 2}px`,
-                                transform: 'translateX(-50%)'
-                            }}
-                        >
-                            <div className="bg-slate-900 text-white p-1 rounded-full shadow-2xl flex items-center gap-1">
-                                <button
-                                    onMouseDown={(e) => {
-                                        e.preventDefault();
-                                        const newEl = activeElement.cloneNode(true) as HTMLElement;
-                                        newEl.style.outline = '';
-                                        activeElement.after(newEl);
-                                        if (activeSnippetId) commitChanges(activeSnippetId);
-                                    }}
-                                    className="p-1.5 hover:bg-slate-800 rounded-full"
-                                    title="Duplicate"
-                                >
-                                    <Copy className="w-3.5 h-3.5" />
-                                </button>
-                                <button
-                                    onMouseDown={(e) => {
-                                        e.preventDefault();
-                                        if (confirm('Delete?')) {
-                                            activeElement.remove();
-                                            setActiveElement(null);
-                                            if (activeSnippetId) commitChanges(activeSnippetId);
-                                        }
-                                    }}
-                                    className="p-1.5 hover:bg-red-900 rounded-full"
-                                    title="Delete"
-                                >
-                                    <Trash2 className="w-3.5 h-3.5" />
-                                </button>
-                                <div className="w-px h-3 bg-slate-700 mx-0.5" />
-                                {activeElement.tagName === 'IMG' && (
-                                    <button
-                                        onMouseDown={(e) => {
-                                            e.preventDefault();
-                                            const src = prompt('URL:', (activeElement as HTMLImageElement).src);
-                                            if (src) {
-                                                (activeElement as HTMLImageElement).src = src;
-                                                commitChanges(activeSnippetId!);
-                                            }
-                                        }}
-                                        className="p-1.5 hover:bg-slate-800 rounded-full"
-                                    >
-                                        <ImageIcon className="w-3.5 h-3.5" />
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-                    )}
+                <div className="flex-1 overflow-hidden flex flex-col items-center p-8 bg-[#E2E8F0]">
+                    <div className="flex gap-4 mb-4 bg-white p-1 rounded-xl shadow-sm border border-slate-200">
+                        <button className="p-2 text-indigo-600 bg-indigo-50 rounded-lg"><Monitor className="w-4 h-4" /></button>
+                        <button className="p-2 text-slate-400 rounded-lg"><Smartphone className="w-4 h-4" /></button>
+                    </div>
 
-                    <div className="max-w-4xl mx-auto space-y-6 pb-40">
-                        {droppedSnippets.map((item, index) => (
-                            <div
-                                key={item.id}
-                                className={`group relative bg-white rounded-lg transition-all border-2 ${activeSnippetId === item.id ? 'border-primary ring-8 ring-primary/5' : 'border-transparent shadow-sm'}`}
-                            >
-                                {/* Snippet Toolbar */}
-                                <div className="absolute -top-4 right-4 hidden group-hover:flex items-center gap-1 bg-slate-900 text-white p-1 rounded-lg z-30 shadow-xl">
-                                    <button onClick={() => moveSnippet(index, 'up')} className="p-1 hover:bg-slate-800 rounded"><Move className="w-3 h-3 rotate-180" /></button>
-                                    <button onClick={() => moveSnippet(index, 'down')} className="p-1 hover:bg-slate-800 rounded"><Move className="w-3 h-3" /></button>
-                                    <button onClick={() => {
-                                        const newList = [...droppedSnippets];
-                                        newList.splice(index + 1, 0, { ...item, id: crypto.randomUUID() });
-                                        setDroppedSnippets(newList);
-                                    }} className="p-1 hover:bg-slate-800 rounded"><Copy className="w-3 h-3" /></button>
-                                    <button onClick={() => {
-                                        setDroppedSnippets(prev => prev.filter((_, i) => i !== index));
-                                        if (activeSnippetId === item.id) { setActiveElement(null); setActiveSnippetId(null); }
-                                    }} className="p-1 hover:bg-red-900 rounded"><Trash2 className="w-3 h-3" /></button>
+                    <div ref={canvasRef} onDragOver={handleDragOver} onDrop={handleDrop} onClick={() => { if (activeSnippetId) commitChanges(activeSnippetId); setActiveSnippetId(null); activeElementRef.current = null; setActiveTagName(null); }}
+                        className={`w-full max-w-5xl bg-white shadow-2xl rounded-2xl overflow-y-auto scroll-smooth transition-all duration-500 relative min-h-[600px] ${previewMode ? 'ring-0' : 'ring-1 ring-slate-300'}`}
+                    >
+                        <div className="flex flex-col min-h-full">
+                            {droppedSnippets.map((item, index) => (
+                                <div key={item.id} className="group relative">
+                                    {!previewMode && (
+                                        <div className="absolute top-4 right-4 hidden group-hover:flex items-center gap-1.5 bg-[#1E293B] text-white px-2 py-1 rounded-xl z-50 shadow-2xl border border-white/10 scale-90 opacity-90 transition-all">
+                                            <button onClick={() => moveSnippet(index, 'up')} className="p-1.5 hover:bg-slate-700 rounded-lg"><Move className="w-3.5 h-3.5 rotate-180" /></button>
+                                            <button onClick={() => moveSnippet(index, 'down')} className="p-1.5 hover:bg-slate-700 rounded-lg"><Move className="w-3.5 h-3.5" /></button>
+                                            <button onClick={() => { const newList = [...droppedSnippets]; newList.splice(index + 1, 0, { ...item, id: crypto.randomUUID() }); setDroppedSnippets(newList); }} className="p-1.5 hover:bg-slate-700 rounded-lg"><Copy className="w-3.5 h-3.5" /></button>
+                                            <button onClick={() => { if (confirm('Delete?')) setDroppedSnippets(prev => prev.filter((_, i) => i !== index)); }} className="p-1.5 hover:bg-red-900 rounded-lg"><Trash2 className="w-3.5 h-3.5" /></button>
+                                        </div>
+                                    )}
+                                    <StableSnippet
+                                        item={item}
+                                        isActive={activeSnippetId === item.id}
+                                        previewMode={previewMode}
+                                        onContentClick={handleContentClick}
+                                        isBeingEdited={activeSnippetId === item.id && activeElementRef.current !== null}
+                                    />
                                 </div>
+                            ))}
+                            {!previewMode && (
+                                <div onDragOver={(e) => handleDragOver(e, droppedSnippets.length)} className={`h-40 border-2 border-dashed border-slate-300 m-8 rounded-3xl flex flex-col items-center justify-center transition-all gap-3 ${dragOverIndex === droppedSnippets.length ? 'bg-indigo-50 border-indigo-400' : 'bg-white hover:bg-slate-50'}`}>
+                                    <Plus className={`w-10 h-10 ${dragOverIndex === droppedSnippets.length ? 'text-indigo-600' : 'text-slate-200'}`} />
+                                    <span className="text-xs font-black text-slate-400 uppercase tracking-widest">Drop New Section</span>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
 
-                                <div
-                                    id={`snippet-content-${item.id}`}
-                                    dangerouslySetInnerHTML={{ __html: item.htmlContent }}
-                                    onClick={(e) => handleContentClick(e, item.id)}
-                                    className="min-h-[100px]"
-                                />
+                <div className={`w-80 bg-white border-l border-slate-200 overflow-y-auto z-40 transition-all duration-300 ${previewMode ? '-mr-80' : 'mr-0'}`}>
+                    <div className="p-4 border-b border-slate-100 text-[10px] font-black text-slate-400 uppercase tracking-widest">مكتبة القصاصات</div>
+                    <div className="p-4 space-y-3">
+                        {snippets.map(s => (
+                            <div key={s.id} draggable onDragStart={(e) => handleDragStart(e, s)} className="p-5 bg-white border border-slate-200 rounded-2xl cursor-grab hover:border-indigo-400 hover:shadow-xl transition-all group overflow-hidden">
+                                <div className="text-xs font-black text-slate-800 uppercase group-hover:text-indigo-600">{s.name}</div>
+                                <div className="text-[9px] text-slate-400 mt-1 uppercase font-bold">{s.category}</div>
                             </div>
                         ))}
-
-                        {/* Drop Zone */}
-                        <div
-                            onDragOver={(e) => handleDragOver(e, droppedSnippets.length)}
-                            className={`h-32 border-2 border-dashed border-slate-300 rounded-3xl flex items-center justify-center transition-all ${dragOverIndex === droppedSnippets.length ? 'bg-indigo-50 border-indigo-400' : 'bg-white/50'}`}
-                        >
-                            <Plus className="w-6 h-6 text-slate-300" />
-                        </div>
                     </div>
                 </div>
             </div>

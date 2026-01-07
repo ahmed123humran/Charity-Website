@@ -541,6 +541,7 @@ function ContentStatus({ isEmpty }) {
         "ContentStatus.useEffect": ()=>{
             if (isEmpty) {
                 (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$hot$2d$toast$2f$dist$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"])('This page has no content yet.', {
+                    id: 'empty-content-toast',
                     icon: 'ℹ️',
                     duration: 5000
                 });

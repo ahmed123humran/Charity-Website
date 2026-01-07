@@ -7,6 +7,7 @@ export default function ContentStatus({ isEmpty }: { isEmpty: boolean }) {
     useEffect(() => {
         if (isEmpty) {
             toast('This page has no content yet.', {
+                id: 'empty-content-toast',
                 icon: 'ℹ️',
                 duration: 5000,
             });
