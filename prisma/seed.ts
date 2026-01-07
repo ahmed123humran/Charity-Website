@@ -432,6 +432,90 @@ async function main() {
   </div>
 </section>
       `
+    },
+    {
+      name: 'Contact Form - Detailed',
+      category: 'Contact',
+      htmlContent: `
+<section class="py-20 bg-white dark:bg-slate-900">
+  <div class="container mx-auto px-4">
+    <div class="max-w-3xl mx-auto bg-white dark:bg-slate-950 rounded-[2.5rem] shadow-xl border border-slate-100 dark:border-slate-800 overflow-hidden">
+      <div class="grid md:grid-cols-5 h-full">
+        <!-- Contact Info / Decoration -->
+        <div class="md:col-span-2 bg-slate-900 text-white p-10 flex flex-col justify-between relative overflow-hidden">
+          <div class="absolute inset-0 bg-primary/20 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-primary/40 via-transparent to-transparent"></div>
+          <div class="relative z-10">
+            <h3 class="text-2xl font-bold mb-4">Contact Us</h3>
+            <p class="text-slate-300 text-sm mb-8">We'd love to hear from you. Fill out the form and we'll be in touch as soon as possible.</p>
+            
+            <div class="space-y-4">
+              <div class="flex items-center gap-3 text-sm">
+                <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                </div>
+                <span>+1 (555) 123-4567</span>
+              </div>
+              <div class="flex items-center gap-3 text-sm">
+                <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                </div>
+                <span>contact@example.com</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="relative z-10 pt-10">
+            <div class="flex gap-4">
+              <a href="#" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-primary transition-colors">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/></svg>
+              </a>
+              <a href="#" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-primary transition-colors">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+              </a>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Form -->
+        <div class="md:col-span-3 p-8 lg:p-10">
+          <form class="space-y-5">
+            <div class="grid md:grid-cols-2 gap-5">
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Name</label>
+                <input type="text" class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors" placeholder="John Doe">
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Company</label>
+                <input type="text" class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors" placeholder="Acme Inc.">
+              </div>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-5">
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Email</label>
+                <input type="email" class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors" placeholder="john@example.com">
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Mobile</label>
+                 <input type="tel" class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors" placeholder="+1 (555) 000-0000">
+              </div>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Message</label>
+              <textarea rows="4" class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors" placeholder="How can we help you?"></textarea>
+            </div>
+            
+            <button type="submit" class="w-full py-4 bg-primary text-white font-bold rounded-xl hover:bg-primary-dark transition-colors shadow-lg shadow-primary/20">
+              Send Message
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+      `
     }
   ];
 
@@ -439,6 +523,62 @@ async function main() {
     await prisma.snippet.create({
       data: snippet,
     });
+  }
+
+  // Create or get default Website
+  let website = await prisma.website.findFirst();
+  if (!website) {
+    website = await prisma.website.create({
+      data: {
+        name: { en: 'My Charity Website', ar: 'موقع جمعيتي' },
+        domain: 'localhost',
+        themeColor: '#4f46e5',
+        language: 'en_US',
+      }
+    });
+    console.log('Created default website');
+  }
+
+  // Create Default Home Page
+  const homePage = await prisma.page.findUnique({
+    where: { url: '/' }
+  });
+
+  if (!homePage) {
+    // Fetch snippets to populate the home page
+    const dbSnippets = await prisma.snippet.findMany();
+
+    // Helper to find snippet by name
+    const findSnip = (name: string) => dbSnippets.find(s => s.name === name);
+
+    const hero = findSnip('Modern Hero');
+    const features = findSnip('Features Grid');
+    const stats = findSnip('Stats Row');
+    const cta = findSnip('Call to Action');
+
+    // Construct content array (simulating dropped snippets)
+    const contentItems = [hero, stats, features, cta].filter(Boolean).map(s => ({
+      id: crypto.randomUUID(), // unique instance ID
+      snippetId: s!.id,
+      htmlContent: s!.htmlContent,
+      name: s!.name
+    }));
+
+    await prisma.page.create({
+      data: {
+        title: { en: 'Home', ar: 'الرئيسية' },
+        url: '/',
+        websiteId: website.id,
+        isPublished: true,
+        content: {
+          en: contentItems,
+          ar: contentItems // Use same content for now, or could duplicate/localize if snippets supported it
+        }
+      }
+    });
+    console.log('Created default Home page');
+  } else {
+    console.log('Home page already exists');
   }
 
   // Default Admin User

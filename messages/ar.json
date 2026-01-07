@@ -13,6 +13,8 @@
         "delete": "حذف",
         "search": "بحث",
         "cancel": "إلغاء",
+        "confirm": "موافق",
+        "deleted": "تم الحذف بنجاح!",
         "saveChanges": "حفظ التغييرات",
         "create": "إنشاء",
         "name": "الاسم",
@@ -135,6 +137,7 @@
         "noRecentWebsites": "ستظهر قائمة المواقع المضافة مؤخراً هنا.",
         "noRecentPages": "ستظهر قائمة الصفحات المضافة مؤخراً هنا.",
         "designPage": "تصميم الصفحة",
-        "managingWebsite": "إدارة الموقع"
+        "managingWebsite": "إدارة الموقع",
+        "searchReplace": "البحث والاستبدال"
     }
 }

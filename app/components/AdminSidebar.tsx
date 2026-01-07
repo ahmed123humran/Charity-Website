@@ -8,7 +8,8 @@ import {
     Menu as MenuIcon,
     PlusSquare,
     LogOut,
-    Users
+    Users,
+    RefreshCw
 } from 'lucide-react';
 
 import { useRouter } from '@/navigation';
@@ -35,6 +36,7 @@ export default function AdminSidebar() {
         { label: t('pages'), href: '/admin/pages', icon: FileText },
         { label: t('menus'), href: '/admin/menus', icon: MenuIcon },
         { label: t('snippets'), href: '/admin/snippets', icon: PlusSquare },
+        { label: t('searchReplace'), href: '/admin/tools/search-replace', icon: RefreshCw },
         { label: t('users'), href: '/admin/users', icon: Users },
     ];
 

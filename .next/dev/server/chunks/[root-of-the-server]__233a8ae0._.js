@@ -604,6 +604,7 @@ async function PUT(request, { params }) {
                 title: validation.data.title,
                 url: validation.data.url,
                 content: validation.data.content,
+                isPublished: validation.data.isPublished,
                 websiteId: validation.data.websiteId,
                 userId: validation.data.userId
             }

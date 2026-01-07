@@ -60,6 +60,7 @@ export async function PUT(request: NextRequest, { params }: Props) {
                 title: validation.data.title as any,
                 url: validation.data.url,
                 content: validation.data.content as any,
+                isPublished: validation.data.isPublished,
                 websiteId: validation.data.websiteId,
                 userId: validation.data.userId
             }

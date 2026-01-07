@@ -5,6 +5,8 @@ import { useState, useEffect } from 'react';
 import { Plus, Search, FileText, ArrowUpRight, Edit2, Trash2, CheckCircle, XCircle, Layout } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { getLocalizedName } from '@/app/utils/locale';
+import ConfirmDialog from '@/app/components/ConfirmDialog';
+import toast from 'react-hot-toast';
 
 interface Website {
     id: string;
@@ -32,6 +34,7 @@ export default function PagesManagement() {
     const [showModal, setShowModal] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [currentId, setCurrentId] = useState<string | null>(null);
+    const [deleteId, setDeleteId] = useState<string | null>(null);
 
     // Form state
     const [titleEn, setTitleEn] = useState('');
@@ -56,6 +59,7 @@ export default function PagesManagement() {
             if (!isEditing && websitesData.length > 0) setWebsiteId(websitesData[0].id);
         } catch (error) {
             console.error('Failed to fetch data:', error);
+            toast.error('Failed to load data');
         } finally {
             setLoading(false);
         }
@@ -75,19 +79,33 @@ export default function PagesManagement() {
             if (res.ok) {
                 closeModal();
                 fetchData();
+                toast.success(isEditing ? commonT('saved') : commonT('created'));
+            } else {
+                toast.error('Operation failed');
             }
         } catch (error) {
             console.error(`Failed to ${isEditing ? 'update' : 'create'} page:`, error);
+            toast.error('An error occurred');
         }
     };
 
-    const handleDelete = async (id: string) => {
-        if (!confirm(commonT('confirmDelete'))) return;
+    const handleDeleteClick = (id: string) => {
+        setDeleteId(id);
+    };
+
+    const confirmDelete = async () => {
+        if (!deleteId) return;
         try {
-            const res = await fetch(`/api/pages/${id}`, { method: 'DELETE' });
-            if (res.ok) fetchData();
+            const res = await fetch(`/api/pages/${deleteId}`, { method: 'DELETE' });
+            if (res.ok) {
+                fetchData();
+                toast.success(commonT('deleted'));
+            } else {
+                toast.error('Failed to delete');
+            }
         } catch (error) {
             console.error('Failed to delete page:', error);
+            toast.error('Failed to delete');
         }
     };
 
@@ -102,14 +120,18 @@ export default function PagesManagement() {
                 body: JSON.stringify({ isPublished: !currentStatus })
             });
 
-            if (!res.ok) {
+            if (res.ok) {
+                toast.success(commonT('saved'));
+            } else {
                 // Revert on failure
                 setPages(pages.map(p => p.id === id ? { ...p, isPublished: currentStatus } : p));
+                toast.error('Failed to update status');
             }
         } catch (error) {
             console.error('Failed to toggle publish status:', error);
             // Revert on failure
             setPages(pages.map(p => p.id === id ? { ...p, isPublished: currentStatus } : p));
+            toast.error('Failed to update status');
         }
     };
 
@@ -244,7 +266,7 @@ export default function PagesManagement() {
                                                 <Edit2 className="w-4 h-4" />
                                             </button>
                                             <button
-                                                onClick={() => handleDelete(page.id)}
+                                                onClick={() => handleDeleteClick(page.id)}
                                                 className="p-2 text-slate-400 hover:text-red-500 transition-colors"
                                                 title={commonT('delete')}
                                             >
@@ -343,6 +365,15 @@ export default function PagesManagement() {
                     </div>
                 </div>
             )}
+
+            <ConfirmDialog
+                isOpen={!!deleteId}
+                onClose={() => setDeleteId(null)}
+                onConfirm={confirmDelete}
+                title={commonT('delete')}
+                message={commonT('confirmDelete')}
+                isDeleting
+            />
         </div>
     );
 }

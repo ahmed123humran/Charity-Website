@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { Plus, Search, Menu as MenuIcon, Edit2, Trash2, ChevronRight, ListOrdered } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { getLocalizedName } from '@/app/utils/locale';
+import ConfirmDialog from '@/app/components/ConfirmDialog';
+import toast from 'react-hot-toast';
 
 interface Website {
     id: string;
@@ -40,6 +42,7 @@ export default function MenusManagement() {
     const [showModal, setShowModal] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [currentId, setCurrentId] = useState<string | null>(null);
+    const [deleteId, setDeleteId] = useState<string | null>(null);
 
     // Form state
     const [nameEn, setNameEn] = useState('');
@@ -71,6 +74,7 @@ export default function MenusManagement() {
             if (!isEditing && websitesData.length > 0) setWebsiteId(websitesData[0].id);
         } catch (error) {
             console.error('Failed to fetch data:', error);
+            toast.error('Failed to load data');
         } finally {
             setLoading(false);
         }
@@ -98,19 +102,33 @@ export default function MenusManagement() {
             if (res.ok) {
                 closeModal();
                 fetchData();
+                toast.success(isEditing ? commonT('saved') : commonT('created'));
+            } else {
+                toast.error('Operation failed');
             }
         } catch (error) {
             console.error(`Failed to ${isEditing ? 'update' : 'create'} menu:`, error);
+            toast.error('An error occurred');
         }
     };
 
-    const handleDelete = async (id: string) => {
-        if (!confirm(commonT('confirmDelete'))) return;
+    const handleDeleteClick = (id: string) => {
+        setDeleteId(id);
+    };
+
+    const confirmDelete = async () => {
+        if (!deleteId) return;
         try {
-            const res = await fetch(`/api/menus/${id}`, { method: 'DELETE' });
-            if (res.ok) fetchData();
+            const res = await fetch(`/api/menus/${deleteId}`, { method: 'DELETE' });
+            if (res.ok) {
+                fetchData();
+                toast.success(commonT('deleted'));
+            } else {
+                toast.error('Failed to delete');
+            }
         } catch (error) {
             console.error('Failed to delete menu:', error);
+            toast.error('Failed to delete');
         }
     };
 
@@ -242,7 +260,7 @@ export default function MenusManagement() {
                                                 <Edit2 className="w-4 h-4" />
                                             </button>
                                             <button
-                                                onClick={() => handleDelete(menu.id)}
+                                                onClick={() => handleDeleteClick(menu.id)}
                                                 className="p-2 text-slate-400 hover:text-red-500 transition-colors"
                                                 title={commonT('delete')}
                                             >
@@ -367,6 +385,15 @@ export default function MenusManagement() {
                     </div>
                 </div>
             )}
+
+            <ConfirmDialog
+                isOpen={!!deleteId}
+                onClose={() => setDeleteId(null)}
+                onConfirm={confirmDelete}
+                title={commonT('delete')}
+                message={commonT('confirmDelete')}
+                isDeleting
+            />
         </div>
     );
 }

@@ -13,6 +13,8 @@
         "delete": "Delete",
         "search": "Search",
         "cancel": "Cancel",
+        "confirm": "Confirm",
+        "deleted": "Successful deleted!",
         "saveChanges": "Save Changes",
         "create": "Create",
         "name": "Name",
@@ -135,6 +137,7 @@
         "noRecentWebsites": "List of recently added websites will appear here.",
         "noRecentPages": "List of recently added pages will appear here.",
         "designPage": "Design Page",
-        "managingWebsite": "Managing Website"
+        "managingWebsite": "Managing Website",
+        "searchReplace": "Search & Replace"
     }
 }

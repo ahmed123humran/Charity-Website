@@ -59,6 +59,7 @@ function PagesManagement() {
     const [showModal, setShowModal] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
     const [isEditing, setIsEditing] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
     const [currentId, setCurrentId] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(null);
+    const [deleteId, setDeleteId] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(null);
     // Form state
     const [titleEn, setTitleEn] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])('');
     const [titleAr, setTitleAr] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])('');
@@ -80,6 +81,7 @@ function PagesManagement() {
             if (!isEditing && websitesData.length > 0) setWebsiteId(websitesData[0].id);
         } catch (error) {
             console.error('Failed to fetch data:', error);
+            toast.error('Failed to load data');
         } finally{
             setLoading(false);
         }
@@ -106,20 +108,33 @@ function PagesManagement() {
             if (res.ok) {
                 closeModal();
                 fetchData();
+                toast.success(isEditing ? commonT('saved') : commonT('created'));
+            } else {
+                toast.error('Operation failed');
             }
         } catch (error) {
             console.error(`Failed to ${isEditing ? 'update' : 'create'} page:`, error);
+            toast.error('An error occurred');
         }
     };
-    const handleDelete = async (id)=>{
-        if (!confirm(commonT('confirmDelete'))) return;
+    const handleDeleteClick = (id)=>{
+        setDeleteId(id);
+    };
+    const confirmDelete = async ()=>{
+        if (!deleteId) return;
         try {
-            const res = await fetch(`/api/pages/${id}`, {
+            const res = await fetch(`/api/pages/${deleteId}`, {
                 method: 'DELETE'
             });
-            if (res.ok) fetchData();
+            if (res.ok) {
+                fetchData();
+                toast.success(commonT('deleted'));
+            } else {
+                toast.error('Failed to delete');
+            }
         } catch (error) {
             console.error('Failed to delete page:', error);
+            toast.error('Failed to delete');
         }
     };
     const togglePublish = async (id, currentStatus)=>{
@@ -138,12 +153,15 @@ function PagesManagement() {
                     isPublished: !currentStatus
                 })
             });
-            if (!res.ok) {
+            if (res.ok) {
+                toast.success(commonT('saved'));
+            } else {
                 // Revert on failure
                 setPages(pages.map((p)=>p.id === id ? {
                         ...p,
                         isPublished: currentStatus
                     } : p));
+                toast.error('Failed to update status');
             }
         } catch (error) {
             console.error('Failed to toggle publish status:', error);
@@ -152,6 +170,7 @@ function PagesManagement() {
                     ...p,
                     isPublished: currentStatus
                 } : p));
+            toast.error('Failed to update status');
         }
     };
     const openEditModal = (page)=>{
@@ -185,7 +204,7 @@ function PagesManagement() {
                                 children: t('pages')
                             }, void 0, false, {
                                 fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                lineNumber: 140,
+                                lineNumber: 160,
                                 columnNumber: 21
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -193,13 +212,13 @@ function PagesManagement() {
                                 children: t('managePages')
                             }, void 0, false, {
                                 fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                lineNumber: 141,
+                                lineNumber: 161,
                                 columnNumber: 21
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                        lineNumber: 139,
+                        lineNumber: 159,
                         columnNumber: 17
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -213,20 +232,20 @@ function PagesManagement() {
                                 className: "w-5 h-5"
                             }, void 0, false, {
                                 fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                lineNumber: 150,
+                                lineNumber: 170,
                                 columnNumber: 21
                             }, this),
                             t('newPage')
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                        lineNumber: 143,
+                        lineNumber: 163,
                         columnNumber: 17
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                lineNumber: 138,
+                lineNumber: 158,
                 columnNumber: 13
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -241,7 +260,7 @@ function PagesManagement() {
                                     className: "absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 rtl:left-auto rtl:right-3"
                                 }, void 0, false, {
                                     fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                    lineNumber: 158,
+                                    lineNumber: 178,
                                     columnNumber: 25
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -250,18 +269,18 @@ function PagesManagement() {
                                     className: "w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-primary/20 rtl:pl-4 rtl:pr-10 text-start"
                                 }, void 0, false, {
                                     fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                    lineNumber: 159,
+                                    lineNumber: 179,
                                     columnNumber: 25
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                            lineNumber: 157,
+                            lineNumber: 177,
                             columnNumber: 21
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                        lineNumber: 156,
+                        lineNumber: 176,
                         columnNumber: 17
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -278,7 +297,7 @@ function PagesManagement() {
                                                 children: t('pageTitle')
                                             }, void 0, false, {
                                                 fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                                lineNumber: 171,
+                                                lineNumber: 191,
                                                 columnNumber: 33
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -286,7 +305,7 @@ function PagesManagement() {
                                                 children: t('urlPath')
                                             }, void 0, false, {
                                                 fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                                lineNumber: 172,
+                                                lineNumber: 192,
                                                 columnNumber: 33
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -294,7 +313,7 @@ function PagesManagement() {
                                                 children: commonT('charities')
                                             }, void 0, false, {
                                                 fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                                lineNumber: 173,
+                                                lineNumber: 193,
                                                 columnNumber: 33
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -302,7 +321,7 @@ function PagesManagement() {
                                                 children: commonT('status')
                                             }, void 0, false, {
                                                 fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                                lineNumber: 174,
+                                                lineNumber: 194,
                                                 columnNumber: 33
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -310,18 +329,18 @@ function PagesManagement() {
                                                 children: commonT('actions')
                                             }, void 0, false, {
                                                 fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                                lineNumber: 175,
+                                                lineNumber: 195,
                                                 columnNumber: 33
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                        lineNumber: 170,
+                                        lineNumber: 190,
                                         columnNumber: 29
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                    lineNumber: 169,
+                                    lineNumber: 189,
                                     columnNumber: 25
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("tbody", {
@@ -337,12 +356,12 @@ function PagesManagement() {
                                                 className: "px-6 py-8 h-16 bg-slate-50/50"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                                lineNumber: 182,
+                                                lineNumber: 202,
                                                 columnNumber: 41
                                             }, this)
                                         }, i, false, {
                                             fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                            lineNumber: 181,
+                                            lineNumber: 201,
                                             columnNumber: 37
                                         }, this)) : pages.length === 0 ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("tr", {
                                         children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -351,12 +370,12 @@ function PagesManagement() {
                                             children: t('noPages')
                                         }, void 0, false, {
                                             fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                            lineNumber: 187,
+                                            lineNumber: 207,
                                             columnNumber: 37
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                        lineNumber: 186,
+                                        lineNumber: 206,
                                         columnNumber: 33
                                     }, this) : pages.map((page)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("tr", {
                                             className: "hover:bg-slate-50/50 transition-colors",
@@ -372,12 +391,12 @@ function PagesManagement() {
                                                                     className: "w-5 h-5"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                                                    lineNumber: 196,
+                                                                    lineNumber: 216,
                                                                     columnNumber: 49
                                                                 }, this)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                                                lineNumber: 195,
+                                                                lineNumber: 215,
                                                                 columnNumber: 45
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -385,18 +404,18 @@ function PagesManagement() {
                                                                 children: (0, __TURBOPACK__imported__module__$5b$project$5d2f$app$2f$utils$2f$locale$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["getLocalizedName"])(page.title, locale)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                                                lineNumber: 198,
+                                                                lineNumber: 218,
                                                                 columnNumber: 45
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                                        lineNumber: 194,
+                                                        lineNumber: 214,
                                                         columnNumber: 41
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                                    lineNumber: 193,
+                                                    lineNumber: 213,
                                                     columnNumber: 37
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -409,12 +428,12 @@ function PagesManagement() {
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                                        lineNumber: 202,
+                                                        lineNumber: 222,
                                                         columnNumber: 41
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                                    lineNumber: 201,
+                                                    lineNumber: 221,
                                                     columnNumber: 37
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -424,12 +443,12 @@ function PagesManagement() {
                                                         children: (0, __TURBOPACK__imported__module__$5b$project$5d2f$app$2f$utils$2f$locale$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["getLocalizedName"])(page.website?.name, locale)
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                                        lineNumber: 205,
+                                                        lineNumber: 225,
                                                         columnNumber: 41
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                                    lineNumber: 204,
+                                                    lineNumber: 224,
                                                     columnNumber: 37
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -445,7 +464,7 @@ function PagesManagement() {
                                                                     className: "w-3 h-3"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                                                    lineNumber: 215,
+                                                                    lineNumber: 235,
                                                                     columnNumber: 53
                                                                 }, this),
                                                                 " ",
@@ -453,7 +472,7 @@ function PagesManagement() {
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                                            lineNumber: 214,
+                                                            lineNumber: 234,
                                                             columnNumber: 49
                                                         }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                             className: "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors cursor-pointer",
@@ -462,7 +481,7 @@ function PagesManagement() {
                                                                     className: "w-3 h-3"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                                                    lineNumber: 219,
+                                                                    lineNumber: 239,
                                                                     columnNumber: 53
                                                                 }, this),
                                                                 " ",
@@ -470,17 +489,17 @@ function PagesManagement() {
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                                            lineNumber: 218,
+                                                            lineNumber: 238,
                                                             columnNumber: 49
                                                         }, this)
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                                        lineNumber: 208,
+                                                        lineNumber: 228,
                                                         columnNumber: 41
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                                    lineNumber: 207,
+                                                    lineNumber: 227,
                                                     columnNumber: 37
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -495,12 +514,12 @@ function PagesManagement() {
                                                                     className: "w-4 h-4"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                                                    lineNumber: 230,
+                                                                    lineNumber: 250,
                                                                     columnNumber: 49
                                                                 }, this)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                                                lineNumber: 226,
+                                                                lineNumber: 246,
                                                                 columnNumber: 45
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -511,12 +530,12 @@ function PagesManagement() {
                                                                     className: "w-4 h-4"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                                                    lineNumber: 237,
+                                                                    lineNumber: 257,
                                                                     columnNumber: 49
                                                                 }, this)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                                                lineNumber: 232,
+                                                                lineNumber: 252,
                                                                 columnNumber: 45
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -527,67 +546,67 @@ function PagesManagement() {
                                                                     className: "w-4 h-4"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                                                    lineNumber: 244,
+                                                                    lineNumber: 264,
                                                                     columnNumber: 49
                                                                 }, this)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                                                lineNumber: 239,
+                                                                lineNumber: 259,
                                                                 columnNumber: 45
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                                                onClick: ()=>handleDelete(page.id),
+                                                                onClick: ()=>handleDeleteClick(page.id),
                                                                 className: "p-2 text-slate-400 hover:text-red-500 transition-colors",
                                                                 title: commonT('delete'),
                                                                 children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$trash$2d$2$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Trash2$3e$__["Trash2"], {
                                                                     className: "w-4 h-4"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                                                    lineNumber: 251,
+                                                                    lineNumber: 271,
                                                                     columnNumber: 49
                                                                 }, this)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                                                lineNumber: 246,
+                                                                lineNumber: 266,
                                                                 columnNumber: 45
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                                        lineNumber: 225,
+                                                        lineNumber: 245,
                                                         columnNumber: 41
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                                    lineNumber: 224,
+                                                    lineNumber: 244,
                                                     columnNumber: 37
                                                 }, this)
                                             ]
                                         }, page.id, true, {
                                             fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                            lineNumber: 192,
+                                            lineNumber: 212,
                                             columnNumber: 33
                                         }, this))
                                 }, void 0, false, {
                                     fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                    lineNumber: 178,
+                                    lineNumber: 198,
                                     columnNumber: 25
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                            lineNumber: 168,
+                            lineNumber: 188,
                             columnNumber: 21
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                        lineNumber: 167,
+                        lineNumber: 187,
                         columnNumber: 17
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                lineNumber: 155,
+                lineNumber: 175,
                 columnNumber: 13
             }, this),
             showModal && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -603,7 +622,7 @@ function PagesManagement() {
                                     children: isEditing ? t('editPage') : t('newPage')
                                 }, void 0, false, {
                                     fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                    lineNumber: 267,
+                                    lineNumber: 287,
                                     columnNumber: 29
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -612,13 +631,13 @@ function PagesManagement() {
                                     children: "×"
                                 }, void 0, false, {
                                     fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                    lineNumber: 270,
+                                    lineNumber: 290,
                                     columnNumber: 29
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                            lineNumber: 266,
+                            lineNumber: 286,
                             columnNumber: 25
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("form", {
@@ -632,7 +651,7 @@ function PagesManagement() {
                                             children: t('targetWebsite')
                                         }, void 0, false, {
                                             fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                            lineNumber: 274,
+                                            lineNumber: 294,
                                             columnNumber: 33
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
@@ -646,7 +665,7 @@ function PagesManagement() {
                                                         children: (0, __TURBOPACK__imported__module__$5b$project$5d2f$app$2f$utils$2f$locale$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["getLocalizedName"])(site.name, locale)
                                                     }, site.id, false, {
                                                         fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                                        lineNumber: 282,
+                                                        lineNumber: 302,
                                                         columnNumber: 41
                                                     }, this)),
                                                 websites.length === 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -654,19 +673,19 @@ function PagesManagement() {
                                                     children: "No websites available"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                                    lineNumber: 284,
+                                                    lineNumber: 304,
                                                     columnNumber: 63
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                            lineNumber: 275,
+                                            lineNumber: 295,
                                             columnNumber: 33
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                    lineNumber: 273,
+                                    lineNumber: 293,
                                     columnNumber: 29
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -682,7 +701,7 @@ function PagesManagement() {
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                                    lineNumber: 289,
+                                                    lineNumber: 309,
                                                     columnNumber: 37
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -694,13 +713,13 @@ function PagesManagement() {
                                                     placeholder: "e.g. About Us"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                                    lineNumber: 290,
+                                                    lineNumber: 310,
                                                     columnNumber: 37
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                            lineNumber: 288,
+                                            lineNumber: 308,
                                             columnNumber: 33
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -713,7 +732,7 @@ function PagesManagement() {
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                                    lineNumber: 300,
+                                                    lineNumber: 320,
                                                     columnNumber: 37
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -725,19 +744,19 @@ function PagesManagement() {
                                                     placeholder: "مثال: من نحن"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                                    lineNumber: 301,
+                                                    lineNumber: 321,
                                                     columnNumber: 37
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                            lineNumber: 299,
+                                            lineNumber: 319,
                                             columnNumber: 33
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                    lineNumber: 287,
+                                    lineNumber: 307,
                                     columnNumber: 29
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -747,7 +766,7 @@ function PagesManagement() {
                                             children: t('urlPath')
                                         }, void 0, false, {
                                             fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                            lineNumber: 312,
+                                            lineNumber: 332,
                                             columnNumber: 33
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -758,7 +777,7 @@ function PagesManagement() {
                                                     children: "/"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                                    lineNumber: 314,
+                                                    lineNumber: 334,
                                                     columnNumber: 37
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -770,19 +789,19 @@ function PagesManagement() {
                                                     placeholder: "about-us"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                                    lineNumber: 317,
+                                                    lineNumber: 337,
                                                     columnNumber: 37
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                            lineNumber: 313,
+                                            lineNumber: 333,
                                             columnNumber: 33
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                    lineNumber: 311,
+                                    lineNumber: 331,
                                     columnNumber: 29
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -795,7 +814,7 @@ function PagesManagement() {
                                             children: commonT('cancel')
                                         }, void 0, false, {
                                             fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                            lineNumber: 328,
+                                            lineNumber: 348,
                                             columnNumber: 33
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -804,36 +823,48 @@ function PagesManagement() {
                                             children: isEditing ? commonT('saveChanges') : commonT('create')
                                         }, void 0, false, {
                                             fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                            lineNumber: 335,
+                                            lineNumber: 355,
                                             columnNumber: 33
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                                    lineNumber: 327,
+                                    lineNumber: 347,
                                     columnNumber: 29
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                            lineNumber: 272,
+                            lineNumber: 292,
                             columnNumber: 25
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                    lineNumber: 265,
+                    lineNumber: 285,
                     columnNumber: 21
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-                lineNumber: 264,
+                lineNumber: 284,
                 columnNumber: 17
+            }, this),
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(ConfirmDialog, {
+                isOpen: !!deleteId,
+                onClose: ()=>setDeleteId(null),
+                onConfirm: confirmDelete,
+                title: commonT('delete'),
+                message: commonT('confirmDelete'),
+                isDeleting: true
+            }, void 0, false, {
+                fileName: "[project]/app/[locale]/admin/pages/page.tsx",
+                lineNumber: 367,
+                columnNumber: 13
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/app/[locale]/admin/pages/page.tsx",
-        lineNumber: 137,
+        lineNumber: 157,
         columnNumber: 9
     }, this);
 }

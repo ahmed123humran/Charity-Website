@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, User as UserIcon, Mail, Shield } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import toast from 'react-hot-toast';
+import ConfirmDialog from '@/app/components/ConfirmDialog';
 
 interface User {
     id: number;
@@ -20,6 +21,7 @@ export default function UsersManagement() {
     const [showModal, setShowModal] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [currentId, setCurrentId] = useState<number | null>(null);
+    const [deleteId, setDeleteId] = useState<number | null>(null);
 
     // Form state
     const [name, setName] = useState('');
@@ -37,6 +39,7 @@ export default function UsersManagement() {
             setUsers(data);
         } catch (error) {
             console.error('Failed to fetch users:', error);
+            toast.error('Failed to load users');
         } finally {
             setLoading(false);
         }
@@ -70,13 +73,23 @@ export default function UsersManagement() {
         }
     };
 
-    const handleDelete = async (id: number) => {
-        if (!confirm(commonT('confirmDelete'))) return;
+    const handleDeleteClick = (id: number) => {
+        setDeleteId(id);
+    };
+
+    const confirmDelete = async () => {
+        if (!deleteId) return;
         try {
-            const res = await fetch(`/api/users/${id}`, { method: 'DELETE' });
-            if (res.ok) fetchUsers();
+            const res = await fetch(`/api/users/${deleteId}`, { method: 'DELETE' });
+            if (res.ok) {
+                fetchUsers();
+                toast.success('User deleted successfully');
+            } else {
+                toast.error('Failed to delete user');
+            }
         } catch (error) {
             console.error('Failed to delete user:', error);
+            toast.error('Failed to delete user');
         }
     };
 
@@ -159,7 +172,7 @@ export default function UsersManagement() {
                                             <Edit2 className="w-4 h-4" />
                                         </button>
                                         <button
-                                            onClick={() => handleDelete(user.id)}
+                                            onClick={() => handleDeleteClick(user.id)}
                                             className="p-2 text-slate-400 hover:text-red-500 transition-colors"
                                             title={commonT('delete')}
                                         >
@@ -245,6 +258,15 @@ export default function UsersManagement() {
                     </div>
                 </div>
             )}
+
+            <ConfirmDialog
+                isOpen={!!deleteId}
+                onClose={() => setDeleteId(null)}
+                onConfirm={confirmDelete}
+                title={commonT('delete')}
+                message={commonT('confirmDelete')}
+                isDeleting
+            />
         </div>
     );
 }

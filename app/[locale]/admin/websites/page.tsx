@@ -5,6 +5,8 @@ import { useState, useEffect } from 'react';
 import { Plus, Search, Globe, MoreVertical, Edit2, Trash2, ExternalLink } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { getLocalizedName } from '@/app/utils/locale';
+import ConfirmDialog from '@/app/components/ConfirmDialog';
+import toast from 'react-hot-toast';
 
 interface Website {
     id: string;
@@ -25,6 +27,7 @@ export default function WebsitesPage() {
     const [showModal, setShowModal] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [currentId, setCurrentId] = useState<string | null>(null);
+    const [deleteId, setDeleteId] = useState<string | null>(null);
 
     // Form state
     const [nameEn, setNameEn] = useState('');
@@ -43,6 +46,7 @@ export default function WebsitesPage() {
             setWebsites(data);
         } catch (error) {
             console.error('Failed to fetch websites:', error);
+            toast.error('Failed to load websites');
         } finally {
             setLoading(false);
         }
@@ -63,19 +67,33 @@ export default function WebsitesPage() {
                 closeModal();
                 fetchWebsites();
                 router.refresh(); // Refresh server components to update global theme
+                toast.success(isEditing ? commonT('saved') : commonT('created'));
+            } else {
+                toast.error('Operation failed');
             }
         } catch (error) {
             console.error(`Failed to ${isEditing ? 'update' : 'create'} website:`, error);
+            toast.error('An error occurred');
         }
     };
 
-    const handleDelete = async (id: string) => {
-        if (!confirm(commonT('confirmDelete'))) return;
+    const handleDeleteClick = (id: string) => {
+        setDeleteId(id);
+    };
+
+    const confirmDelete = async () => {
+        if (!deleteId) return;
         try {
-            const res = await fetch(`/api/websites/${id}`, { method: 'DELETE' });
-            if (res.ok) fetchWebsites();
+            const res = await fetch(`/api/websites/${deleteId}`, { method: 'DELETE' });
+            if (res.ok) {
+                fetchWebsites();
+                toast.success(commonT('deleted'));
+            } else {
+                toast.error('Failed to delete');
+            }
         } catch (error) {
             console.error('Failed to delete website:', error);
+            toast.error('Failed to delete');
         }
     };
 
@@ -188,7 +206,7 @@ export default function WebsitesPage() {
                                                 <Edit2 className="w-4 h-4" />
                                             </button>
                                             <button
-                                                onClick={() => handleDelete(site.id)}
+                                                onClick={() => handleDeleteClick(site.id)}
                                                 className="p-2 text-slate-400 hover:text-red-500 transition-colors"
                                                 title={commonT('delete')}
                                             >
@@ -289,6 +307,15 @@ export default function WebsitesPage() {
                     </div>
                 </div>
             )}
+
+            <ConfirmDialog
+                isOpen={!!deleteId}
+                onClose={() => setDeleteId(null)}
+                onConfirm={confirmDelete}
+                title={commonT('delete')}
+                message={commonT('confirmDelete')}
+                isDeleting
+            />
         </div>
     );
 }

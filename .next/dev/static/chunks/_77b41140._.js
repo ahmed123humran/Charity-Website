@@ -678,9 +678,6 @@ function MenusManagement() {
                                                     value: nameEn,
                                                     onChange: (e)=>setNameEn(e.target.value),
                                                     required: true,
-                                                    value: nameEn,
-                                                    onChange: (e)=>setNameEn(e.target.value),
-                                                    required: true,
                                                     className: "w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 ltr",
                                                     placeholder: "e.g. Home"
                                                 }, void 0, false, {
@@ -704,7 +701,7 @@ function MenusManagement() {
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/[locale]/admin/menus/page.tsx",
-                                                    lineNumber: 320,
+                                                    lineNumber: 317,
                                                     columnNumber: 37
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -712,20 +709,17 @@ function MenusManagement() {
                                                     value: nameAr,
                                                     onChange: (e)=>setNameAr(e.target.value),
                                                     required: true,
-                                                    value: nameAr,
-                                                    onChange: (e)=>setNameAr(e.target.value),
-                                                    required: true,
                                                     className: "w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 rtl",
                                                     placeholder: "مثال: الرئيسية"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/[locale]/admin/menus/page.tsx",
-                                                    lineNumber: 321,
+                                                    lineNumber: 318,
                                                     columnNumber: 37
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/[locale]/admin/menus/page.tsx",
-                                            lineNumber: 319,
+                                            lineNumber: 316,
                                             columnNumber: 33
                                         }, this)
                                     ]
@@ -741,14 +735,11 @@ function MenusManagement() {
                                             children: t('urlHint')
                                         }, void 0, false, {
                                             fileName: "[project]/app/[locale]/admin/menus/page.tsx",
-                                            lineNumber: 335,
+                                            lineNumber: 329,
                                             columnNumber: 33
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
                                             type: "text",
-                                            value: url,
-                                            onChange: (e)=>setUrl(e.target.value),
-                                            required: true,
                                             value: url,
                                             onChange: (e)=>setUrl(e.target.value),
                                             required: true,
@@ -758,13 +749,13 @@ function MenusManagement() {
                                             disabled: !!pageId
                                         }, void 0, false, {
                                             fileName: "[project]/app/[locale]/admin/menus/page.tsx",
-                                            lineNumber: 336,
+                                            lineNumber: 330,
                                             columnNumber: 33
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/[locale]/admin/menus/page.tsx",
-                                    lineNumber: 334,
+                                    lineNumber: 328,
                                     columnNumber: 29
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -774,7 +765,7 @@ function MenusManagement() {
                                             children: t('sequence')
                                         }, void 0, false, {
                                             fileName: "[project]/app/[locale]/admin/menus/page.tsx",
-                                            lineNumber: 351,
+                                            lineNumber: 342,
                                             columnNumber: 33
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -782,19 +773,16 @@ function MenusManagement() {
                                             value: sequence,
                                             onChange: (e)=>setSequence(Number(e.target.value)),
                                             required: true,
-                                            value: sequence,
-                                            onChange: (e)=>setSequence(Number(e.target.value)),
-                                            required: true,
                                             className: "w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 shadow-xs text-start"
                                         }, void 0, false, {
                                             fileName: "[project]/app/[locale]/admin/menus/page.tsx",
-                                            lineNumber: 352,
+                                            lineNumber: 343,
                                             columnNumber: 33
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/[locale]/admin/menus/page.tsx",
-                                    lineNumber: 350,
+                                    lineNumber: 341,
                                     columnNumber: 29
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -807,7 +795,7 @@ function MenusManagement() {
                                             children: commonT('cancel')
                                         }, void 0, false, {
                                             fileName: "[project]/app/[locale]/admin/menus/page.tsx",
-                                            lineNumber: 364,
+                                            lineNumber: 352,
                                             columnNumber: 33
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -816,13 +804,13 @@ function MenusManagement() {
                                             children: isEditing ? commonT('saveChanges') : commonT('create')
                                         }, void 0, false, {
                                             fileName: "[project]/app/[locale]/admin/menus/page.tsx",
-                                            lineNumber: 371,
+                                            lineNumber: 359,
                                             columnNumber: 33
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/[locale]/admin/menus/page.tsx",
-                                    lineNumber: 363,
+                                    lineNumber: 351,
                                     columnNumber: 29
                                 }, this)
                             ]

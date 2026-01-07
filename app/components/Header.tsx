@@ -27,7 +27,6 @@ export default async function Header() {
                     </div>
 
                     <nav className="hidden md:flex items-center gap-8">
-                        <Link href="/" className="text-slate-600 hover:text-primary font-medium transition-colors">{t('home')}</Link>
                         {menus.length > 0 ? (
                             menus.map(menu => (
                                 <Link
