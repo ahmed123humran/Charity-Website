@@ -2,9 +2,15 @@ import Header from "@/app/components/Header";
 import Footer from "@/app/components/Footer";
 import prisma from "@/app/utils/db";
 import ContentStatus from "@/app/components/ContentStatus";
+import { redirect } from "next/navigation";
 
 export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+
+  const userCount = await prisma.user.count();
+  if (userCount === 0) {
+    redirect(`/${locale}/setup`);
+  }
 
   // Try to find the homepage configuration in the database
   // We check for common homepage URL patterns

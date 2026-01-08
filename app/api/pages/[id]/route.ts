@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { updatePageSchema } from '@/app/utils/validiton';
 import prisma from '@/app/utils/db';
+import { getServerUser } from '@/app/utils/auth';
+import { Role } from '@prisma/client';
+import { logActivity } from '@/app/utils/logger';
 
 interface Props {
     params: Promise<{ id: string }>;
@@ -41,6 +44,11 @@ export async function GET(request: NextRequest, { params }: Props) {
  */
 export async function PUT(request: NextRequest, { params }: Props) {
     try {
+        const user = await getServerUser();
+        if (!user || (user.role !== Role.ADMIN && user.role !== Role.EDITOR)) {
+            return NextResponse.json({ message: 'Unauthorized: Only Admin and Editor can update pages' }, { status: 403 });
+        }
+
         const { id } = await params;
         const body = await request.json();
         const validation = updatePageSchema.safeParse(body);
@@ -66,6 +74,16 @@ export async function PUT(request: NextRequest, { params }: Props) {
             }
         });
 
+        await logActivity({
+            action: 'UPDATE',
+            entityType: 'PAGE',
+            entityId: id,
+            details: `Updated page: ${updatedPage.url}`,
+            oldData: page,
+            newData: updatedPage,
+            userId: user.id
+        });
+
         return NextResponse.json(updatedPage, { status: 200 });
     } catch (error) {
         console.error(error);
@@ -81,6 +99,11 @@ export async function PUT(request: NextRequest, { params }: Props) {
  */
 export async function DELETE(request: NextRequest, { params }: Props) {
     try {
+        const user = await getServerUser();
+        if (!user || user.role !== Role.ADMIN) {
+            return NextResponse.json({ message: 'Unauthorized: Only Admin can delete pages' }, { status: 403 });
+        }
+
         const { id } = await params;
         const page = await prisma.page.findUnique({ where: { id } });
         if (!page) {
@@ -88,6 +111,15 @@ export async function DELETE(request: NextRequest, { params }: Props) {
         }
 
         await prisma.page.delete({ where: { id } });
+
+        await logActivity({
+            action: 'DELETE',
+            entityType: 'PAGE',
+            entityId: id,
+            details: `Deleted page: ${page.url}`,
+            oldData: page,
+            userId: user.id
+        });
 
         return NextResponse.json({ message: 'Page deleted successfully' }, { status: 200 });
     } catch (error) {

@@ -7,6 +7,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import { getLocalizedName } from '@/app/utils/locale';
 import ConfirmDialog from '@/app/components/ConfirmDialog';
 import toast from 'react-hot-toast';
+import { useAppSelector } from '@/app/store/hooks';
 
 interface Website {
     id: string;
@@ -21,7 +22,8 @@ export default function WebsitesPage() {
     const t = useTranslations('Admin');
     const commonT = useTranslations('Common');
     const locale = useLocale();
-    const router = useRouter(); // Initialize router
+    const router = useRouter();
+    const { role: userRole } = useAppSelector((state) => state.user);
     const [websites, setWebsites] = useState<Website[]>([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
@@ -46,7 +48,7 @@ export default function WebsitesPage() {
             setWebsites(data);
         } catch (error) {
             console.error('Failed to fetch websites:', error);
-            toast.error('Failed to load websites');
+            toast.error(commonT('error'));
         } finally {
             setLoading(false);
         }
@@ -67,13 +69,13 @@ export default function WebsitesPage() {
                 closeModal();
                 fetchWebsites();
                 router.refresh(); // Refresh server components to update global theme
-                toast.success(isEditing ? commonT('saved') : commonT('created'));
+                toast.success(isEditing ? commonT('updated') : commonT('created'));
             } else {
-                toast.error('Operation failed');
+                toast.error(commonT('error'));
             }
         } catch (error) {
             console.error(`Failed to ${isEditing ? 'update' : 'create'} website:`, error);
-            toast.error('An error occurred');
+            toast.error(commonT('error'));
         }
     };
 
@@ -89,11 +91,11 @@ export default function WebsitesPage() {
                 fetchWebsites();
                 toast.success(commonT('deleted'));
             } else {
-                toast.error('Failed to delete');
+                toast.error(commonT('error'));
             }
         } catch (error) {
             console.error('Failed to delete website:', error);
-            toast.error('Failed to delete');
+            toast.error(commonT('error'));
         }
     };
 
@@ -124,16 +126,18 @@ export default function WebsitesPage() {
                     <h1 className="text-3xl font-bold text-slate-900">{t('websites')}</h1>
                     <p className="text-slate-500 mt-1">{t('manageWebsites')}</p>
                 </div>
-                <button
-                    onClick={() => {
-                        setIsEditing(false);
-                        setShowModal(true);
-                    }}
-                    className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-primary-dark transition-colors shadow-sm"
-                >
-                    <Plus className="w-5 h-5" />
-                    {t('newWebsite')}
-                </button>
+                {(userRole === 'ADMIN' || userRole === 'EDITOR') && (
+                    <button
+                        onClick={() => {
+                            setIsEditing(false);
+                            setShowModal(true);
+                        }}
+                        className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-primary-dark transition-colors shadow-sm"
+                    >
+                        <Plus className="w-5 h-5" />
+                        {t('newWebsite')}
+                    </button>
+                )}
             </div>
 
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
@@ -198,20 +202,24 @@ export default function WebsitesPage() {
                                     </td>
                                     <td className="px-6 py-4 text-end">
                                         <div className="flex justify-end gap-2">
-                                            <button
-                                                onClick={() => openEditModal(site)}
-                                                className="p-2 text-slate-400 hover:text-primary transition-colors"
-                                                title={commonT('edit')}
-                                            >
-                                                <Edit2 className="w-4 h-4" />
-                                            </button>
-                                            <button
-                                                onClick={() => handleDeleteClick(site.id)}
-                                                className="p-2 text-slate-400 hover:text-red-500 transition-colors"
-                                                title={commonT('delete')}
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
+                                            {(userRole === 'ADMIN' || userRole === 'EDITOR') && (
+                                                <button
+                                                    onClick={() => openEditModal(site)}
+                                                    className="p-2 text-slate-400 hover:text-primary transition-colors"
+                                                    title={commonT('edit')}
+                                                >
+                                                    <Edit2 className="w-4 h-4" />
+                                                </button>
+                                            )}
+                                            {userRole === 'ADMIN' && (
+                                                <button
+                                                    onClick={() => handleDeleteClick(site.id)}
+                                                    className="p-2 text-slate-400 hover:text-red-500 transition-colors"
+                                                    title={commonT('delete')}
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            )}
                                         </div>
                                     </td>
                                 </tr>

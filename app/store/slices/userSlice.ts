@@ -5,6 +5,8 @@ export interface UserState {
     id: number | null;
     name: string | null;
     email: string | null;
+    phone: string | null;
+    role: 'ADMIN' | 'EDITOR' | 'VIEWER' | null;
     loading: boolean;
     error: string | null;
     isAuthenticated: boolean;
@@ -14,6 +16,8 @@ const initialState: UserState = {
     id: null,
     name: null,
     email: null,
+    phone: null,
+    role: null,
     loading: false,
     error: null,
     isAuthenticated: false,
@@ -55,16 +59,20 @@ const userSlice = createSlice({
     name: 'user',
     initialState,
     reducers: {
-        setUser: (state, action: PayloadAction<{ id: number; name: string | null; email: string }>) => {
+        setUser: (state, action: PayloadAction<{ id: number; name: string | null; email?: string | null; phone?: string | null; role: 'ADMIN' | 'EDITOR' | 'VIEWER' }>) => {
             state.id = action.payload.id;
             state.name = action.payload.name;
-            state.email = action.payload.email;
+            state.email = action.payload.email || null;
+            state.phone = action.payload.phone || null;
+            state.role = action.payload.role;
             state.isAuthenticated = true;
         },
         clearUser: (state) => {
             state.id = null;
             state.name = null;
             state.email = null;
+            state.phone = null;
+            state.role = null;
             state.isAuthenticated = false;
         },
     },
@@ -80,6 +88,8 @@ const userSlice = createSlice({
                 state.id = action.payload.id;
                 state.name = action.payload.name;
                 state.email = action.payload.email;
+                state.phone = action.payload.phone;
+                state.role = action.payload.role;
                 state.isAuthenticated = true;
             })
             .addCase(fetchCurrentUser.rejected, (state, action) => {
@@ -96,6 +106,8 @@ const userSlice = createSlice({
                 state.id = null;
                 state.name = null;
                 state.email = null;
+                state.phone = null;
+                state.role = null;
                 state.isAuthenticated = false;
             })
             .addCase(logoutUser.rejected, (state, action) => {

@@ -6,6 +6,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import { getLocalizedName } from '@/app/utils/locale';
 import ConfirmDialog from '@/app/components/ConfirmDialog';
 import toast from 'react-hot-toast';
+import { useAppSelector } from '@/app/store/hooks';
 
 interface Website {
     id: string;
@@ -35,6 +36,7 @@ export default function MenusManagement() {
     const t = useTranslations('Admin');
     const commonT = useTranslations('Common');
     const locale = useLocale();
+    const { role: userRole } = useAppSelector((state) => state.user);
     const [menus, setMenus] = useState<Menu[]>([]);
     const [websites, setWebsites] = useState<Website[]>([]);
     const [pages, setPages] = useState<Page[]>([]); // New state for pages
@@ -74,7 +76,7 @@ export default function MenusManagement() {
             if (!isEditing && websitesData.length > 0) setWebsiteId(websitesData[0].id);
         } catch (error) {
             console.error('Failed to fetch data:', error);
-            toast.error('Failed to load data');
+            toast.error(commonT('error'));
         } finally {
             setLoading(false);
         }
@@ -102,13 +104,13 @@ export default function MenusManagement() {
             if (res.ok) {
                 closeModal();
                 fetchData();
-                toast.success(isEditing ? commonT('saved') : commonT('created'));
+                toast.success(isEditing ? commonT('updated') : commonT('created'));
             } else {
-                toast.error('Operation failed');
+                toast.error(commonT('error'));
             }
         } catch (error) {
             console.error(`Failed to ${isEditing ? 'update' : 'create'} menu:`, error);
-            toast.error('An error occurred');
+            toast.error(commonT('error'));
         }
     };
 
@@ -124,11 +126,11 @@ export default function MenusManagement() {
                 fetchData();
                 toast.success(commonT('deleted'));
             } else {
-                toast.error('Failed to delete');
+                toast.error(commonT('error'));
             }
         } catch (error) {
             console.error('Failed to delete menu:', error);
-            toast.error('Failed to delete');
+            toast.error(commonT('error'));
         }
     };
 
@@ -180,16 +182,18 @@ export default function MenusManagement() {
                     <h1 className="text-3xl font-bold text-slate-900">{t('menus')}</h1>
                     <p className="text-slate-500 mt-1">{t('configureMenus')}</p>
                 </div>
-                <button
-                    onClick={() => {
-                        setIsEditing(false);
-                        setShowModal(true);
-                    }}
-                    className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-primary-dark transition-colors shadow-sm"
-                >
-                    <Plus className="w-5 h-5" />
-                    {t('newMenuItem')}
-                </button>
+                {(userRole === 'ADMIN' || userRole === 'EDITOR') && (
+                    <button
+                        onClick={() => {
+                            setIsEditing(false);
+                            setShowModal(true);
+                        }}
+                        className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-primary-dark transition-colors shadow-sm"
+                    >
+                        <Plus className="w-5 h-5" />
+                        {t('newMenuItem')}
+                    </button>
+                )}
             </div>
 
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
@@ -252,20 +256,24 @@ export default function MenusManagement() {
                                     </td>
                                     <td className="px-6 py-4 text-end">
                                         <div className="flex justify-end gap-2">
-                                            <button
-                                                onClick={() => openEditModal(menu)}
-                                                className="p-2 text-slate-400 hover:text-primary transition-colors"
-                                                title={commonT('edit')}
-                                            >
-                                                <Edit2 className="w-4 h-4" />
-                                            </button>
-                                            <button
-                                                onClick={() => handleDeleteClick(menu.id)}
-                                                className="p-2 text-slate-400 hover:text-red-500 transition-colors"
-                                                title={commonT('delete')}
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
+                                            {(userRole === 'ADMIN' || userRole === 'EDITOR') && (
+                                                <button
+                                                    onClick={() => openEditModal(menu)}
+                                                    className="p-2 text-slate-400 hover:text-primary transition-colors"
+                                                    title={commonT('edit')}
+                                                >
+                                                    <Edit2 className="w-4 h-4" />
+                                                </button>
+                                            )}
+                                            {userRole === 'ADMIN' && (
+                                                <button
+                                                    onClick={() => handleDeleteClick(menu.id)}
+                                                    className="p-2 text-slate-400 hover:text-red-500 transition-colors"
+                                                    title={commonT('delete')}
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            )}
                                         </div>
                                     </td>
                                 </tr>

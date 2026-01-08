@@ -1,10 +1,19 @@
 import AdminSidebar from "@/app/components/AdminSidebar";
+import prisma from "@/app/utils/db";
+import { redirect } from "next/navigation";
 
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
-}: Readonly<{
+  params
+}: {
   children: React.ReactNode;
-}>) {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  const userCount = await prisma.user.count();
+  if (userCount === 0) {
+    redirect(`/${locale}/setup`);
+  }
   return (
     <div className="flex bg-slate-50 min-h-screen">
       <AdminSidebar />

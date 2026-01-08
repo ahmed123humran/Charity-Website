@@ -1,5 +1,4 @@
-
-import { PrismaClient } from '../app/generated/prisma/client';
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -12,32 +11,32 @@ async function main() {
       name: 'Modern Hero',
       category: 'Intro',
       htmlContent: `
-<section class="relative py-20 lg:py-32 overflow-hidden bg-white dark:bg-slate-900 transition-colors">
-  <div class="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] dark:bg-[radial-gradient(#334155_1px,transparent_1px)] [background-size:16px_16px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-30"></div>
-  <div class="container mx-auto px-4 relative z-10 text-center">
-    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6 animate-fade-in-up">
-      <span class="relative flex h-2 w-2">
-        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-        <span class="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-      </span>
-      New Features Available
+  <section class="relative py-20 lg:py-32 overflow-hidden bg-white dark:bg-slate-900 transition-colors">
+    <div class="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] dark:bg-[radial-gradient(#334155_1px,transparent_1px)] [background-size:16px_16px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-30"></div>
+    <div class="container mx-auto px-4 relative z-10 text-center">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6 animate-fade-in-up">
+        <span class="relative flex h-2 w-2">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+        </span>
+        New Features Available
+      </div>
+      <h1 class="text-4xl md:text-6xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-6">
+        Transform Your <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary-accent">Digital Presence</span>
+      </h1>
+      <p class="text-lg md:text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto mb-10 leading-relaxed">
+        Create stunning websites with our intuitive builder. Powerful, flexible, and designed for modern needs.
+      </p>
+      <div class="flex flex-col sm:flex-row justify-center gap-4">
+        <a href="#" class="inline-flex items-center justify-center px-8 py-3.5 text-base font-semibold text-white bg-primary rounded-xl hover:bg-primary-dark transition-all shadow-lg shadow-primary/20 hover:scale-105 active:scale-95">
+          Get Started
+        </a>
+        <a href="#" class="inline-flex items-center justify-center px-8 py-3.5 text-base font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all shadow-sm">
+          Learn More
+        </a>
+      </div>
     </div>
-    <h1 class="text-4xl md:text-6xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-6">
-      Transform Your <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary-accent">Digital Presence</span>
-    </h1>
-    <p class="text-lg md:text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto mb-10 leading-relaxed">
-      Create stunning websites with our intuitive builder. Powerful, flexible, and designed for modern needs.
-    </p>
-    <div class="flex flex-col sm:flex-row justify-center gap-4">
-      <a href="#" class="inline-flex items-center justify-center px-8 py-3.5 text-base font-semibold text-white bg-primary rounded-xl hover:bg-primary-dark transition-all shadow-lg shadow-primary/20 hover:scale-105 active:scale-95">
-        Get Started
-      </a>
-      <a href="#" class="inline-flex items-center justify-center px-8 py-3.5 text-base font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all shadow-sm">
-        Learn More
-      </a>
-    </div>
-  </div>
-</section>
+  </section>
       `
     },
     {

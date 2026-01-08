@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { CreatePageDto } from '@/app/utils/page_dto';
 import { createPageSchema } from '@/app/utils/validiton';
 import prisma from '@/app/utils/db';
+import { getServerUser } from '@/app/utils/auth';
+import { Role } from '@prisma/client';
+import { logActivity } from '@/app/utils/logger';
 
 /**
  * @method GET
@@ -33,6 +36,11 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
     try {
+        const user = await getServerUser();
+        if (!user || (user.role !== Role.ADMIN && user.role !== Role.EDITOR)) {
+            return NextResponse.json({ message: 'Unauthorized: Only Admin and Editor can create pages' }, { status: 403 });
+        }
+
         const body = (await request.json()) as CreatePageDto;
         const validation = createPageSchema.safeParse(body);
         if (!validation.success) {
@@ -60,6 +68,15 @@ export async function POST(request: NextRequest) {
                 websiteId,
                 userId
             }
+        });
+
+        await logActivity({
+            action: 'CREATE',
+            entityType: 'PAGE',
+            entityId: newPage.id,
+            details: `Created page: ${url}`,
+            newData: newPage,
+            userId: user.id
         });
 
         return NextResponse.json(newPage, { status: 201 });

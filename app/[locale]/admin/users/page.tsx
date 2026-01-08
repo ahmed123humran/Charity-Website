@@ -2,20 +2,24 @@
 
 import { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, User as UserIcon, Mail, Shield } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import toast from 'react-hot-toast';
 import ConfirmDialog from '@/app/components/ConfirmDialog';
+import { useAppSelector } from '@/app/store/hooks';
 
 interface User {
     id: number;
     name: string | null;
     email: string;
+    role: 'ADMIN' | 'EDITOR' | 'VIEWER';
     createdAt: string;
 }
 
 export default function UsersManagement() {
     const t = useTranslations('Admin');
     const commonT = useTranslations('Common');
+    const locale = useLocale();
+    const { role: userRole } = useAppSelector((state) => state.user);
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
@@ -27,6 +31,7 @@ export default function UsersManagement() {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [role, setRole] = useState<'ADMIN' | 'EDITOR' | 'VIEWER'>('EDITOR');
 
     useEffect(() => {
         fetchUsers();
@@ -39,7 +44,7 @@ export default function UsersManagement() {
             setUsers(data);
         } catch (error) {
             console.error('Failed to fetch users:', error);
-            toast.error('Failed to load users');
+            toast.error(commonT('error'));
         } finally {
             setLoading(false);
         }
@@ -51,7 +56,7 @@ export default function UsersManagement() {
             const url = isEditing ? `/api/users/${currentId}` : '/api/users';
             const method = isEditing ? 'PUT' : 'POST';
 
-            const body: any = { name, email };
+            const body: any = { name, email, role };
             if (password) body.password = password;
 
             const res = await fetch(url, {
@@ -62,14 +67,14 @@ export default function UsersManagement() {
             if (res.ok) {
                 closeModal();
                 fetchUsers();
-                toast.success(isEditing ? 'User updated successfully' : 'User created successfully');
+                toast.success(isEditing ? commonT('updated') : commonT('created'));
             } else {
                 const err = await res.json();
-                toast.error(err.message || 'Error occurred');
+                toast.error(err.message || commonT('error'));
             }
         } catch (error) {
             console.error(`Failed to ${isEditing ? 'update' : 'create'} user:`, error);
-            toast.error(`Failed to ${isEditing ? 'update' : 'create'} user`);
+            toast.error(commonT('error'));
         }
     };
 
@@ -83,19 +88,20 @@ export default function UsersManagement() {
             const res = await fetch(`/api/users/${deleteId}`, { method: 'DELETE' });
             if (res.ok) {
                 fetchUsers();
-                toast.success('User deleted successfully');
+                toast.success(commonT('deleted'));
             } else {
-                toast.error('Failed to delete user');
+                toast.error(commonT('error'));
             }
         } catch (error) {
             console.error('Failed to delete user:', error);
-            toast.error('Failed to delete user');
+            toast.error(commonT('error'));
         }
     };
 
     const openEditModal = (user: User) => {
         setName(user.name || '');
         setEmail(user.email);
+        setRole(user.role);
         setPassword(''); // Don't show old password
         setCurrentId(user.id);
         setIsEditing(true);
@@ -108,10 +114,20 @@ export default function UsersManagement() {
         setName('');
         setEmail('');
         setPassword('');
+        setRole('EDITOR');
         setCurrentId(null);
     };
 
-    if (loading) return <div className="p-8 text-center text-slate-500 font-bold">{commonT('signIn')}...</div>;
+    const getRoleBadge = (role: string) => {
+        switch (role) {
+            case 'ADMIN': return <span className="px-2 py-1 rounded-md bg-red-100 text-red-700 text-xs font-bold">{t('adminRole')}</span>;
+            case 'EDITOR': return <span className="px-2 py-1 rounded-md bg-blue-100 text-blue-700 text-xs font-bold">{t('editorRole')}</span>;
+            case 'VIEWER': return <span className="px-2 py-1 rounded-md bg-slate-100 text-slate-700 text-xs font-bold">{t('viewerRole')}</span>;
+            default: return null;
+        }
+    };
+
+    if (loading) return <div className="p-8 text-center text-slate-500 font-bold">{commonT('loading')}</div>;
 
     return (
         <div className="p-8 max-w-7xl mx-auto">
@@ -120,70 +136,82 @@ export default function UsersManagement() {
                     <h1 className="text-3xl font-bold text-slate-900">{t('userManagement')}</h1>
                     <p className="text-slate-500 mt-1">{t('manageUsers')}</p>
                 </div>
-                <button
-                    onClick={() => {
-                        setIsEditing(false);
-                        setShowModal(true);
-                    }}
-                    className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-primary-dark transition-colors shadow-sm"
-                >
-                    <Plus className="w-5 h-5" />
-                    {t('newUser')}
-                </button>
+                {userRole === 'ADMIN' && (
+                    <button
+                        onClick={() => {
+                            setIsEditing(false);
+                            setShowModal(true);
+                        }}
+                        className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-primary-dark transition-colors shadow-sm"
+                    >
+                        <Plus className="w-5 h-5" />
+                        {t('newUser')}
+                    </button>
+                )}
             </div>
 
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                <table className="w-full text-start border-collapse">
-                    <thead>
-                        <tr className="bg-slate-50 border-b border-slate-200">
-                            <th className="px-6 py-4 text-sm font-semibold text-slate-600 text-start">{t('user')}</th>
-                            <th className="px-6 py-4 text-sm font-semibold text-slate-600 text-start">{t('emailAddress')}</th>
-                            <th className="px-6 py-4 text-sm font-semibold text-slate-600 text-start">{t('joined')}</th>
-                            <th className="px-6 py-4 text-sm font-semibold text-slate-600 text-end">{commonT('actions')}</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                        {users.map((user) => (
-                            <tr key={user.id} className="hover:bg-slate-50 transition-colors group">
-                                <td className="px-6 py-4">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 bg-primary/10 text-primary rounded-full flex items-center justify-center font-bold">
-                                            {user.name?.[0] || user.email[0].toUpperCase()}
-                                        </div>
-                                        <span className="font-semibold text-slate-900">{user.name || 'Admin'}</span>
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4">
-                                    <div className="flex items-center gap-2 text-slate-500">
-                                        <Mail className="w-4 h-4" />
-                                        {user.email}
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4 text-slate-500 text-sm">
-                                    {new Date(user.createdAt).toLocaleDateString()}
-                                </td>
-                                <td className="px-6 py-4 text-end">
-                                    <div className="flex justify-end gap-2">
-                                        <button
-                                            onClick={() => openEditModal(user)}
-                                            className="p-2 text-slate-400 hover:text-primary transition-colors"
-                                            title={commonT('edit')}
-                                        >
-                                            <Edit2 className="w-4 h-4" />
-                                        </button>
-                                        <button
-                                            onClick={() => handleDeleteClick(user.id)}
-                                            className="p-2 text-slate-400 hover:text-red-500 transition-colors"
-                                            title={commonT('delete')}
-                                        >
-                                            <Trash2 className="w-4 h-4" />
-                                        </button>
-                                    </div>
-                                </td>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-start border-collapse">
+                        <thead>
+                            <tr className="bg-slate-50 border-b border-slate-200">
+                                <th className="px-6 py-4 text-sm font-semibold text-slate-600 text-start">{t('user')}</th>
+                                <th className="px-6 py-4 text-sm font-semibold text-slate-600 text-start">{t('emailAddress')}</th>
+                                <th className="px-6 py-4 text-sm font-semibold text-slate-600 text-start">{t('role')}</th>
+                                <th className="px-6 py-4 text-sm font-semibold text-slate-600 text-start">{t('joined')}</th>
+                                <th className="px-6 py-4 text-sm font-semibold text-slate-600 text-end">{commonT('actions')}</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                            {users.map((user) => (
+                                <tr key={user.id} className="hover:bg-slate-50 transition-colors group">
+                                    <td className="px-6 py-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 bg-primary/10 text-primary rounded-full flex items-center justify-center font-bold">
+                                                {user.name?.[0] || user.email?.[0]?.toUpperCase() || 'A'}
+                                            </div>
+                                            <span className="font-semibold text-slate-900">{user.name || 'Admin'}</span>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <div className="flex items-center gap-2 text-slate-500">
+                                            <Mail className="w-4 h-4" />
+                                            {user.email || '-'}
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        {getRoleBadge(user.role)}
+                                    </td>
+                                    <td className="px-6 py-4 text-slate-500 text-sm">
+                                        {new Date(user.createdAt).toLocaleDateString(locale === 'ar' ? 'ar-EG' : 'en-US')}
+                                    </td>
+                                    <td className="px-6 py-4 text-end">
+                                        <div className="flex justify-end gap-2">
+                                            {userRole === 'ADMIN' && (
+                                                <>
+                                                    <button
+                                                        onClick={() => openEditModal(user)}
+                                                        className="p-2 text-slate-400 hover:text-primary transition-colors"
+                                                        title={commonT('edit')}
+                                                    >
+                                                        <Edit2 className="w-4 h-4" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeleteClick(user.id)}
+                                                        className="p-2 text-slate-400 hover:text-red-500 transition-colors"
+                                                        title={commonT('delete')}
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
+                                                </>
+                                            )}
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             {showModal && (
@@ -205,7 +233,7 @@ export default function UsersManagement() {
                                         value={name}
                                         onChange={(e) => setName(e.target.value)}
                                         className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary outline-hidden rtl:pl-4 rtl:pr-10 text-start"
-                                        placeholder="John Doe"
+                                        placeholder={t('fullName')}
                                     />
                                 </div>
                             </div>
@@ -215,13 +243,25 @@ export default function UsersManagement() {
                                     <Mail className="absolute left-3 top-2.5 w-4 h-4 text-slate-400 rtl:left-auto rtl:right-3" />
                                     <input
                                         type="email"
-                                        required
+                                        required={!isEditing}
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary outline-hidden rtl:pl-4 rtl:pr-10 text-start"
-                                        placeholder="user@example.com"
+                                        placeholder={t('emailAddress')}
                                     />
                                 </div>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">{t('role')}</label>
+                                <select
+                                    value={role}
+                                    onChange={(e: any) => setRole(e.target.value)}
+                                    className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary outline-hidden"
+                                >
+                                    <option value="ADMIN">{t('adminRole')}</option>
+                                    <option value="EDITOR">{t('editorRole')}</option>
+                                    <option value="VIEWER">{t('viewerRole')}</option>
+                                </select>
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-slate-700 mb-1 whitespace-pre-wrap">

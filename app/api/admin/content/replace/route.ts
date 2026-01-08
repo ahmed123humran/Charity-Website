@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/app/utils/db';
+import { getServerUser } from '@/app/utils/auth';
+import { logActivity } from '@/app/utils/logger';
 
 export async function POST(request: NextRequest) {
     try {
@@ -89,6 +91,18 @@ export async function POST(request: NextRequest) {
                     totalUpdated++;
                 }
             }
+        }
+
+        const user = await getServerUser();
+        if (user && totalUpdated > 0) {
+            await logActivity({
+                action: 'UPDATE',
+                entityType: 'WEBSITE', // Using WEBSITE as a generic catch-all for bulk tools or just indicating a system-wide change
+                entityId: 'BULK_REPLACE',
+                details: `Bulk Replace: Changed "${searchText}" to "${replaceText}" in ${totalUpdated} items.`,
+                newData: { searchText, replaceText, totalUpdated, targetType },
+                userId: user.id
+            });
         }
 
         return NextResponse.json({ success: true, count: totalUpdated });

@@ -1,12 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client"
-  output   = "../app/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -15,60 +8,82 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  name      String?
-  password  String   @default("admin123")
-  pages     Page[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         Int           @id @default(autoincrement())
+  email      String?       @unique
+  name       String?
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  password   String        @default("admin123")
+  phone      String?       @unique
+  role       Role          @default(ADMIN)
+  activities ActivityLog[]
+  pages      Page[]
+}
+
+model ActivityLog {
+  id         String   @id @default(cuid())
+  action     String
+  entityType String
+  entityId   String
+  details    String?
+  oldData    Json?
+  newData    Json?
+  userId     Int
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id])
 }
 
 model Website {
   id         String   @id @default(cuid())
-  name       Json     // Localized name { en: "...", ar: "..." }
   domain     String?  @unique
-  themeColor String   @default("#714B67") // Default theme color
-  language   String   @default("en_US") // Default language
+  themeColor String   @default("#714B67")
+  language   String   @default("en_US")
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
-  pages      Page[]
+  name       Json
   menus      Menu[]
+  pages      Page[]
 }
 
 model Page {
   id          String   @id @default(cuid())
-  title       Json     // Localized title { en: "...", ar: "..." }
   url         String   @unique
-  content     Json?    // Localized content { en: [...], ar: [...] }
   isPublished Boolean  @default(false)
   websiteId   String
-  website     Website  @relation(fields: [websiteId], references: [id])
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  user        User?    @relation(fields: [userId], references: [id])
   userId      Int?
+  title       Json
+  content     Json?
   menus       Menu[]
+  user        User?    @relation(fields: [userId], references: [id])
+  website     Website  @relation(fields: [websiteId], references: [id])
 }
 
 model Menu {
   id         String  @id @default(cuid())
-  name       Json    // Localized name { en: "...", ar: "..." }
   url        String
   sequence   Int     @default(0)
   parentId   String?
-  parent     Menu?   @relation("SubMenus", fields: [parentId], references: [id])
-  childMenus Menu[]  @relation("SubMenus")
   websiteId  String
-  website    Website @relation(fields: [websiteId], references: [id])
+  name       Json
   pageId     String?
   page       Page?   @relation(fields: [pageId], references: [id])
+  parent     Menu?   @relation("SubMenus", fields: [parentId], references: [id])
+  childMenus Menu[]  @relation("SubMenus")
+  website    Website @relation(fields: [websiteId], references: [id])
 }
 
 model Snippet {
   id          String  @id @default(cuid())
   name        String
-  category    String // Intro, Content, Images, etc.
+  category    String
   htmlContent String
   thumbnail   String?
+}
+
+enum Role {
+  ADMIN
+  EDITOR
+  VIEWER
 }

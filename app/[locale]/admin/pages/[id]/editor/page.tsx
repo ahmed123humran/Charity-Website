@@ -68,6 +68,7 @@ const StableSnippet = memo(({
 
 export default function VisualEditor({ params }: { params: Promise<{ id: string }> }) {
     const t = useTranslations('Admin');
+    const editorT = useTranslations('Editor');
     const commonT = useTranslations('Common');
     const router = useRouter();
     const locale = useLocale();
@@ -297,7 +298,7 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                 body: JSON.stringify({ content: JSON.stringify(contentToSave) })
             });
             toast.success(commonT('saved'), { id: 'save-progress' });
-        } catch (error) { toast.error('Save failed'); }
+        } catch (error) { toast.error(commonT('error')); }
         finally { setSaving(false); }
     };
 
@@ -310,7 +311,7 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
         }
     };
 
-    if (loading) return <div className="p-8 text-center text-slate-500">Loading Editor...</div>;
+    if (loading) return <div className="p-8 text-center text-slate-500 font-bold">{commonT('loading')}</div>;
 
     const swatchColors = [
         '#10B981', '#3B82F6', '#EF4444', '#000000',
@@ -331,7 +332,7 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                         <Save className="w-3.5 h-3.5" /> {saving ? '...' : commonT('saveChanges')}
                     </button>
                     <button onClick={() => setPreviewMode(!previewMode)} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${previewMode ? 'bg-amber-500 text-white' : 'hover:bg-slate-800'}`}>
-                        {previewMode ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />} Preview
+                        {previewMode ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />} {previewMode ? editorT('exitPreview') : editorT('preview')}
                     </button>
                 </div>
                 <div className="flex items-center gap-6">
@@ -349,26 +350,26 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
             <div className="flex flex-1 overflow-hidden relative">
                 <div className={`w-72 bg-white border-r border-slate-200 overflow-y-auto z-40 flex flex-col transition-all duration-300 ${previewMode ? '-ml-72' : 'ml-0'}`}>
                     <div className="p-4 border-b border-slate-100 flex items-center justify-between">
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Style Designer</span>
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{editorT('styleDesigner')}</span>
                         <Settings className="w-3.5 h-3.5 text-indigo-500" />
                     </div>
 
                     <div className="p-5 space-y-8">
                         <div className="bg-slate-50 p-4 rounded-xl border border-dashed border-slate-200">
                             <div className="text-[9px] text-slate-400 font-bold uppercase mb-2 text-center flex items-center justify-center gap-1">
-                                <MousePointer2 className="w-2.5 h-2.5" /> Active Element
+                                <MousePointer2 className="w-2.5 h-2.5" /> {editorT('activeElement')}
                             </div>
                             <div className="text-center font-black text-indigo-600 text-xs py-1 px-3 bg-white border border-slate-200 rounded-lg shadow-sm uppercase">
-                                {activeTagName || 'None'}
+                                {activeTagName || editorT('none')}
                             </div>
                         </div>
 
                         <div className="space-y-4">
                             <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                                <TypeIcon className="w-3 h-3" /> Typography
+                                <TypeIcon className="w-3 h-3" /> {editorT('typography')}
                             </div>
                             <div className="space-y-3">
-                                <div className="flex justify-between items-center px-1"><span className="text-[10px] font-bold text-slate-500 uppercase">Size</span><span className="text-[11px] font-black text-indigo-600">{activeStyles.fontSize}</span></div>
+                                <div className="flex justify-between items-center px-1"><span className="text-[10px] font-bold text-slate-500 uppercase">{editorT('size')}</span><span className="text-[11px] font-black text-indigo-600">{activeStyles.fontSize}</span></div>
                                 <input type="range" min="8" max="120" value={parseInt(activeStyles.fontSize) || 16} onChange={(e) => applyStyle('fontSize', `${e.target.value}px`)} className="w-full h-1.5 bg-indigo-100 rounded-lg appearance-none cursor-pointer accent-indigo-600" />
                             </div>
                             <div className="grid grid-cols-4 gap-1 p-1 bg-slate-100 rounded-xl">
@@ -378,7 +379,7 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                                 <button onMouseDown={(e) => { e.preventDefault(); applyStyle('textAlign', 'justify'); }} className={`p-2 rounded-lg flex justify-center transition-all ${activeStyles.textAlign.includes('justify') ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-400'}`}><Layout className="w-4 h-4" /></button>
                             </div>
                             <div className="space-y-3">
-                                <span className="text-[10px] font-bold text-slate-500 uppercase px-1">Text Color</span>
+                                <span className="text-[10px] font-bold text-slate-500 uppercase px-1">{editorT('textColor')}</span>
                                 <div className="grid grid-cols-4 gap-2">
                                     {swatchColors.map(c => (
                                         <button key={c} onMouseDown={(e) => { e.preventDefault(); applyStyle('foreColor', c); }} className="w-8 h-8 rounded-full border-2 border-white shadow-md hover:scale-110 transition-transform" style={{ backgroundColor: c }} />
@@ -388,9 +389,9 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                         </div>
 
                         <div className="space-y-4 pt-4 border-t border-slate-100">
-                            <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2"><PaintBucket className="w-3 h-3" /> Background</div>
+                            <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2"><PaintBucket className="w-3 h-3" /> {editorT('background')}</div>
                             <div className="space-y-3">
-                                <span className="text-[10px] font-bold text-slate-500 uppercase px-1">Color</span>
+                                <span className="text-[10px] font-bold text-slate-500 uppercase px-1">{editorT('color')}</span>
                                 <div className="grid grid-cols-4 gap-2">
                                     {bgColors.map(c => (
                                         <button key={c} onMouseDown={(e) => { e.preventDefault(); applyStyle('backgroundColor', c); }} className="w-8 h-8 rounded-full border-2 border-white shadow-md hover:scale-110 transition-transform" style={{ backgroundColor: c }} />
@@ -419,7 +420,7 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                                             <button onClick={() => moveSnippet(index, 'up')} className="p-1.5 hover:bg-slate-700 rounded-lg"><Move className="w-3.5 h-3.5 rotate-180" /></button>
                                             <button onClick={() => moveSnippet(index, 'down')} className="p-1.5 hover:bg-slate-700 rounded-lg"><Move className="w-3.5 h-3.5" /></button>
                                             <button onClick={() => { const newList = [...droppedSnippets]; newList.splice(index + 1, 0, { ...item, id: crypto.randomUUID() }); setDroppedSnippets(newList); }} className="p-1.5 hover:bg-slate-700 rounded-lg"><Copy className="w-3.5 h-3.5" /></button>
-                                            <button onClick={() => { if (confirm('Delete?')) setDroppedSnippets(prev => prev.filter((_, i) => i !== index)); }} className="p-1.5 hover:bg-red-900 rounded-lg"><Trash2 className="w-3.5 h-3.5" /></button>
+                                            <button onClick={() => { if (window.confirm(editorT('deleteConfirm'))) setDroppedSnippets(prev => prev.filter((_, i) => i !== index)); }} className="p-1.5 hover:bg-red-900 rounded-lg"><Trash2 className="w-3.5 h-3.5" /></button>
                                         </div>
                                     )}
                                     <StableSnippet
@@ -434,7 +435,7 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                             {!previewMode && (
                                 <div onDragOver={(e) => handleDragOver(e, droppedSnippets.length)} className={`h-40 border-2 border-dashed border-slate-300 m-8 rounded-3xl flex flex-col items-center justify-center transition-all gap-3 ${dragOverIndex === droppedSnippets.length ? 'bg-indigo-50 border-indigo-400' : 'bg-white hover:bg-slate-50'}`}>
                                     <Plus className={`w-10 h-10 ${dragOverIndex === droppedSnippets.length ? 'text-indigo-600' : 'text-slate-200'}`} />
-                                    <span className="text-xs font-black text-slate-400 uppercase tracking-widest">Drop New Section</span>
+                                    <span className="text-xs font-black text-slate-400 uppercase tracking-widest">{editorT('dropNewSection')}</span>
                                 </div>
                             )}
                         </div>
@@ -442,12 +443,12 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                 </div>
 
                 <div className={`w-80 bg-white border-l border-slate-200 overflow-y-auto z-40 transition-all duration-300 ${previewMode ? '-mr-80' : 'mr-0'}`}>
-                    <div className="p-4 border-b border-slate-100 text-[10px] font-black text-slate-400 uppercase tracking-widest">مكتبة القصاصات</div>
+                    <div className="p-4 border-b border-slate-100 text-[10px] font-black text-slate-400 uppercase tracking-widest">{editorT('snippetsLibrary')}</div>
                     <div className="p-4 space-y-3">
                         {snippets.map(s => (
                             <div key={s.id} draggable onDragStart={(e) => handleDragStart(e, s)} className="p-5 bg-white border border-slate-200 rounded-2xl cursor-grab hover:border-indigo-400 hover:shadow-xl transition-all group overflow-hidden">
                                 <div className="text-xs font-black text-slate-800 uppercase group-hover:text-indigo-600">{s.name}</div>
-                                <div className="text-[9px] text-slate-400 mt-1 uppercase font-bold">{s.category}</div>
+                                <div className="text-[9px] text-slate-400 mt-1 uppercase font-bold">{t(`categories.${s.category}`)}</div>
                             </div>
                         ))}
                     </div>

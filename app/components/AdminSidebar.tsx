@@ -9,7 +9,8 @@ import {
     PlusSquare,
     LogOut,
     Users,
-    RefreshCw
+    RefreshCw,
+    History
 } from 'lucide-react';
 
 import { useRouter } from '@/navigation';
@@ -28,7 +29,7 @@ export default function AdminSidebar() {
 
     // Get state from Redux
     const { name: websiteName } = useAppSelector((state) => state.website);
-    const { name: userName, email: userEmail } = useAppSelector((state) => state.user);
+    const { name: userName, email: userEmail, phone: userPhone, role: userRole } = useAppSelector((state) => state.user);
 
     const navItems = [
         { label: t('dashboard'), href: '/admin', icon: LayoutDashboard },
@@ -37,7 +38,10 @@ export default function AdminSidebar() {
         { label: t('menus'), href: '/admin/menus', icon: MenuIcon },
         { label: t('snippets'), href: '/admin/snippets', icon: PlusSquare },
         { label: t('searchReplace'), href: '/admin/tools/search-replace', icon: RefreshCw },
-        { label: t('users'), href: '/admin/users', icon: Users },
+        ...(userRole === 'ADMIN' ? [
+            { label: t('users'), href: '/admin/users', icon: Users },
+            { label: t('activityLogs') || 'Activity Logs', href: '/admin/activities', icon: History }
+        ] : []),
     ];
 
     const handleLogout = async () => {
@@ -83,15 +87,15 @@ export default function AdminSidebar() {
             </nav>
 
             <div className="p-4 border-t border-white/10 space-y-4">
+                {(userName || userEmail || userPhone) && (
+                    <div className="px-4 py-3 bg-white/5 rounded-xl border border-white/10 text-start">
+                        <p className="text-sm font-bold text-white truncate">{userName || 'Admin'}</p>
+                        <p className="text-xs text-white/50 truncate">{userEmail || userPhone}</p>
+                    </div>
+                )}
                 <LanguageSwitcher
                     className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 text-indigo-100/70 transition-colors w-full group font-medium"
                 />
-                {userEmail && (
-                    <div className="px-4 py-3 bg-white/5 rounded-xl border border-white/10 text-start">
-                        <p className="text-sm font-bold text-white truncate">{userName || 'Admin'}</p>
-                        <p className="text-xs text-white/50 truncate">{userEmail}</p>
-                    </div>
-                )}
                 <button
                     onClick={handleLogout}
                     className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-500/10 text-red-100/70 transition-colors w-full group"

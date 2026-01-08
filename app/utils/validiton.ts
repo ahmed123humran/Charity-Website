@@ -1,8 +1,10 @@
 import { z } from 'zod';
 
 const localizedString = z.object({
-    en: z.string().min(1, "English name is required"),
-    ar: z.string().min(1, "Arabic name is required"),
+    en: z.string().optional().or(z.literal("")),
+    ar: z.string().optional().or(z.literal("")),
+}).refine(data => data.en || data.ar, {
+    message: "At least one translation (AR or EN) is required"
 });
 
 export const createPageSchema = z.object({
@@ -23,15 +25,20 @@ export const updatePageSchema = z.object({
 });
 
 export const createUserSchema = z.object({
-    email: z.string().email(),
+    email: z.string().email().optional(),
+    phone: z.string().optional(),
     name: z.string().optional(),
     password: z.string().min(6).optional(),
+    role: z.enum(['ADMIN', 'EDITOR', 'VIEWER']).optional(),
+}).refine(data => data.email || data.phone, {
+    message: "Either email or phone is required"
 });
 
 export const updateUserSchema = z.object({
     email: z.string().email().optional(),
     name: z.string().optional(),
     password: z.string().min(6).optional(),
+    role: z.enum(['ADMIN', 'EDITOR', 'VIEWER']).optional(),
 });
 
 export const createWebsiteSchema = z.object({

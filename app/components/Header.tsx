@@ -9,9 +9,15 @@ export default async function Header() {
     const t = await getTranslations('Common');
     const locale = await getLocale();
 
+    const website = await prisma.website.findFirst({
+        orderBy: { updatedAt: 'desc' }
+    });
+
     const menus = await prisma.menu.findMany({
         orderBy: { sequence: 'asc' }
     });
+
+    const websiteName = website ? getLocalizedName(website.name, locale) : t('title');
 
     return (
         <header className="fixed top-0 left-0 right-0 z-50 bg-white/70 backdrop-blur-md border-b border-slate-200">
@@ -22,7 +28,7 @@ export default async function Header() {
                             <div className="w-5 h-5 bg-white rounded-xs rotate-45" />
                         </div>
                         <span className="text-2xl font-bold bg-linear-to-r from-primary to-primary-dark bg-clip-text text-transparent">
-                            {t('title')}
+                            {websiteName}
                         </span>
                     </div>
 

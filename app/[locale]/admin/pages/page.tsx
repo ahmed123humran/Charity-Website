@@ -7,6 +7,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import { getLocalizedName } from '@/app/utils/locale';
 import ConfirmDialog from '@/app/components/ConfirmDialog';
 import toast from 'react-hot-toast';
+import { useAppSelector } from '@/app/store/hooks';
 
 interface Website {
     id: string;
@@ -28,6 +29,7 @@ export default function PagesManagement() {
     const commonT = useTranslations('Common');
     const locale = useLocale();
     const router = useRouter();
+    const { role: userRole } = useAppSelector((state) => state.user);
     const [pages, setPages] = useState<Page[]>([]);
     const [websites, setWebsites] = useState<Website[]>([]);
     const [loading, setLoading] = useState(true);
@@ -59,7 +61,7 @@ export default function PagesManagement() {
             if (!isEditing && websitesData.length > 0) setWebsiteId(websitesData[0].id);
         } catch (error) {
             console.error('Failed to fetch data:', error);
-            toast.error('Failed to load data');
+            toast.error(commonT('error'));
         } finally {
             setLoading(false);
         }
@@ -79,13 +81,13 @@ export default function PagesManagement() {
             if (res.ok) {
                 closeModal();
                 fetchData();
-                toast.success(isEditing ? commonT('saved') : commonT('created'));
+                toast.success(isEditing ? commonT('updated') : commonT('created'));
             } else {
-                toast.error('Operation failed');
+                toast.error(commonT('error'));
             }
         } catch (error) {
             console.error(`Failed to ${isEditing ? 'update' : 'create'} page:`, error);
-            toast.error('An error occurred');
+            toast.error(commonT('error'));
         }
     };
 
@@ -101,11 +103,11 @@ export default function PagesManagement() {
                 fetchData();
                 toast.success(commonT('deleted'));
             } else {
-                toast.error('Failed to delete');
+                toast.error(commonT('error'));
             }
         } catch (error) {
             console.error('Failed to delete page:', error);
-            toast.error('Failed to delete');
+            toast.error(commonT('error'));
         }
     };
 
@@ -162,16 +164,18 @@ export default function PagesManagement() {
                     <h1 className="text-3xl font-bold text-slate-900">{t('pages')}</h1>
                     <p className="text-slate-500 mt-1">{t('managePages')}</p>
                 </div>
-                <button
-                    onClick={() => {
-                        setIsEditing(false);
-                        setShowModal(true);
-                    }}
-                    className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-primary-dark transition-colors shadow-sm"
-                >
-                    <Plus className="w-5 h-5" />
-                    {t('newPage')}
-                </button>
+                {(userRole === 'ADMIN' || userRole === 'EDITOR') && (
+                    <button
+                        onClick={() => {
+                            setIsEditing(false);
+                            setShowModal(true);
+                        }}
+                        className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-primary-dark transition-colors shadow-sm"
+                    >
+                        <Plus className="w-5 h-5" />
+                        {t('newPage')}
+                    </button>
+                )}
             </div>
 
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
@@ -227,21 +231,35 @@ export default function PagesManagement() {
                                         <div className="text-sm font-medium text-slate-700">{getLocalizedName(page.website?.name, locale)}</div>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <button
-                                            onClick={() => togglePublish(page.id, page.isPublished)}
-                                            className="text-start focus:outline-hidden"
-                                            disabled={loading}
-                                        >
-                                            {page.isPublished ? (
-                                                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 hover:bg-green-200 transition-colors cursor-pointer">
-                                                    <CheckCircle className="w-3 h-3" /> {t('published')}
-                                                </span>
-                                            ) : (
-                                                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors cursor-pointer">
-                                                    <XCircle className="w-3 h-3" /> {t('draft')}
-                                                </span>
-                                            )}
-                                        </button>
+                                        {(userRole === 'ADMIN' || userRole === 'EDITOR') ? (
+                                            <button
+                                                onClick={() => togglePublish(page.id, page.isPublished)}
+                                                className="text-start focus:outline-hidden"
+                                                disabled={loading}
+                                            >
+                                                {page.isPublished ? (
+                                                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 hover:bg-green-200 transition-colors cursor-pointer">
+                                                        <CheckCircle className="w-3 h-3" /> {t('published')}
+                                                    </span>
+                                                ) : (
+                                                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors cursor-pointer">
+                                                        <XCircle className="w-3 h-3" /> {t('draft')}
+                                                    </span>
+                                                )}
+                                            </button>
+                                        ) : (
+                                            <div className="text-start">
+                                                {page.isPublished ? (
+                                                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                        <CheckCircle className="w-3 h-3" /> {t('published')}
+                                                    </span>
+                                                ) : (
+                                                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
+                                                        <XCircle className="w-3 h-3" /> {t('draft')}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        )}
                                     </td>
                                     <td className="px-6 py-4 text-end">
                                         <div className="flex justify-end gap-2">
@@ -251,27 +269,33 @@ export default function PagesManagement() {
                                             >
                                                 <ArrowUpRight className="w-4 h-4" />
                                             </button>
-                                            <button
-                                                onClick={() => router.push(`/admin/pages/${page.id}/editor`)}
-                                                className="p-2 text-slate-400 hover:text-primary transition-colors"
-                                                title={t('designPage')}
-                                            >
-                                                <Layout className="w-4 h-4" />
-                                            </button>
-                                            <button
-                                                onClick={() => openEditModal(page)}
-                                                className="p-2 text-slate-400 hover:text-primary transition-colors"
-                                                title={commonT('edit')}
-                                            >
-                                                <Edit2 className="w-4 h-4" />
-                                            </button>
-                                            <button
-                                                onClick={() => handleDeleteClick(page.id)}
-                                                className="p-2 text-slate-400 hover:text-red-500 transition-colors"
-                                                title={commonT('delete')}
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
+                                            {(userRole === 'ADMIN' || userRole === 'EDITOR') && (
+                                                <>
+                                                    <button
+                                                        onClick={() => router.push(`/admin/pages/${page.id}/editor`)}
+                                                        className="p-2 text-slate-400 hover:text-primary transition-colors"
+                                                        title={t('designPage')}
+                                                    >
+                                                        <Layout className="w-4 h-4" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => openEditModal(page)}
+                                                        className="p-2 text-slate-400 hover:text-primary transition-colors"
+                                                        title={commonT('edit')}
+                                                    >
+                                                        <Edit2 className="w-4 h-4" />
+                                                    </button>
+                                                </>
+                                            )}
+                                            {userRole === 'ADMIN' && (
+                                                <button
+                                                    onClick={() => handleDeleteClick(page.id)}
+                                                    className="p-2 text-slate-400 hover:text-red-500 transition-colors"
+                                                    title={commonT('delete')}
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            )}
                                         </div>
                                     </td>
                                 </tr>
@@ -282,89 +306,91 @@ export default function PagesManagement() {
             </div>
 
             {/* Modal */}
-            {showModal && (
-                <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl border border-slate-200">
-                        <div className="p-6 border-b border-slate-100 flex justify-between items-center">
-                            <h2 className="text-xl font-bold text-slate-900">
-                                {isEditing ? t('editPage') : t('newPage')}
-                            </h2>
-                            <button onClick={closeModal} className="text-slate-400 hover:text-slate-600">&times;</button>
+            {
+                showModal && (
+                    <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+                        <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl border border-slate-200">
+                            <div className="p-6 border-b border-slate-100 flex justify-between items-center">
+                                <h2 className="text-xl font-bold text-slate-900">
+                                    {isEditing ? t('editPage') : t('newPage')}
+                                </h2>
+                                <button onClick={closeModal} className="text-slate-400 hover:text-slate-600">&times;</button>
+                            </div>
+                            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-1">{t('targetWebsite')}</label>
+                                    <select
+                                        value={websiteId}
+                                        onChange={(e) => setWebsiteId(e.target.value)}
+                                        required
+                                        className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 text-start"
+                                    >
+                                        {websites.map(site => (
+                                            <option key={site.id} value={site.id}>{getLocalizedName(site.name, locale)}</option>
+                                        ))}
+                                        {websites.length === 0 && <option disabled>No websites available</option>}
+                                    </select>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">{t('pageTitle')} (EN)</label>
+                                        <input
+                                            type="text"
+                                            value={titleEn}
+                                            onChange={(e) => setTitleEn(e.target.value)}
+                                            required
+                                            className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 ltr"
+                                            placeholder="e.g. About Us"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">{t('pageTitle')} (AR)</label>
+                                        <input
+                                            type="text"
+                                            value={titleAr}
+                                            onChange={(e) => setTitleAr(e.target.value)}
+                                            required
+                                            className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 rtl"
+                                            placeholder="مثال: من نحن"
+                                        />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-1">{t('urlPath')}</label>
+                                    <div className="flex">
+                                        <span className="inline-flex items-center px-3 rounded-s-lg border border-e-0 border-slate-200 bg-slate-50 text-slate-500 text-sm">
+                                            /
+                                        </span>
+                                        <input
+                                            type="text"
+                                            value={url}
+                                            onChange={(e) => setUrl(e.target.value)}
+                                            required
+                                            className="flex-1 w-full px-4 py-2 border border-slate-200 rounded-e-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 shadow-xs text-start"
+                                            placeholder="about-us"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="flex gap-3 pt-4">
+                                    <button
+                                        type="button"
+                                        onClick={closeModal}
+                                        className="flex-1 px-4 py-2 border border-slate-200 text-slate-600 rounded-lg font-medium hover:bg-slate-50 transition-colors"
+                                    >
+                                        {commonT('cancel')}
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        className="flex-1 px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary-dark transition-colors"
+                                    >
+                                        {isEditing ? commonT('saveChanges') : commonT('create')}
+                                    </button>
+                                </div>
+                            </form>
                         </div>
-                        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">{t('targetWebsite')}</label>
-                                <select
-                                    value={websiteId}
-                                    onChange={(e) => setWebsiteId(e.target.value)}
-                                    required
-                                    className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 text-start"
-                                >
-                                    {websites.map(site => (
-                                        <option key={site.id} value={site.id}>{getLocalizedName(site.name, locale)}</option>
-                                    ))}
-                                    {websites.length === 0 && <option disabled>No websites available</option>}
-                                </select>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">{t('pageTitle')} (EN)</label>
-                                    <input
-                                        type="text"
-                                        value={titleEn}
-                                        onChange={(e) => setTitleEn(e.target.value)}
-                                        required
-                                        className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 ltr"
-                                        placeholder="e.g. About Us"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">{t('pageTitle')} (AR)</label>
-                                    <input
-                                        type="text"
-                                        value={titleAr}
-                                        onChange={(e) => setTitleAr(e.target.value)}
-                                        required
-                                        className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 rtl"
-                                        placeholder="مثال: من نحن"
-                                    />
-                                </div>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">{t('urlPath')}</label>
-                                <div className="flex">
-                                    <span className="inline-flex items-center px-3 rounded-s-lg border border-e-0 border-slate-200 bg-slate-50 text-slate-500 text-sm">
-                                        /
-                                    </span>
-                                    <input
-                                        type="text"
-                                        value={url}
-                                        onChange={(e) => setUrl(e.target.value)}
-                                        required
-                                        className="flex-1 w-full px-4 py-2 border border-slate-200 rounded-e-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 shadow-xs text-start"
-                                        placeholder="about-us"
-                                    />
-                                </div>
-                            </div>
-                            <div className="flex gap-3 pt-4">
-                                <button
-                                    type="button"
-                                    onClick={closeModal}
-                                    className="flex-1 px-4 py-2 border border-slate-200 text-slate-600 rounded-lg font-medium hover:bg-slate-50 transition-colors"
-                                >
-                                    {commonT('cancel')}
-                                </button>
-                                <button
-                                    type="submit"
-                                    className="flex-1 px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary-dark transition-colors"
-                                >
-                                    {isEditing ? commonT('saveChanges') : commonT('create')}
-                                </button>
-                            </div>
-                        </form>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             <ConfirmDialog
                 isOpen={!!deleteId}
@@ -374,6 +400,6 @@ export default function PagesManagement() {
                 message={commonT('confirmDelete')}
                 isDeleting
             />
-        </div>
+        </div >
     );
 }

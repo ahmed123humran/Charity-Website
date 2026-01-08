@@ -9,6 +9,9 @@ import { locales } from '@/navigation';
 import ToastProvider from '@/app/components/ToastProvider';
 import ReduxProvider from '@/app/components/ReduxProvider';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],

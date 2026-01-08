@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { updateWebsiteSchema } from '@/app/utils/validiton';
 import prisma from '@/app/utils/db';
+import { getServerUser } from '@/app/utils/auth';
+import { Role } from '@prisma/client';
+import { logActivity } from '@/app/utils/logger';
 
 interface Props {
     params: Promise<{ id: string }>;
@@ -41,6 +44,11 @@ export async function GET(request: NextRequest, { params }: Props) {
  */
 export async function PUT(request: NextRequest, { params }: Props) {
     try {
+        const user = await getServerUser();
+        if (!user || (user.role !== Role.ADMIN && user.role !== Role.EDITOR)) {
+            return NextResponse.json({ message: 'Unauthorized: Only Admin and Editor can update websites' }, { status: 403 });
+        }
+
         const { id } = await params;
         const body = await request.json();
         const validation = updateWebsiteSchema.safeParse(body);
@@ -59,6 +67,16 @@ export async function PUT(request: NextRequest, { params }: Props) {
             data: validation.data
         });
 
+        await logActivity({
+            action: 'UPDATE',
+            entityType: 'WEBSITE',
+            entityId: id,
+            details: `Updated website: ${validation.data.name?.en || validation.data.name?.ar}`,
+            oldData: website,
+            newData: updatedWebsite,
+            userId: user.id
+        });
+
         return NextResponse.json(updatedWebsite, { status: 200 });
     } catch (error) {
         return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
@@ -73,6 +91,11 @@ export async function PUT(request: NextRequest, { params }: Props) {
  */
 export async function DELETE(request: NextRequest, { params }: Props) {
     try {
+        const user = await getServerUser();
+        if (!user || user.role !== Role.ADMIN) {
+            return NextResponse.json({ message: 'Unauthorized: Only Admin can delete websites' }, { status: 403 });
+        }
+
         const { id } = await params;
         const website = await prisma.website.findUnique({ where: { id } });
         if (!website) {
@@ -80,6 +103,15 @@ export async function DELETE(request: NextRequest, { params }: Props) {
         }
 
         await prisma.website.delete({ where: { id } });
+
+        await logActivity({
+            action: 'DELETE',
+            entityType: 'WEBSITE',
+            entityId: id,
+            details: `Deleted website: ${(website.name as any)?.en || (website.name as any)?.ar}`,
+            oldData: website,
+            userId: user.id
+        });
 
         return NextResponse.json({ message: 'Website deleted successfully' }, { status: 200 });
     } catch (error) {

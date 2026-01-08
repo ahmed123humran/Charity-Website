@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createSnippetSchema } from '@/app/utils/validiton';
 import prisma from '@/app/utils/db';
+import { getServerUser } from '@/app/utils/auth';
+import { Role } from '@prisma/client';
+import { logActivity } from '@/app/utils/logger';
 
 /**
  * @method GET
@@ -26,6 +29,11 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
     try {
+        const user = await getServerUser();
+        if (!user || (user.role !== Role.ADMIN && user.role !== Role.EDITOR)) {
+            return NextResponse.json({ message: 'Unauthorized: Only Admin and Editor can create snippets' }, { status: 403 });
+        }
+
         const body = await request.json();
         const validation = createSnippetSchema.safeParse(body);
         if (!validation.success) {
@@ -34,6 +42,15 @@ export async function POST(request: NextRequest) {
 
         const newSnippet = await prisma.snippet.create({
             data: validation.data
+        });
+
+        await logActivity({
+            action: 'CREATE',
+            entityType: 'SNIPPET',
+            entityId: newSnippet.id,
+            details: `Created snippet: ${newSnippet.name}`,
+            newData: newSnippet,
+            userId: user.id
         });
 
         return NextResponse.json(newSnippet, { status: 201 });
