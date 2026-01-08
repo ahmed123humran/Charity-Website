@@ -10,8 +10,8 @@
 *.userosscache
 *.sln.docstates
 *.env
-next.js
 /.next/
+/out/
 *node_modules
 
 # User-specific files (MonoDevelop/Xamarin Studio)
