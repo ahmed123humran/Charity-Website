@@ -8,7 +8,7 @@ import {
     Image as ImageIcon, Copy, MousePointer2, X,
     Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight, Palette,
     Type as TypeIcon, Minus, Plus as PlusIcon, PaintBucket, Settings,
-    Eye, EyeOff, Monitor, Laptop, Smartphone
+    Eye, EyeOff, Monitor, Laptop, Smartphone, SquareRoundCorner, VectorSquare
 } from 'lucide-react';
 import { getLocalizedName } from '@/app/utils/locale';
 import toast from 'react-hot-toast';
@@ -94,10 +94,13 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
         fontSize: '16px',
         color: '#000000',
         backgroundColor: 'transparent',
-        textAlign: 'left'
+        textAlign: 'left',
+        borderRadius: '0px'
     });
 
     const canvasRef = useRef<HTMLDivElement>(null);
+    const imageInputRef = useRef<HTMLInputElement>(null);
+    const svgInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         const init = async () => {
@@ -209,12 +212,34 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
 
     const updateActiveStyles = (el: HTMLElement) => {
         const computed = window.getComputedStyle(el);
-        setActiveStyles({
-            fontSize: computed.fontSize,
-            color: computed.color,
-            backgroundColor: computed.backgroundColor,
-            textAlign: computed.textAlign
-        });
+        let styles: typeof activeStyles = {
+            fontSize: '16px',
+            color: '#000000',
+            backgroundColor: 'transparent',
+            textAlign: 'left',
+            borderRadius: '0px'
+        };
+
+        if (el.tagName === 'SVG') {
+            // For SVG, fontSize can be interpreted as width/height
+            styles.color = (el.getAttribute('fill') || computed.color) as string;
+            styles.fontSize = el.getAttribute('width') || computed.width;
+            styles.backgroundColor = el.getAttribute('background') || 'transparent';
+            styles.textAlign = 'center';
+            styles.borderRadius = computed.borderRadius || '0px';
+        } else if (activeTagName === 'img') {
+            styles.borderRadius = computed.borderRadius || '0px';
+        } else {
+            styles = {
+                fontSize: computed.fontSize,
+                color: computed.color,
+                backgroundColor: computed.backgroundColor,
+                textAlign: computed.textAlign,
+                borderRadius: computed.borderRadius
+            };
+        }
+
+        setActiveStyles(styles);
         setActiveTagName(el.tagName.toLowerCase());
     };
 
@@ -224,7 +249,7 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
         const wrapper = document.getElementById(`snippet-content-${snippetId}`);
 
         // Target editable elements
-        const smartTarget = target.closest('p, h1, h2, h3, h4, h5, h6, span, a, li, button, img, section, div:not([id^="snippet-content-"])');
+        const smartTarget = target.closest('p, h1, h2, h3, h4, h5, h6, span, a, li, button, img, section, div:not([id^="snippet-content-"]), svg');
         if (smartTarget && wrapper?.contains(smartTarget)) target = smartTarget as HTMLElement;
 
         e.stopPropagation();
@@ -241,18 +266,24 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
         updateActiveStyles(target);
 
         if (target.tagName !== 'IMG' && !target.classList.contains('no-edit')) {
-            target.contentEditable = 'true';
-            target.style.outline = '2px solid #3b82f6';
-            target.style.outlineOffset = '2px';
+            if (target.tagName === 'SVG') {
+                // Mark SVG as editable
+                target.style.outline = '2px solid #3b82f6';
+                target.style.outlineOffset = '2px';
+            } else {
+                target.contentEditable = 'true';
+                target.style.outline = '2px solid #3b82f6';
+                target.style.outlineOffset = '2px';
 
-            // We only commit on blur or when clicking away to stay efficient
-            const onBlur = () => {
-                target.contentEditable = 'false';
-                target.style.outline = '';
-                commitChanges(snippetId);
-                target.removeEventListener('blur', onBlur);
-            };
-            target.addEventListener('blur', onBlur);
+                // We only commit on blur or when clicking away to stay efficient
+                const onBlur = () => {
+                    target.contentEditable = 'false';
+                    target.style.outline = '';
+                    commitChanges(snippetId);
+                    target.removeEventListener('blur', onBlur);
+                };
+                target.addEventListener('blur', onBlur);
+            }
         } else {
             target.style.outline = '2px solid #3b82f6';
             target.style.outlineOffset = '2px';
@@ -263,17 +294,31 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
         if (!activeElementRef.current) return;
         const el = activeElementRef.current;
 
-        if (command === 'backgroundColor') {
-            el.style.backgroundColor = value || '';
-        } else if (command === 'fontSize') {
-            el.style.fontSize = value || '';
-        } else if (command === 'textAlign') {
-            el.style.textAlign = value || '';
-        } else if (command === 'foreColor') {
-            document.execCommand('styleWithCSS', false, 'true');
-            document.execCommand('foreColor', false, value);
+        if (el.tagName === 'svg') {
+            if (command === 'backgroundColor') {
+                el.style.backgroundColor = value || 'transparent';
+            } else if (command === 'fontSize') {
+                 // نستخدمه للعرض والارتفاع
+                el.setAttribute('width', value || '24px');
+                el.setAttribute('height', value || '24px');
+            } else if (command === 'foreColor') {
+                el.setAttribute('fill', value || '#000');
+            } else if (command === 'borderRadius') {
+                el.style.borderRadius = value || '0px';
+            }
         } else {
-            document.execCommand(command, false, value);
+            if (command === 'backgroundColor') {
+                el.style.backgroundColor = value || '';
+            } else if (command === 'fontSize') {
+                el.style.fontSize = value || '';
+            } else if (command === 'textAlign') {
+                el.style.textAlign = value || '';
+            } else if (command === 'foreColor') {
+                el.style.color = value || '';
+            } else if (command === 'borderRadius') {
+                console.log(el.style)
+                el.style.borderRadius = value || '0px';
+            }
         }
 
         updateActiveStyles(el);
@@ -284,6 +329,16 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
             }
         }
     };
+
+    const applyStyleDebounced = (() => {
+        let timeout: NodeJS.Timeout;
+        return (command: string, value?: string) => {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => {
+                applyStyle(command, value);
+            }, 50); // 50ms تأخير بسيط
+        };
+    })();
 
     const handleSave = async () => {
         if (activeSnippetId) commitChanges(activeSnippetId);
@@ -302,6 +357,64 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
         finally { setSaving(false); }
     };
 
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file || !activeElementRef.current || activeElementRef.current.tagName !== 'IMG') return;
+
+        const img = activeElementRef.current as HTMLImageElement;
+
+        const reader = new FileReader();
+        reader.onload = () => {
+            img.src = reader.result as string;
+
+            if (activeSnippetId) {
+                commitChanges(activeSnippetId);
+            }
+        };
+
+        reader.readAsDataURL(file);
+    };
+
+    const handleSvgUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        if (!file.type.includes('svg')) {
+            toast.error(commonT('svgerror'))
+            return;
+        }
+
+        const reader = new FileReader();
+
+        reader.onload = () => {
+            let svgText = reader.result as string;
+
+            // 🔐 تنظيف مبدئي
+            svgText = svgText
+                .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, '')
+                .replace(/on\w+="[^"]*"/g, '');
+
+            // 🎯 تأكد من الخصائص المهمة
+            if (!svgText.includes('viewBox')) {
+                console.warn('SVG بدون viewBox قد لا يتجاوب جيدًا');
+            }
+
+            // 🎨 إجبار التحكم باللون
+            svgText = svgText.replace(
+                /<svg([^>]+)>/,
+                `<svg$1 fill="currentColor" width="24" height="24" style="color:inherit">`
+            );
+
+            // 🔄 استبدال العنصر الحالي
+            if (activeElementRef.current) {
+                activeElementRef.current.outerHTML = svgText;
+                commitChanges(activeSnippetId!);
+            }
+        };
+
+        reader.readAsText(file);
+    };
+
     const moveSnippet = (index: number, direction: 'up' | 'down') => {
         const newSnippets = [...droppedSnippets];
         const targetIndex = direction === 'up' ? index - 1 : index + 1;
@@ -316,7 +429,7 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
     const swatchColors = [
         '#10B981', '#3B82F6', '#EF4444', '#000000',
         '#6366F1', '#64748B', '#8B5CF6', '#F59E0B',
-        '#EC4899', '#14B8A6', '#828282', '#FFFFFF'
+        '#14B8A6', '#828282', '#FFFFFF'
     ];
 
     const bgColors = [
@@ -365,13 +478,63 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                         </div>
 
                         <div className="space-y-4">
+                            {activeTagName !== 'img' && (
+                                <div>
+                                    <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                        <TypeIcon className="w-3 h-3" /> {editorT('typography')}
+                                    </div>
+                                    <div className="space-y-3">
+                                        <div className="flex justify-between items-center px-1"><span className="text-[10px] font-bold text-slate-500 uppercase">{editorT('size')}</span><span className="text-[11px] font-black text-indigo-600">{activeElementRef.current?.tagName === 'svg'? activeElementRef.current.getAttribute('width') : activeStyles.fontSize}</span></div>
+                                        <input type="range" min="8" max="120" value={activeElementRef.current?.tagName === 'svg'? parseInt(activeElementRef.current.getAttribute('width') || '24') : parseInt(activeStyles.fontSize) || 16} onChange={(e) => applyStyle('fontSize', `${e.target.value}px`)} className="w-full h-1.5 bg-indigo-100 rounded-lg appearance-none cursor-pointer accent-indigo-600" />
+                                    </div>
+                                </div>
+                            )}
                             <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                                <TypeIcon className="w-3 h-3" /> {editorT('typography')}
+                                <SquareRoundCorner className="w-3 h-3" /> {editorT('squarerounded')}
                             </div>
                             <div className="space-y-3">
-                                <div className="flex justify-between items-center px-1"><span className="text-[10px] font-bold text-slate-500 uppercase">{editorT('size')}</span><span className="text-[11px] font-black text-indigo-600">{activeStyles.fontSize}</span></div>
-                                <input type="range" min="8" max="120" value={parseInt(activeStyles.fontSize) || 16} onChange={(e) => applyStyle('fontSize', `${e.target.value}px`)} className="w-full h-1.5 bg-indigo-100 rounded-lg appearance-none cursor-pointer accent-indigo-600" />
+                                <div className="flex justify-between items-center px-1"><span className="text-[10px] font-bold text-slate-500 uppercase">{editorT('squarerounded')}</span><span className="text-[11px] font-black text-indigo-600">{activeStyles.borderRadius}</span></div>
+                                <input type="range" min="0" max="24" value={parseInt(activeStyles.borderRadius) || 0} onChange={(e) => applyStyle('borderRadius', `${e.target.value}px`)} className="w-full h-1.5 bg-indigo-100 rounded-lg appearance-none cursor-pointer accent-indigo-600" />
                             </div>
+                            {activeTagName === 'img' && (
+                                <div className="space-y-3 pt-4 border-t border-slate-100">
+                                    <button
+                                    onClick={() => imageInputRef.current?.click()}
+                                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2 rounded-xl shadow-md transition cursor-pointer"
+                                    >
+                                        {editorT('replaceimg')}
+                                    </button>
+                                    <input
+                                        ref={imageInputRef}
+                                        type="file"
+                                        accept="image/*"
+                                        hidden
+                                        onChange={(e) => handleImageChange(e)}
+                                    />
+                                </div>
+                            )}
+                            {(activeTagName === 'svg') && (
+                                <div className="space-y-3 pt-4 border-t border-slate-100">
+                                    <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                    <VectorSquare className="w-3 h-3" /> SVG
+                                    </div>
+
+                                    <button
+                                        onClick={() => svgInputRef.current?.click()}
+                                        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2 rounded-xl shadow-md transition cursor-pointer"
+                                        >
+                                        {editorT('replacesvg')}
+                                    </button>
+                                    <input
+                                        ref={svgInputRef}
+                                        type="file"
+                                        accept=".svg"
+                                        hidden
+                                        onChange={handleSvgUpload}
+                                    />
+                                </div>
+                            )}
+
                             <div className="grid grid-cols-4 gap-1 p-1 bg-slate-100 rounded-xl">
                                 <button onMouseDown={(e) => { e.preventDefault(); applyStyle('textAlign', 'left'); }} className={`p-2 rounded-lg flex justify-center transition-all ${activeStyles.textAlign.includes('left') ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-400'}`}><AlignLeft className="w-4 h-4" /></button>
                                 <button onMouseDown={(e) => { e.preventDefault(); applyStyle('textAlign', 'center'); }} className={`p-2 rounded-lg flex justify-center transition-all ${activeStyles.textAlign.includes('center') ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-400'}`}><AlignCenter className="w-4 h-4" /></button>
@@ -384,6 +547,19 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                                     {swatchColors.map(c => (
                                         <button key={c} onMouseDown={(e) => { e.preventDefault(); applyStyle('foreColor', c); }} className="w-8 h-8 rounded-full border-2 border-white shadow-md hover:scale-110 transition-transform" style={{ backgroundColor: c }} />
                                     ))}
+                                    {/* مدخل اللون الديناميكي مع تدرج */}
+                                    <div className="relative w-8 h-8 rounded-full shadow-md overflow-hidden  border-2 border-white">
+                                        {/* التدرج كخلفية */}
+                                        <div className="absolute inset-0 rounded-full" 
+                                            style={{ background: 'linear-gradient(to right, red, orange, yellow, green, cyan, blue, violet)' }} />
+                                        {/* input شفاف فوق التدرج */}
+                                        <input
+                                            type="color"
+                                            value={activeStyles.color || '#ff0000'}
+                                            onChange={(e) => applyStyleDebounced('foreColor', e.target.value)}
+                                            className="w-full h-full opacity-0 cursor-pointer"
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </div>

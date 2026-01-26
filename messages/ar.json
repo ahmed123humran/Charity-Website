@@ -48,7 +48,8 @@
         "saved": "تم الحفظ بنجاح!",
         "error": "حدث خطأ ما",
         "notAuthorized": "ليس لديك صلاحية للقيام بهذا الإجراء",
-        "loading": "جاري التحميل..."
+        "loading": "جاري التحميل...",
+        "svgerror": "الملف يجب أن يكون SVG"
     },
     "HomePage": {
         "heroTitle": "تمكين الجمعيات من أجل",
@@ -221,6 +222,7 @@
     "Editor": {
         "styleDesigner": "مصمم التنسيقات",
         "activeElement": "العنصر النشط",
+        "squarerounded": "الحواف",
         "typography": "الخطوط",
         "size": "الحجم",
         "textColor": "لون النص",
@@ -231,6 +233,8 @@
         "snippetsLibrary": "مكتبة القصاصات",
         "deleteConfirm": "هل أنت متأكد من حذف هذا القسم؟",
         "preview": "معاينة",
-        "exitPreview": "إلغاء المعاينة"
+        "exitPreview": "إلغاء المعاينة",
+        "replaceimg": "تغيير الصورة",
+        "replacesvg": "استبدال SVG"
     }
 }
