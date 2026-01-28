@@ -49,7 +49,8 @@
         "error": "حدث خطأ ما",
         "notAuthorized": "ليس لديك صلاحية للقيام بهذا الإجراء",
         "loading": "جاري التحميل...",
-        "svgerror": "الملف يجب أن يكون SVG"
+        "svgerror": "الملف يجب أن يكون SVG",
+        "videoerror": "الملف يجب أن يكون mp4, webm"
     },
     "HomePage": {
         "heroTitle": "تمكين الجمعيات من أجل",
@@ -235,6 +236,8 @@
         "preview": "معاينة",
         "exitPreview": "إلغاء المعاينة",
         "replaceimg": "تغيير الصورة",
-        "replacesvg": "استبدال SVG"
+        "replacesvg": "استبدال SVG",
+        "replacevideo": "استبدال الفيديو",
+        "replaceimgvideo": "استبدال صورة بداية الفيديو"
     }
 }

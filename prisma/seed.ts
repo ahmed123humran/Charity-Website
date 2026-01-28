@@ -87,6 +87,22 @@ async function main() {
     },
 
     {
+      name: 'Title',
+      category: 'Content',
+      htmlContent: `
+        <section class="container mx-auto px-5 lg:px-10 xl:px-20 py-20">
+            <h1 class="text-center text-3xl/10 md:text-3xl lg:text-4xl xl:text-6xl/20 font-bold text-black">
+                متحدون من أجل الخير، أقوياء من أجل الأعمال الخيرية
+            </h1>
+            <div class="flex text-center justify-center text-gray-600 py-10">
+                <p class="md:w-2/3">
+                    هناك حقيقة مثبتة منذ زمن طويل وهي أن المحتوى المقروء لصفحة ما سيلهي القارئ عن التركيز على الشكل الخارجي للنص أو شكل توضع الفقرات في الصفحة التي يقرأها.
+                </p>
+            </div>
+        </section>
+      `
+    },
+    {
       name: 'Features Cards',
       category: 'Features',
       htmlContent: `
@@ -223,6 +239,51 @@ async function main() {
             <img src="/partner/red_crescent.png" alt="..." class="w-1/2" />
             <img src="/partner/xmlid.svg" alt="..." class="w-1/2" />
           </div>
+        </section>
+      `
+    },
+    {
+      name: 'Vidio with text',
+      category: 'Content',
+      htmlContent: `
+        <section class="container mx-auto px-5 lg:px-10 xl:px-20 py-20">
+            <h1 class="text-3xl/10 md:text-3xl lg:text-5xl font-bold text-black">
+                تغيير حياة الناس من خلال الحب والكرم.
+            </h1>
+            <div class="w-full max-w my-10 overflow-hidden rounded-2xl shadow-xl">
+                <video
+                    class="w-full"
+                    controls
+                    src="/video/test.mp4"
+                >
+                </video>
+            </div>
+            <div class="flex flex-wrap gap-4 justify-around justify-items-center items-center">
+                <img src="/video/XMLID.svg" alt="..." class="w-full md:w-3/7 lg:w-3/10" />
+                <div class="w-full md:w-3/7 lg:w-3/10 flex flex-col">
+                    <h3 class="text-black font-bold text-3xl my-4">
+                        أقوم أيضاً بالتوصيل
+                    </h3>
+                    <p class="text-gray-600">
+                        هناك حقيقة مثبتة منذ زمن طويل وهي أن المحتوى المقروء لصفحة ما سيلهي القارئ عن التركيز على الشكل الخارجي للنص أو شكل توضع الفقرات في الصفحة التي يقرأها. ولذلك يتم استخدام طريقة لوريم إيبسوم لأنها تعطي توزيعاَ طبيعياَ
+                    </p>
+                    <a href="#" class="focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]  mt-8 py-2 text-base text-black rounded-2xl">
+                        يتعلم أكثر <span>&#x279C;</span>
+                    </a>
+                </div>
+                <div class="w-full md:w-3/7 lg:w-3/10 flex flex-col">
+                    <h3 class="text-black font-bold text-3xl my-4">
+                        تغيير حياة الناس
+                    </h3>
+                    <p class="text-gray-600">
+                        هناك حقيقة مثبتة منذ زمن طويل وهي أن المحتوى المقروء لصفحة ما سيلهي القارئ عن التركيز على الشكل الخارجي للنص أو شكل توضع الفقرات في الصفحة التي يقرأها. ولذلك يتم استخدام طريقة لوريم إيبسوم لأنها تعطي توزيعاَ طبيعياَ
+                    </p>
+                    <a href="#" class="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 
+                        outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive mt-8 px-10 py-2 text-base bg-primary text-white rounded-2xl">
+                        يتبرع
+                    </a>
+                </div>
+            </div>
         </section>
       `
     },

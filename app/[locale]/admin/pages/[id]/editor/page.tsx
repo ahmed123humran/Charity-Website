@@ -5,7 +5,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from '@/navigation';
 import {
     Save, ArrowLeft, Plus, Move, Trash2, Layout, Type,
-    Image as ImageIcon, Copy, MousePointer2, X,
+    Image as ImageIcon, Copy, MousePointer2, X, FilePlay, 
     Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight, Palette,
     Type as TypeIcon, Minus, Plus as PlusIcon, PaintBucket, Settings,
     Eye, EyeOff, Monitor, Laptop, Smartphone, SquareRoundCorner, VectorSquare
@@ -101,6 +101,8 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
     const canvasRef = useRef<HTMLDivElement>(null);
     const imageInputRef = useRef<HTMLInputElement>(null);
     const svgInputRef = useRef<HTMLInputElement>(null);
+    const videoInputRef = useRef<HTMLInputElement>(null);
+    const videoImgInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         const init = async () => {
@@ -249,7 +251,7 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
         const wrapper = document.getElementById(`snippet-content-${snippetId}`);
 
         // Target editable elements
-        const smartTarget = target.closest('p, h1, h2, h3, h4, h5, h6, span, a, li, button, img, section, div:not([id^="snippet-content-"]), svg');
+        const smartTarget = target.closest('p, h1, h2, h3, h4, h5, h6, span, a, li, button, img, section, div:not([id^="snippet-content-"]), svg, video');
         if (smartTarget && wrapper?.contains(smartTarget)) target = smartTarget as HTMLElement;
 
         e.stopPropagation();
@@ -290,53 +292,94 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
         }
     };
 
-    const applyStyle = (command: string, value?: string) => {
-        if (!activeElementRef.current) return;
-        const el = activeElementRef.current;
+    type StyleCommand =
+    | 'fontSize'
+    | 'foreColor'
+    | 'backgroundColor'
+    | 'textAlign'
+    | 'borderRadius'
+    | 'aspectRatio'
+    | 'objectFit';
 
-        if (el.tagName === 'svg') {
-            if (command === 'backgroundColor') {
-                el.style.backgroundColor = value || 'transparent';
-            } else if (command === 'fontSize') {
-                 // نستخدمه للعرض والارتفاع
-                el.setAttribute('width', value || '24px');
-                el.setAttribute('height', value || '24px');
-            } else if (command === 'foreColor') {
-                el.setAttribute('fill', value || '#000');
-            } else if (command === 'borderRadius') {
-                el.style.borderRadius = value || '0px';
-            }
-        } else {
-            if (command === 'backgroundColor') {
-                el.style.backgroundColor = value || '';
-            } else if (command === 'fontSize') {
-                el.style.fontSize = value || '';
-            } else if (command === 'textAlign') {
-                el.style.textAlign = value || '';
-            } else if (command === 'foreColor') {
-                el.style.color = value || '';
-            } else if (command === 'borderRadius') {
-                console.log(el.style)
-                el.style.borderRadius = value || '0px';
-            }
-        }
+    type ElementKind = 'text' | 'svg' | 'img' | 'video';
+
+    const getElementKind = (el: HTMLElement): ElementKind => {
+        if (el.tagName === 'svg') return 'svg';
+        if (el.tagName === 'IMG') return 'img';
+        if (el.tagName === 'VIDEO') return 'video';
+        return 'text';
+    };
+
+
+    type StyleHandler = (el: HTMLElement, value?: string) => void;
+
+    const STYLE_HANDLERS: Record<ElementKind, Partial<Record<StyleCommand, StyleHandler>>> = {
+        text: {
+            fontSize: (el, v) => el.style.fontSize = v || '',
+            foreColor: (el, v) => el.style.color = v || '',
+            backgroundColor: (el, v) => el.style.backgroundColor = v || '',
+            textAlign: (el, v) => el.style.textAlign = v || '',
+            borderRadius: (el, v) => el.style.borderRadius = v || '',
+        },
+
+        svg: {
+            fontSize: (el, v) => {
+            el.setAttribute('width', v || '24px');
+            el.setAttribute('height', v || '24px');
+            },
+            foreColor: (el, v) => el.setAttribute('fill', v || '#000'),
+            backgroundColor: (el, v) => el.style.backgroundColor = v || 'transparent',
+            borderRadius: (el, v) => el.style.borderRadius = v || '0px',
+        },
+
+        img: {
+            borderRadius: (el, v) => el.style.borderRadius = v || '',
+            objectFit: (el, v) => el.style.objectFit = v || 'cover',
+        },
+
+        video: {
+            borderRadius: (el, v) => el.style.borderRadius = v || '',
+            objectFit: (el, v) => el.style.objectFit = v || 'cover',
+            aspectRatio: (el, v) => el.style.aspectRatio = v || '',
+        },
+    };
+
+
+    const applyStyle = (command: StyleCommand, value?: string) => {
+        const el = activeElementRef.current;
+        if (!el) return;
+
+        const kind = getElementKind(el);
+        const handler = STYLE_HANDLERS[kind]?.[command];
+
+        if (!handler) return;
+
+        handler(el, value);
 
         updateActiveStyles(el);
+
         if (activeSnippetId) {
-            // Colors and discrete styles are committed immediately
-            if (command === 'foreColor' || command === 'backgroundColor' || command === 'fontSize' || command === 'textAlign') {
-                commitChanges(activeSnippetId);
+            const instantCommitCommands: StyleCommand[] = [
+            'foreColor',
+            'backgroundColor',
+            'fontSize',
+            'textAlign',
+            'borderRadius',
+            ];
+
+            if (instantCommitCommands.includes(command)) {
+            commitChanges(activeSnippetId);
             }
         }
     };
 
     const applyStyleDebounced = (() => {
-        let timeout: NodeJS.Timeout;
-        return (command: string, value?: string) => {
-            clearTimeout(timeout);
-            timeout = setTimeout(() => {
-                applyStyle(command, value);
-            }, 50); // 50ms تأخير بسيط
+        let t: NodeJS.Timeout;
+        return (command: StyleCommand, value?: string) => {
+            clearTimeout(t);
+            t = setTimeout(() => {
+            applyStyle(command, value);
+            }, 60);
         };
     })();
 
@@ -415,6 +458,46 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
         reader.readAsText(file);
     };
 
+    const handleVideoReplace = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file || !activeElementRef.current) return;
+
+        if (!file.type.includes('video')) {
+            toast.error(commonT('videoerror'))
+            return;
+        }
+
+        const video = activeElementRef.current as HTMLVideoElement;
+        const url = URL.createObjectURL(file);
+
+        video.src = url;
+        video.load();
+
+        commitChanges(activeSnippetId!);
+    };
+
+    const handleVideoImgReplace = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file || !activeElementRef.current) return;
+
+        const video = activeElementRef.current as HTMLVideoElement;
+        const url = URL.createObjectURL(file);
+
+        video.poster = url;
+        video.load();
+
+        commitChanges(activeSnippetId!);
+    };
+
+    const removevideoImg = () => {
+        const video = activeElementRef.current as HTMLVideoElement;
+
+        video.poster = '';
+        video.load();
+
+        commitChanges(activeSnippetId!);
+    };
+
     const moveSnippet = (index: number, direction: 'up' | 'down') => {
         const newSnippets = [...droppedSnippets];
         const targetIndex = direction === 'up' ? index - 1 : index + 1;
@@ -478,7 +561,7 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                         </div>
 
                         <div className="space-y-4">
-                            {activeTagName !== 'img' && (
+                            {(!['img', 'video'].includes(activeTagName)) && (
                                 <div>
                                     <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                                         <TypeIcon className="w-3 h-3" /> {editorT('typography')}
@@ -534,48 +617,94 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                                     />
                                 </div>
                             )}
+                            {(activeTagName === 'video') && (
+                                <div className="space-y-3 pt-4 border-t border-slate-100">
+                                    <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                        <FilePlay className="w-3 h-3" /> Video
+                                    </div>
+                                    <button
+                                        onClick={() => videoInputRef.current?.click()}
+                                        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2 rounded-xl shadow-md transition cursor-pointer"
+                                        >
+                                        {editorT('replacevideo')}
+                                    </button>
+                                    <div className='flex'>
+                                        <button
+                                            onClick={() => videoImgInputRef.current?.click()}
+                                            className="w-4/5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2 rounded-r-xl shadow-md transition cursor-pointer"
+                                            >
+                                            {editorT('replaceimgvideo')}
+                                        </button>
+                                        <button
+                                            onClick={() => {removevideoImg();}}
+                                            className="flex justify-center items-center w-1/5 bg-red-400 hover:bg-red-700 text-white text-center rounded-l-xl shadow-md transition cursor-pointer"
+                                            >
+                                            <Trash2 className="h-4 text-white" />
+                                        </button>
+                                    </div>
+                                    <input
+                                        ref={videoInputRef}
+                                        type="file"
+                                        accept="video/mp4,video/webm"
+                                        hidden
+                                        onChange={handleVideoReplace}
+                                    />
+                                    <input
+                                        ref={videoImgInputRef}
+                                        type="file"
+                                        accept="image/*"
+                                        hidden
+                                        onChange={handleVideoImgReplace}
+                                    />
+                                </div>
+                            )}
+                            {(!['img', 'svg', 'video'].includes(activeTagName)) && (
+                                <div className="grid grid-cols-4 gap-1 p-1 bg-slate-100 rounded-xl">
+                                    <button onMouseDown={(e) => { e.preventDefault(); applyStyle('textAlign', 'left'); }} className={`p-2 rounded-lg flex justify-center transition-all ${activeStyles.textAlign.includes('left') ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-400'}`}><AlignLeft className="w-4 h-4" /></button>
+                                    <button onMouseDown={(e) => { e.preventDefault(); applyStyle('textAlign', 'center'); }} className={`p-2 rounded-lg flex justify-center transition-all ${activeStyles.textAlign.includes('center') ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-400'}`}><AlignCenter className="w-4 h-4" /></button>
+                                    <button onMouseDown={(e) => { e.preventDefault(); applyStyle('textAlign', 'right'); }} className={`p-2 rounded-lg flex justify-center transition-all ${activeStyles.textAlign.includes('right') ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-400'}`}><AlignRight className="w-4 h-4" /></button>
+                                    <button onMouseDown={(e) => { e.preventDefault(); applyStyle('textAlign', 'justify'); }} className={`p-2 rounded-lg flex justify-center transition-all ${activeStyles.textAlign.includes('justify') ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-400'}`}><Layout className="w-4 h-4" /></button>
+                                </div>
+                            )}
+                            {(!['img', 'video'].includes(activeTagName)) && (
+                                <div className="space-y-3">
+                                    <span className="text-[10px] font-bold text-slate-500 uppercase px-1">{editorT('textColor')}</span>
+                                    <div className="grid grid-cols-4 gap-2">
+                                        {swatchColors.map(c => (
+                                            <button key={c} onMouseDown={(e) => { e.preventDefault(); applyStyle('foreColor', c); }} className="w-8 h-8 rounded-full border-2 border-white shadow-md hover:scale-110 transition-transform" style={{ backgroundColor: c }} />
+                                        ))}
+                                        {/* مدخل اللون الديناميكي مع تدرج */}
+                                        <div className="relative w-8 h-8 rounded-full shadow-md overflow-hidden  border-2 border-white">
+                                            {/* التدرج كخلفية */}
+                                            <div className="absolute inset-0 rounded-full" 
+                                                style={{ background: 'linear-gradient(to right, red, orange, yellow, green, cyan, blue, violet)' }} />
+                                            {/* input شفاف فوق التدرج */}
+                                            <input
+                                                type="color"
+                                                value={activeStyles.color || '#ff0000'}
+                                                onChange={(e) => applyStyleDebounced('foreColor', e.target.value)}
+                                                className="w-full h-full opacity-0 cursor-pointer"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
 
-                            <div className="grid grid-cols-4 gap-1 p-1 bg-slate-100 rounded-xl">
-                                <button onMouseDown={(e) => { e.preventDefault(); applyStyle('textAlign', 'left'); }} className={`p-2 rounded-lg flex justify-center transition-all ${activeStyles.textAlign.includes('left') ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-400'}`}><AlignLeft className="w-4 h-4" /></button>
-                                <button onMouseDown={(e) => { e.preventDefault(); applyStyle('textAlign', 'center'); }} className={`p-2 rounded-lg flex justify-center transition-all ${activeStyles.textAlign.includes('center') ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-400'}`}><AlignCenter className="w-4 h-4" /></button>
-                                <button onMouseDown={(e) => { e.preventDefault(); applyStyle('textAlign', 'right'); }} className={`p-2 rounded-lg flex justify-center transition-all ${activeStyles.textAlign.includes('right') ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-400'}`}><AlignRight className="w-4 h-4" /></button>
-                                <button onMouseDown={(e) => { e.preventDefault(); applyStyle('textAlign', 'justify'); }} className={`p-2 rounded-lg flex justify-center transition-all ${activeStyles.textAlign.includes('justify') ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-400'}`}><Layout className="w-4 h-4" /></button>
-                            </div>
-                            <div className="space-y-3">
-                                <span className="text-[10px] font-bold text-slate-500 uppercase px-1">{editorT('textColor')}</span>
-                                <div className="grid grid-cols-4 gap-2">
-                                    {swatchColors.map(c => (
-                                        <button key={c} onMouseDown={(e) => { e.preventDefault(); applyStyle('foreColor', c); }} className="w-8 h-8 rounded-full border-2 border-white shadow-md hover:scale-110 transition-transform" style={{ backgroundColor: c }} />
-                                    ))}
-                                    {/* مدخل اللون الديناميكي مع تدرج */}
-                                    <div className="relative w-8 h-8 rounded-full shadow-md overflow-hidden  border-2 border-white">
-                                        {/* التدرج كخلفية */}
-                                        <div className="absolute inset-0 rounded-full" 
-                                            style={{ background: 'linear-gradient(to right, red, orange, yellow, green, cyan, blue, violet)' }} />
-                                        {/* input شفاف فوق التدرج */}
-                                        <input
-                                            type="color"
-                                            value={activeStyles.color || '#ff0000'}
-                                            onChange={(e) => applyStyleDebounced('foreColor', e.target.value)}
-                                            className="w-full h-full opacity-0 cursor-pointer"
-                                        />
+                        {(!['video'].includes(activeTagName)) && (
+                            <div className="space-y-4 pt-4 border-t border-slate-100">
+                                <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2"><PaintBucket className="w-3 h-3" /> {editorT('background')}</div>
+                                <div className="space-y-3">
+                                    <span className="text-[10px] font-bold text-slate-500 uppercase px-1">{editorT('color')}</span>
+                                    <div className="grid grid-cols-4 gap-2">
+                                        {bgColors.map(c => (
+                                            <button key={c} onMouseDown={(e) => { e.preventDefault(); applyStyle('backgroundColor', c); }} className="w-8 h-8 rounded-full border-2 border-white shadow-md hover:scale-110 transition-transform" style={{ backgroundColor: c }} />
+                                        ))}
+                                        <button onMouseDown={(e) => { e.preventDefault(); applyStyle('backgroundColor', 'transparent'); }} className="w-8 h-8 rounded-full bg-white border-2 border-slate-100 shadow-md flex items-center justify-center relative"><div className="absolute w-full h-[1px] bg-red-400 rotate-45" /></button>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-
-                        <div className="space-y-4 pt-4 border-t border-slate-100">
-                            <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2"><PaintBucket className="w-3 h-3" /> {editorT('background')}</div>
-                            <div className="space-y-3">
-                                <span className="text-[10px] font-bold text-slate-500 uppercase px-1">{editorT('color')}</span>
-                                <div className="grid grid-cols-4 gap-2">
-                                    {bgColors.map(c => (
-                                        <button key={c} onMouseDown={(e) => { e.preventDefault(); applyStyle('backgroundColor', c); }} className="w-8 h-8 rounded-full border-2 border-white shadow-md hover:scale-110 transition-transform" style={{ backgroundColor: c }} />
-                                    ))}
-                                    <button onMouseDown={(e) => { e.preventDefault(); applyStyle('backgroundColor', 'transparent'); }} className="w-8 h-8 rounded-full bg-white border-2 border-slate-100 shadow-md flex items-center justify-center relative"><div className="absolute w-full h-[1px] bg-red-400 rotate-45" /></button>
-                                </div>
-                            </div>
-                        </div>
+                        )}
                     </div>
                 </div>
 
