@@ -298,6 +298,7 @@ async function main() {
 
               <!-- About -->
               <div class="space-y-4">
+                <img src="/gallery/img_1.svg" alt="..." class="rounded-md w-1/3" />
                 <div class="flex items-center gap-2">
                   <span class="text-xl font-bold text-white tracking-widest lowercase">
                     صدقة
@@ -840,22 +841,22 @@ async function main() {
             <div class="grid md:grid-cols-2 gap-5">
               <div>
                 <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Name</label>
-                <input type="text" class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors" placeholder="John Doe">
+                <input type="text" class="w-full px-4 py-3 rounded-xl border border-slate-200 text-gray-400 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors" placeholder="John Doe">
               </div>
               <div>
                 <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Company</label>
-                <input type="text" class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors" placeholder="Acme Inc.">
+                <input type="text" class="w-full px-4 py-3 rounded-xl border border-slate-200 text-gray-400 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors" placeholder="Acme Inc.">
               </div>
             </div>
             
             <div class="grid md:grid-cols-2 gap-5">
               <div>
                 <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Email</label>
-                <input type="email" class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors" placeholder="john@example.com">
+                <input type="email" class="w-full px-4 py-3 rounded-xl border border-slate-200 text-gray-400 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors" placeholder="john@example.com">
               </div>
               <div>
                 <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Mobile</label>
-                 <input type="tel" class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors" placeholder="+1 (555) 000-0000">
+                 <input type="tel" class="w-full px-4 py-3 rounded-xl border border-slate-200 text-gray-400 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors" placeholder="+1 (555) 000-0000">
               </div>
             </div>
             
@@ -913,9 +914,17 @@ async function main() {
     const features = findSnip('Features Grid');
     const stats = findSnip('Stats Row');
     const cta = findSnip('Call to Action');
+    const footer = findSnip('Footer');
 
     // Construct content array (simulating dropped snippets)
     const contentItems = [hero, stats, features, cta].filter(Boolean).map(s => ({
+      id: crypto.randomUUID(), // unique instance ID
+      snippetId: s!.id,
+      htmlContent: s!.htmlContent,
+      name: s!.name
+    }));
+        
+    const footerItems = [footer].filter(Boolean).map(s => ({
       id: crypto.randomUUID(), // unique instance ID
       snippetId: s!.id,
       htmlContent: s!.htmlContent,
@@ -931,6 +940,17 @@ async function main() {
         content: {
           en: contentItems,
           ar: contentItems // Use same content for now, or could duplicate/localize if snippets supported it
+        }
+      }
+    });
+    await prisma.footer.create({
+      data: {
+        title: { en: 'Footer Defualt', ar: 'التذييل الإفتراضي' },
+        websiteId: website.id,
+        isPublished: true,
+        content: {
+          en: footerItems,
+          ar: footerItems // Use same content for now, or could duplicate/localize if snippets supported it
         }
       }
     });

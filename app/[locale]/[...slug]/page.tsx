@@ -38,6 +38,7 @@ export default async function DynamicPage({ params }: Props) {
     }
 
     let contentToRender = null;
+    let footerToRender = null;
     if (page.content) {
         try {
             // page.content is JsonValue, convert to string if needed
@@ -75,6 +76,46 @@ export default async function DynamicPage({ params }: Props) {
         }
     }
 
+    if (page) {
+        const footer = await prisma.footer.findFirst({
+        where: {websiteId: page.websiteId},
+        });
+        try {
+            // footer.content is JsonValue, convert to string if needed
+            const contentStr = typeof footer.content === 'string' ? footer.content : JSON.stringify(footer.content);
+            const parsed = JSON.parse(contentStr);
+
+            // Check if it's the new localized format { en: [], ar: [] }
+            if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && (parsed.en || parsed.ar)) {
+                const { locale } = await params;
+                const localizedContent = parsed[locale] || parsed.en || [];
+                contentToRender = (
+                    <div className="flex flex-col">
+                        {localizedContent.map((item: any) => (
+                            <div key={item.id} dangerouslySetInnerHTML={{ __html: item.htmlContent }} />
+                        ))}
+                    </div>
+                );
+            } else if (Array.isArray(parsed)) {
+                // Legacy format: single array
+                contentToRender = (
+                    <div className="flex flex-col">
+                        {parsed.map((item: any) => (
+                            <div key={item.id} dangerouslySetInnerHTML={{ __html: item.htmlContent }} />
+                        ))}
+                    </div>
+                );
+            } else {
+                // Fallback for unexpected JSON
+                contentToRender = <div dangerouslySetInnerHTML={{ __html: contentStr }} />;
+            }
+        } catch (e) {
+            // It's a plain HTML string (legacy or manual edit)
+            const contentStr = typeof footer.content === 'string' ? footer.content : String(footer.content);
+            contentToRender = <div dangerouslySetInnerHTML={{ __html: contentStr }} />;
+        }
+    }
+
     return (
         <div className="min-h-screen bg-white flex flex-col">
             {/* 
@@ -92,7 +133,9 @@ export default async function DynamicPage({ params }: Props) {
                 )}
             </main>
 
-            <Footer />
+            {footerToRender || (
+              <div />
+            )}
         </div>
     );
 }

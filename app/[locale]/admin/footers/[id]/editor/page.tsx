@@ -21,10 +21,9 @@ interface Snippet {
     thumbnail?: string;
 }
 
-interface Page {
+interface Footer {
     id: string;
     title: any;
-    url: string;
     content: string | null;
 }
 
@@ -73,7 +72,7 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
     const router = useRouter();
     const locale = useLocale();
 
-    const [page, setPage] = useState<Page | null>(null);
+    const [footer, setFooter] = useState<Footer | null>(null);
     const [snippets, setSnippets] = useState<Snippet[]>([]);
     const [droppedSnippets, setDroppedSnippets] = useState<DroppedSnippet[]>([]);
     const [loading, setLoading] = useState(true);
@@ -107,17 +106,17 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
     useEffect(() => {
         const init = async () => {
             const { id } = await params;
-            await Promise.all([fetchPage(id), fetchSnippets()]);
+            await Promise.all([fetchFooter(id), fetchSnippets()]);
         };
         init();
     }, [params]);
 
-    const fetchPage = async (id: string) => {
+    const fetchFooter = async (id: string) => {
         try {
-            const res = await fetch(`/api/pages/${id}`);
+            const res = await fetch(`/api/footers/${id}`);
             if (res.ok) {
                 const data = await res.json();
-                setPage(data);
+                setFooter(data);
                 if (data.content) {
                     try {
                         let parsed = data.content;
@@ -133,7 +132,7 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                     } catch (e) { console.log('Content parse error', e); }
                 }
             }
-        } catch (error) { console.error('Failed to fetch page', error); }
+        } catch (error) { console.error('Failed to fetch footer', error); }
     };
 
     const fetchSnippets = async () => {
@@ -390,7 +389,7 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
             const latestEn = editorLocale === 'en' ? droppedSnippets : contentEn;
             const latestAr = editorLocale === 'ar' ? droppedSnippets : contentAr;
             const contentToSave = { en: latestEn, ar: latestAr };
-            await fetch(`/api/pages/${page?.id}`, {
+            await fetch(`/api/footers/${footer?.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ content: JSON.stringify(contentToSave) })
@@ -498,6 +497,15 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
         commitChanges(activeSnippetId!);
     };
 
+    const moveSnippet = (index: number, direction: 'up' | 'down') => {
+        const newSnippets = [...droppedSnippets];
+        const targetIndex = direction === 'up' ? index - 1 : index + 1;
+        if (targetIndex >= 0 && targetIndex < newSnippets.length) {
+            [newSnippets[index], newSnippets[targetIndex]] = [newSnippets[targetIndex], newSnippets[index]];
+            setDroppedSnippets(newSnippets);
+        }
+    };
+
     const updateLinkHref = (href: string) => {
         const el = activeElementRef.current;
         console.log(el.tagName)
@@ -521,15 +529,6 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
         }
 
         commitChanges(activeSnippetId!);
-    };
-
-    const moveSnippet = (index: number, direction: 'up' | 'down') => {
-        const newSnippets = [...droppedSnippets];
-        const targetIndex = direction === 'up' ? index - 1 : index + 1;
-        if (targetIndex >= 0 && targetIndex < newSnippets.length) {
-            [newSnippets[index], newSnippets[targetIndex]] = [newSnippets[targetIndex], newSnippets[index]];
-            setDroppedSnippets(newSnippets);
-        }
     };
 
     if (loading) return <div className="p-8 text-center text-slate-500 font-bold">{commonT('loading')}</div>;
@@ -562,14 +561,14 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                         <button onClick={() => switchLocale('en')} className={`px-4 py-1 rounded text-[10px] font-bold transition-all ${editorLocale === 'en' ? 'bg-[#3B82F6] text-white shadow-lg' : 'text-slate-400'}`}>EN</button>
                     </div>
                     <div className="flex items-center gap-3 border-l border-slate-700 pl-6">
-                        <span className="text-xs font-bold text-slate-300">{getLocalizedName(page?.title, locale)}</span>
+                        <span className="text-xs font-bold text-slate-300">{getLocalizedName(footer?.title, locale)}</span>
                         <button onClick={() => router.back()} className="p-2 hover:bg-slate-800 rounded-lg"><ArrowLeft className="w-4 h-4" /></button>
                     </div>
                 </div>
             </div>
 
             <div className="flex flex-1 overflow-hidden relative">
-                <div className={`w-72 bg-white border-r border-slate-200 overflow-y-auto z-40 flex flex-col transition-all duration-300 ${previewMode ? '-ml-72' : 'ml-0'}`}>
+                <div className={`w-72 bg-white border-r border-slate-200 overflow-y-auto z-40 flex flex-col transition-all duration-300 ${previewMode ? 'hidden' : 'ml-0'}`}>
                     <div className="p-4 border-b border-slate-100 flex items-center justify-between">
                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{editorT('styleDesigner')}</span>
                         <Settings className="w-3.5 h-3.5 text-indigo-500" />
@@ -695,7 +694,7 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                                             placeholder="https://example.com"
                                             value={activeElementRef.current?.getAttribute('href') || ''}
                                             onChange={(e) => updateLinkHref(e.target.value)}
-                                            className="w-full text-xs px-3 py-2 border border-slate-200 text-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                            className="w-full text-xs px-3 py-2 border text-gray-400 border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                         />
                                     </div>
 
@@ -766,19 +765,19 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                     </div>
 
                     <div ref={canvasRef} onDragOver={handleDragOver} onDrop={handleDrop} onClick={() => { if (activeSnippetId) commitChanges(activeSnippetId); setActiveSnippetId(null); activeElementRef.current = null; setActiveTagName(null); }}
-                        className={`w-full max-w-5xl bg-white shadow-2xl rounded-2xl overflow-y-auto scroll-smooth transition-all duration-500 relative min-h-[600px] ${previewMode ? 'ring-0' : 'ring-1 ring-slate-300'}`}
+                        className={`w-full bg-white shadow-2xl rounded-2xl overflow-y-auto scroll-smooth transition-all duration-500 relative min-h-[600px] ${previewMode ? 'ring-0' : 'ring-1 ring-slate-300'}`}
                     >
                         <div className="flex flex-col min-h-full">
                             {droppedSnippets.map((item, index) => (
                                 <div key={item.id} className="group relative">
-                                    {!previewMode && (
+                                    {/* {!previewMode && (
                                         <div className="absolute top-4 right-4 hidden group-hover:flex items-center gap-1.5 bg-[#1E293B] text-white px-2 py-1 rounded-xl z-50 shadow-2xl border border-white/10 scale-90 opacity-90 transition-all">
                                             <button onClick={() => moveSnippet(index, 'up')} className="p-1.5 hover:bg-slate-700 rounded-lg"><Move className="w-3.5 h-3.5 rotate-180" /></button>
                                             <button onClick={() => moveSnippet(index, 'down')} className="p-1.5 hover:bg-slate-700 rounded-lg"><Move className="w-3.5 h-3.5" /></button>
                                             <button onClick={() => { const newList = [...droppedSnippets]; newList.splice(index + 1, 0, { ...item, id: crypto.randomUUID() }); setDroppedSnippets(newList); }} className="p-1.5 hover:bg-slate-700 rounded-lg"><Copy className="w-3.5 h-3.5" /></button>
                                             <button onClick={() => { if (window.confirm(editorT('deleteConfirm'))) setDroppedSnippets(prev => prev.filter((_, i) => i !== index)); }} className="p-1.5 hover:bg-red-900 rounded-lg"><Trash2 className="w-3.5 h-3.5" /></button>
                                         </div>
-                                    )}
+                                    )} */}
                                     <StableSnippet
                                         item={item}
                                         isActive={activeSnippetId === item.id}
@@ -788,27 +787,10 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                                     />
                                 </div>
                             ))}
-                            {!previewMode && (
-                                <div onDragOver={(e) => handleDragOver(e, droppedSnippets.length)} className={`h-40 border-2 border-dashed border-slate-300 m-8 rounded-3xl flex flex-col items-center justify-center transition-all gap-3 ${dragOverIndex === droppedSnippets.length ? 'bg-indigo-50 border-indigo-400' : 'bg-white hover:bg-slate-50'}`}>
-                                    <Plus className={`w-10 h-10 ${dragOverIndex === droppedSnippets.length ? 'text-indigo-600' : 'text-slate-200'}`} />
-                                    <span className="text-xs font-black text-slate-400 uppercase tracking-widest">{editorT('dropNewSection')}</span>
-                                </div>
-                            )}
                         </div>
                     </div>
                 </div>
 
-                <div className={`w-80 bg-white border-l border-slate-200 overflow-y-auto z-40 transition-all duration-300 ${previewMode ? '-mr-80' : 'mr-0'}`}>
-                    <div className="p-4 border-b border-slate-100 text-[10px] font-black text-slate-400 uppercase tracking-widest">{editorT('snippetsLibrary')}</div>
-                    <div className="p-4 space-y-3">
-                        {snippets.map(s => (
-                            <div key={s.id} draggable onDragStart={(e) => handleDragStart(e, s)} className="p-5 bg-white border border-slate-200 rounded-2xl cursor-grab hover:border-indigo-400 hover:shadow-xl transition-all group overflow-hidden">
-                                <div className="text-xs font-black text-slate-800 uppercase group-hover:text-indigo-600">{s.name}</div>
-                                <div className="text-[9px] text-slate-400 mt-1 uppercase font-bold">{t(`categories.${s.category}`)}</div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
             </div>
         </div>
     );

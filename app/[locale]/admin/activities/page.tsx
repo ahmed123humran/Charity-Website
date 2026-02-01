@@ -109,7 +109,7 @@ export default function ActivitiesPage() {
                             placeholder={t('searchActivities')}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 rtl:pl-4 rtl:pr-10 text-start"
+                            className="w-full pl-10 pr-4 py-2 border border-slate-200 text-gray-400 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 rtl:pl-4 rtl:pr-10 text-start"
                         />
                     </div>
                 </div>

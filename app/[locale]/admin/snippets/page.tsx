@@ -180,8 +180,8 @@ export default function SnippetsManagement() {
                             <div className="w-72 bg-slate-50 border-r border-slate-100 p-6 overflow-y-auto space-y-6">
                                 <div>
                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">{t('generalDetails')}</label>
-                                    <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder={t('snippetName')} className="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm text-start" />
-                                    <select value={category} onChange={e => setCategory(e.target.value)} className="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm mt-3">
+                                    <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder={t('snippetName')} className="w-full px-4 py-2 bg-white border border-slate-200 text-gray-400 rounded-xl text-sm text-start" />
+                                    <select value={category} onChange={e => setCategory(e.target.value)} className="w-full px-4 py-2 bg-white border border-slate-200 text-gray-400 rounded-xl text-sm mt-3">
                                         {['Intro', 'Content', 'Features', 'Contact', 'Footer', 'Header', 'CTA'].map(c => <option key={c} value={c}>{t(`categories.${c}`)}</option>)}
                                     </select>
                                 </div>

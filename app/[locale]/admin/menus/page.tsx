@@ -203,7 +203,7 @@ export default function MenusManagement() {
                         <input
                             type="text"
                             placeholder={t('searchMenus')}
-                            className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-primary/20 rtl:pl-4 rtl:pr-10 text-start"
+                            className="w-full pl-10 pr-4 py-2 border border-slate-200 text-gray-400 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-primary/20 rtl:pl-4 rtl:pr-10 text-start"
                         />
                     </div>
                 </div>
@@ -300,7 +300,7 @@ export default function MenusManagement() {
                                     value={websiteId}
                                     onChange={(e) => setWebsiteId(e.target.value)}
                                     required
-                                    className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 text-start bg-white"
+                                    className="w-full px-4 py-2 border border-slate-200 text-gray-400 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 text-start bg-white"
                                 >
                                     {websites.map(site => (
                                         <option key={site.id} value={site.id}>{getLocalizedName(site.name, locale)}</option>
@@ -315,7 +315,7 @@ export default function MenusManagement() {
                                 <select
                                     value={pageId}
                                     onChange={(e) => handlePageSelect(e.target.value)}
-                                    className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 text-start bg-white"
+                                    className="w-full px-4 py-2 border border-slate-200 text-gray-400 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 text-start bg-white"
                                 >
                                     <option value="">{t('customUrl')}</option>
                                     {availablePages.map(page => (
@@ -335,7 +335,7 @@ export default function MenusManagement() {
                                         value={nameEn}
                                         onChange={(e) => setNameEn(e.target.value)}
                                         required
-                                        className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 ltr"
+                                        className="w-full px-4 py-2 border border-slate-200 text-gray-400 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 ltr"
                                         placeholder="e.g. Home"
                                     />
                                 </div>
@@ -346,7 +346,7 @@ export default function MenusManagement() {
                                         value={nameAr}
                                         onChange={(e) => setNameAr(e.target.value)}
                                         required
-                                        className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 rtl"
+                                        className="w-full px-4 py-2 border border-slate-200 text-gray-400 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 rtl"
                                         placeholder="مثال: الرئيسية"
                                     />
                                 </div>
@@ -358,7 +358,7 @@ export default function MenusManagement() {
                                     value={url}
                                     onChange={(e) => setUrl(e.target.value)}
                                     required
-                                    className={`w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 shadow-xs text-start ${pageId ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : ''}`}
+                                    className={`w-full px-4 py-2 border border-slate-200 text-gray-400 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 shadow-xs text-start ${pageId ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : ''}`}
                                     placeholder="/home or https://..."
                                     readOnly={!!pageId} // Lock URL if page is selected
                                     disabled={!!pageId} // Also disable it to make it clear
@@ -371,7 +371,7 @@ export default function MenusManagement() {
                                     value={sequence}
                                     onChange={(e) => setSequence(Number(e.target.value))}
                                     required
-                                    className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 shadow-xs text-start"
+                                    className="w-full px-4 py-2 border border-slate-200 text-gray-400 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 shadow-xs text-start"
                                 />
                             </div>
                             <div className="flex gap-3 pt-4">

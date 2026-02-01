@@ -14,23 +14,22 @@ interface Website {
     name: any;
 }
 
-interface Page {
+interface Footer {
     id: string;
     title: any;
-    url: string;
     isPublished: boolean;
     websiteId: string;
     website: Website;
     createdAt: string;
 }
 
-export default function PagesManagement() {
+export default function FootersManagement() {
     const t = useTranslations('Admin');
     const commonT = useTranslations('Common');
     const locale = useLocale();
     const router = useRouter();
     const { role: userRole } = useAppSelector((state) => state.user);
-    const [pages, setPages] = useState<Page[]>([]);
+    const [footers, setFooters] = useState<Footer[]>([]);
     const [websites, setWebsites] = useState<Website[]>([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
@@ -41,7 +40,6 @@ export default function PagesManagement() {
     // Form state
     const [titleEn, setTitleEn] = useState('');
     const [titleAr, setTitleAr] = useState('');
-    const [url, setUrl] = useState('');
     const [websiteId, setWebsiteId] = useState('');
 
     useEffect(() => {
@@ -50,13 +48,13 @@ export default function PagesManagement() {
 
     const fetchData = async () => {
         try {
-            const [pagesRes, websitesRes] = await Promise.all([
-                fetch('/api/pages'),
+            const [footersRes, websitesRes] = await Promise.all([
+                fetch('/api/footers'),
                 fetch('/api/websites')
             ]);
-            const pagesData = await pagesRes.json();
+            const footersData = await footersRes.json();
             const websitesData = await websitesRes.json();
-            setPages(pagesData);
+            setFooters(footersData);
             setWebsites(websitesData);
             if (!isEditing && websitesData.length > 0) setWebsiteId(websitesData[0].id);
         } catch (error) {
@@ -70,13 +68,13 @@ export default function PagesManagement() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const apiUrl = isEditing ? `/api/pages/${currentId}` : '/api/pages';
+            const apiUrl = isEditing ? `/api/footers/${currentId}` : '/api/footers';
             const method = isEditing ? 'PUT' : 'POST';
 
             const res = await fetch(apiUrl, {
                 method,
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title: { en: titleEn, ar: titleAr }, url, websiteId }),
+                body: JSON.stringify({ title: { en: titleEn, ar: titleAr }, websiteId }),
             });
             if (res.ok) {
                 closeModal();
@@ -86,7 +84,7 @@ export default function PagesManagement() {
                 toast.error(commonT('error'));
             }
         } catch (error) {
-            console.error(`Failed to ${isEditing ? 'update' : 'create'} page:`, error);
+            console.error(`Failed to ${isEditing ? 'update' : 'create'} footer:`, error);
             toast.error(commonT('error'));
         }
     };
@@ -98,7 +96,7 @@ export default function PagesManagement() {
     const confirmDelete = async () => {
         if (!deleteId) return;
         try {
-            const res = await fetch(`/api/pages/${deleteId}`, { method: 'DELETE' });
+            const res = await fetch(`/api/footers/${deleteId}`, { method: 'DELETE' });
             if (res.ok) {
                 fetchData();
                 toast.success(commonT('deleted'));
@@ -106,7 +104,7 @@ export default function PagesManagement() {
                 toast.error(commonT('error'));
             }
         } catch (error) {
-            console.error('Failed to delete page:', error);
+            console.error('Failed to delete footer:', error);
             toast.error(commonT('error'));
         }
     };
@@ -114,9 +112,9 @@ export default function PagesManagement() {
     const togglePublish = async (id: string, currentStatus: boolean) => {
         try {
             // Optimistic update
-            setPages(pages.map(p => p.id === id ? { ...p, isPublished: !currentStatus } : p));
+            setFooters(footers.map(p => p.id === id ? { ...p, isPublished: !currentStatus } : p));
 
-            const res = await fetch(`/api/pages/${id}`, {
+            const res = await fetch(`/api/footers/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ isPublished: !currentStatus })
@@ -126,23 +124,22 @@ export default function PagesManagement() {
                 toast.success(commonT('saved'));
             } else {
                 // Revert on failure
-                setPages(pages.map(p => p.id === id ? { ...p, isPublished: currentStatus } : p));
+                setFooters(footers.map(p => p.id === id ? { ...p, isPublished: currentStatus } : p));
                 toast.error('Failed to update status');
             }
         } catch (error) {
             console.error('Failed to toggle publish status:', error);
             // Revert on failure
-            setPages(pages.map(p => p.id === id ? { ...p, isPublished: currentStatus } : p));
+            setFooters(footers.map(p => p.id === id ? { ...p, isPublished: currentStatus } : p));
             toast.error('Failed to update status');
         }
     };
 
-    const openEditModal = (page: Page) => {
-        setTitleEn(page.title?.en || '');
-        setTitleAr(page.title?.ar || '');
-        setUrl(page.url);
-        setWebsiteId(page.websiteId);
-        setCurrentId(page.id);
+    const openEditModal = (footer: Footer) => {
+        setTitleEn(footer.title?.en || '');
+        setTitleAr(footer.title?.ar || '');
+        setWebsiteId(footer.websiteId);
+        setCurrentId(footer.id);
         setIsEditing(true);
         setShowModal(true);
     };
@@ -152,7 +149,6 @@ export default function PagesManagement() {
         setIsEditing(false);
         setTitleEn('');
         setTitleAr('');
-        setUrl('');
         setWebsiteId(websites[0]?.id || '');
         setCurrentId(null);
     };
@@ -161,8 +157,8 @@ export default function PagesManagement() {
         <div className="space-y-8">
             <div className="flex justify-between items-center">
                 <div>
-                    <h1 className="text-3xl font-bold text-slate-900">{t('pages')}</h1>
-                    <p className="text-slate-500 mt-1">{t('managePages')}</p>
+                    <h1 className="text-3xl font-bold text-slate-900">{t('footers')}</h1>
+                    <p className="text-slate-500 mt-1">{t('manageFooters')}</p>
                 </div>
                 {(userRole === 'ADMIN' || userRole === 'EDITOR') && (
                     <button
@@ -173,7 +169,7 @@ export default function PagesManagement() {
                         className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-primary-dark transition-colors shadow-sm"
                     >
                         <Plus className="w-5 h-5" />
-                        {t('newPage')}
+                        {t('newFooter')}
                     </button>
                 )}
             </div>
@@ -184,7 +180,7 @@ export default function PagesManagement() {
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 rtl:left-auto rtl:right-3" />
                         <input
                             type="text"
-                            placeholder={t('searchPages')}
+                            placeholder={t('searchFooters')}
                             className="w-full pl-10 pr-4 py-2 border border-slate-200 text-gray-400 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-primary/20 rtl:pl-4 rtl:pr-10 text-start"
                         />
                     </div>
@@ -194,8 +190,7 @@ export default function PagesManagement() {
                     <table className="w-full text-start">
                         <thead className="bg-slate-50 text-slate-500 text-xs font-semibold uppercase tracking-wider">
                             <tr>
-                                <th className="px-6 py-4 text-start">{t('pageTitle')}</th>
-                                <th className="px-6 py-4 text-start">{t('urlPath')}</th>
+                                <th className="px-6 py-4 text-start">{t('footerTitle')}</th>
                                 <th className="px-6 py-4 text-start">{commonT('charities')}</th>
                                 <th className="px-6 py-4 text-start">{commonT('status')}</th>
                                 <th className="px-6 py-4 text-end">{commonT('actions')}</th>
@@ -208,36 +203,33 @@ export default function PagesManagement() {
                                         <td colSpan={5} className="px-6 py-8 h-16 bg-slate-50/50"></td>
                                     </tr>
                                 ))
-                            ) : pages.length === 0 ? (
+                            ) : footers.length === 0 ? (
                                 <tr>
                                     <td colSpan={5} className="px-6 py-12 text-center text-slate-500">
-                                        {t('noPages')}
+                                        {t('noFooters')}
                                     </td>
                                 </tr>
-                            ) : pages.map((page) => (
-                                <tr key={page.id} className="hover:bg-slate-50/50 transition-colors">
+                            ) : footers.map((footer) => (
+                                <tr key={footer.id} className="hover:bg-slate-50/50 transition-colors">
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-3">
                                             <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
                                                 <FileText className="w-5 h-5" />
                                             </div>
-                                            <span className="font-semibold text-slate-900">{getLocalizedName(page.title, locale)}</span>
+                                            <span className="font-semibold text-slate-900">{getLocalizedName(footer.title, locale)}</span>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4 text-slate-500 text-sm">
-                                        <code className="bg-slate-100 px-2 py-1 rounded text-primary">/{page.url}</code>
-                                    </td>
                                     <td className="px-6 py-4">
-                                        <div className="text-sm font-medium text-slate-700">{getLocalizedName(page.website?.name, locale)}</div>
+                                        <div className="text-sm font-medium text-slate-700">{getLocalizedName(footer.website?.name, locale)}</div>
                                     </td>
                                     <td className="px-6 py-4">
                                         {(userRole === 'ADMIN' || userRole === 'EDITOR') ? (
                                             <button
-                                                onClick={() => togglePublish(page.id, page.isPublished)}
+                                                onClick={() => togglePublish(footer.id, footer.isPublished)}
                                                 className="text-start focus:outline-hidden"
                                                 disabled={loading}
                                             >
-                                                {page.isPublished ? (
+                                                {footer.isPublished ? (
                                                     <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 hover:bg-green-200 transition-colors cursor-pointer">
                                                         <CheckCircle className="w-3 h-3" /> {t('published')}
                                                     </span>
@@ -249,7 +241,7 @@ export default function PagesManagement() {
                                             </button>
                                         ) : (
                                             <div className="text-start">
-                                                {page.isPublished ? (
+                                                {footer.isPublished ? (
                                                     <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                                         <CheckCircle className="w-3 h-3" /> {t('published')}
                                                     </span>
@@ -272,14 +264,14 @@ export default function PagesManagement() {
                                             {(userRole === 'ADMIN' || userRole === 'EDITOR') && (
                                                 <>
                                                     <button
-                                                        onClick={() => router.push(`/admin/pages/${page.id}/editor`)}
+                                                        onClick={() => router.push(`/admin/footers/${footer.id}/editor`)}
                                                         className="p-2 text-slate-400 hover:text-primary transition-colors"
-                                                        title={t('designPage')}
+                                                        title={t('designFooter')}
                                                     >
                                                         <Layout className="w-4 h-4" />
                                                     </button>
                                                     <button
-                                                        onClick={() => openEditModal(page)}
+                                                        onClick={() => openEditModal(footer)}
                                                         className="p-2 text-slate-400 hover:text-primary transition-colors"
                                                         title={commonT('edit')}
                                                     >
@@ -289,7 +281,7 @@ export default function PagesManagement() {
                                             )}
                                             {userRole === 'ADMIN' && (
                                                 <button
-                                                    onClick={() => handleDeleteClick(page.id)}
+                                                    onClick={() => handleDeleteClick(footer.id)}
                                                     className="p-2 text-slate-400 hover:text-red-500 transition-colors"
                                                     title={commonT('delete')}
                                                 >
@@ -312,7 +304,7 @@ export default function PagesManagement() {
                         <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl border border-slate-200">
                             <div className="p-6 border-b border-slate-100 flex justify-between items-center">
                                 <h2 className="text-xl font-bold text-slate-900">
-                                    {isEditing ? t('editPage') : t('newPage')}
+                                    {isEditing ? t('editFooter') : t('newFooter')}
                                 </h2>
                                 <button onClick={closeModal} className="text-slate-400 hover:text-slate-600">&times;</button>
                             </div>
@@ -333,7 +325,7 @@ export default function PagesManagement() {
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-1">{t('pageTitle')} (EN)</label>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">{t('footerTitle')} (EN)</label>
                                         <input
                                             type="text"
                                             value={titleEn}
@@ -344,7 +336,7 @@ export default function PagesManagement() {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-1">{t('pageTitle')} (AR)</label>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">{t('footerTitle')} (AR)</label>
                                         <input
                                             type="text"
                                             value={titleAr}
@@ -352,22 +344,6 @@ export default function PagesManagement() {
                                             required
                                             className="w-full px-4 py-2 border border-slate-200 text-gray-400 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 rtl"
                                             placeholder="مثال: من نحن"
-                                        />
-                                    </div>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">{t('urlPath')}</label>
-                                    <div className="flex">
-                                        <span className="inline-flex items-center px-3 rounded-s-lg border border-e-0 border-slate-200 bg-slate-50 text-slate-500 text-sm">
-                                            /
-                                        </span>
-                                        <input
-                                            type="text"
-                                            value={url}
-                                            onChange={(e) => setUrl(e.target.value)}
-                                            required
-                                            className="flex-1 w-full px-4 py-2 border border-slate-200 text-gray-400 rounded-e-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 shadow-xs text-start"
-                                            placeholder="about-us"
                                         />
                                     </div>
                                 </div>

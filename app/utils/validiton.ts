@@ -24,6 +24,21 @@ export const updatePageSchema = z.object({
     userId: z.number().optional(),
 });
 
+export const createFooterSchema = z.object({
+    title: localizedString,
+    content: z.any().optional(), // Json object
+    websiteId: z.string().min(1),
+    userId: z.number().optional(),
+});
+
+export const updateFooterSchema = z.object({
+    title: localizedString.optional(),
+    content: z.any().optional(), // Json object
+    isPublished: z.boolean().optional(),
+    websiteId: z.string().optional(),
+    userId: z.number().optional(),
+});
+
 export const createUserSchema = z.object({
     email: z.string().email().optional(),
     phone: z.string().optional(),

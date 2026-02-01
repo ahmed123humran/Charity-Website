@@ -13,6 +13,10 @@ ALTER TABLE "Page" DROP COLUMN "content",
 ADD COLUMN     "content" JSONB;
 
 -- AlterTable
+ALTER TABLE "Footer" DROP COLUMN "content",
+ADD COLUMN     "content" JSONB;
+
+-- AlterTable
 ALTER TABLE "User" ADD COLUMN     "phone" TEXT,
 ALTER COLUMN "email" DROP NOT NULL;
 

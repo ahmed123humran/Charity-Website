@@ -3,7 +3,7 @@ import prisma from './db';
 
 interface LogOptions {
     action: 'CREATE' | 'UPDATE' | 'DELETE' | 'SEARCH_REPLACE' | 'LOGIN' | 'LOGOUT';
-    entityType: 'WEBSITE' | 'PAGE' | 'MENU' | 'SNIPPET' | 'USER' | 'SYSTEM';
+    entityType: 'WEBSITE' | 'PAGE' | 'MENU' | 'SNIPPET' | 'USER' | 'SYSTEM' | 'FOOTER';
     entityId: string;
     details: string;
     oldData?: any;
