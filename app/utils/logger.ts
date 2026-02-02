@@ -36,7 +36,6 @@ export async function logActivity({
                 }
             });
         } else {
-            console.log('ActivityLog model property missing in logger, falling back to queryRaw');
             // Raw SQL fallback for creation
             await prisma.$executeRawUnsafe(`
                 INSERT INTO "ActivityLog" ("id", "action", "entityType", "entityId", "details", "oldData", "newData", "userId", "createdAt")

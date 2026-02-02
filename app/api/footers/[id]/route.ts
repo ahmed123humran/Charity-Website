@@ -104,9 +104,7 @@ export async function DELETE(request: NextRequest, { params }: Props) {
         }
 
         const { id } = await params;
-        console.log(id)
         const footer = await prisma.footer.findUnique({ where: { id } });
-        console.log(footer)
         if (!footer) {
             return NextResponse.json({ message: 'Footer not found' }, { status: 404 });
         }

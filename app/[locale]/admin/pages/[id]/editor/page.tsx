@@ -4,13 +4,14 @@ import { useState, useEffect, useRef, memo } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from '@/navigation';
 import {
-    Save, ArrowLeft, Plus, Move, Trash2, Layout, Type, LinkIcon, 
-    Image as ImageIcon, Copy, MousePointer2, X, FilePlay, 
+    Save, ArrowLeft, Plus, Move, Trash2, Layout, Type, LinkIcon,
+    Image as ImageIcon, Copy, MousePointer2, X, FilePlay,
     Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight, Palette,
     Type as TypeIcon, Minus, Plus as PlusIcon, PaintBucket, Settings,
     Eye, EyeOff, Monitor, Laptop, Smartphone, SquareRoundCorner, VectorSquare
 } from 'lucide-react';
 import { getLocalizedName } from '@/app/utils/locale';
+import ConfirmDialog from '@/app/components/ConfirmDialog';
 import toast from 'react-hot-toast';
 
 interface Snippet {
@@ -81,6 +82,16 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
     const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
     const [editorLocale, setEditorLocale] = useState('en');
     const [previewMode, setPreviewMode] = useState(false);
+
+    // Dialog state
+    const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
+
+    const confirmDeleteSnippet = () => {
+        if (deleteIndex === null) return;
+        setDroppedSnippets(prev => prev.filter((_, i) => i !== deleteIndex));
+        setDeleteIndex(null);
+        toast.success(commonT('deleted'));
+    };
 
     // States for persistent content
     const [contentEn, setContentEn] = useState<DroppedSnippet[]>([]);
@@ -293,13 +304,13 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
     };
 
     type StyleCommand =
-    | 'fontSize'
-    | 'foreColor'
-    | 'backgroundColor'
-    | 'textAlign'
-    | 'borderRadius'
-    | 'aspectRatio'
-    | 'objectFit';
+        | 'fontSize'
+        | 'foreColor'
+        | 'backgroundColor'
+        | 'textAlign'
+        | 'borderRadius'
+        | 'aspectRatio'
+        | 'objectFit';
 
     type ElementKind = 'text' | 'svg' | 'img' | 'video';
 
@@ -324,8 +335,8 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
 
         svg: {
             fontSize: (el, v) => {
-            el.setAttribute('width', v || '24px');
-            el.setAttribute('height', v || '24px');
+                el.setAttribute('width', v || '24px');
+                el.setAttribute('height', v || '24px');
             },
             foreColor: (el, v) => el.setAttribute('fill', v || '#000'),
             backgroundColor: (el, v) => el.style.backgroundColor = v || 'transparent',
@@ -360,15 +371,15 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
 
         if (activeSnippetId) {
             const instantCommitCommands: StyleCommand[] = [
-            'foreColor',
-            'backgroundColor',
-            'fontSize',
-            'textAlign',
-            'borderRadius',
+                'foreColor',
+                'backgroundColor',
+                'fontSize',
+                'textAlign',
+                'borderRadius',
             ];
 
             if (instantCommitCommands.includes(command)) {
-            commitChanges(activeSnippetId);
+                commitChanges(activeSnippetId);
             }
         }
     };
@@ -378,7 +389,7 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
         return (command: StyleCommand, value?: string) => {
             clearTimeout(t);
             t = setTimeout(() => {
-            applyStyle(command, value);
+                applyStyle(command, value);
             }, 60);
         };
     })();
@@ -500,8 +511,6 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
 
     const updateLinkHref = (href: string) => {
         const el = activeElementRef.current;
-        console.log(el.tagName)
-        console.log(href)
         if (!el || el.tagName !== 'A') return;
 
         el.setAttribute('href', href);
@@ -592,8 +601,8 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                                         <TypeIcon className="w-3 h-3" /> {editorT('typography')}
                                     </div>
                                     <div className="space-y-3">
-                                        <div className="flex justify-between items-center px-1"><span className="text-[10px] font-bold text-slate-500 uppercase">{editorT('size')}</span><span className="text-[11px] font-black text-indigo-600">{activeElementRef.current?.tagName === 'svg'? activeElementRef.current.getAttribute('width') : activeStyles.fontSize}</span></div>
-                                        <input type="range" min="8" max="120" value={activeElementRef.current?.tagName === 'svg'? parseInt(activeElementRef.current.getAttribute('width') || '24') : parseInt(activeStyles.fontSize) || 16} onChange={(e) => applyStyle('fontSize', `${e.target.value}px`)} className="w-full h-1.5 bg-indigo-100 rounded-lg appearance-none cursor-pointer accent-indigo-600" />
+                                        <div className="flex justify-between items-center px-1"><span className="text-[10px] font-bold text-slate-500 uppercase">{editorT('size')}</span><span className="text-[11px] font-black text-indigo-600">{activeElementRef.current?.tagName === 'svg' ? activeElementRef.current.getAttribute('width') : activeStyles.fontSize}</span></div>
+                                        <input type="range" min="8" max="120" value={activeElementRef.current?.tagName === 'svg' ? parseInt(activeElementRef.current.getAttribute('width') || '24') : parseInt(activeStyles.fontSize) || 16} onChange={(e) => applyStyle('fontSize', `${e.target.value}px`)} className="w-full h-1.5 bg-indigo-100 rounded-lg appearance-none cursor-pointer accent-indigo-600" />
                                     </div>
                                 </div>
                             )}
@@ -607,8 +616,8 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                             {activeTagName === 'img' && (
                                 <div className="space-y-3 pt-4 border-t border-slate-100">
                                     <button
-                                    onClick={() => imageInputRef.current?.click()}
-                                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2 rounded-xl shadow-md transition cursor-pointer"
+                                        onClick={() => imageInputRef.current?.click()}
+                                        className="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2 rounded-xl shadow-md transition cursor-pointer"
                                     >
                                         {editorT('replaceimg')}
                                     </button>
@@ -624,13 +633,13 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                             {(activeTagName === 'svg') && (
                                 <div className="space-y-3 pt-4 border-t border-slate-100">
                                     <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                                    <VectorSquare className="w-3 h-3" /> SVG
+                                        <VectorSquare className="w-3 h-3" /> SVG
                                     </div>
 
                                     <button
                                         onClick={() => svgInputRef.current?.click()}
                                         className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2 rounded-xl shadow-md transition cursor-pointer"
-                                        >
+                                    >
                                         {editorT('replacesvg')}
                                     </button>
                                     <input
@@ -650,20 +659,20 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                                     <button
                                         onClick={() => videoInputRef.current?.click()}
                                         className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2 rounded-xl shadow-md transition cursor-pointer"
-                                        >
+                                    >
                                         {editorT('replacevideo')}
                                     </button>
                                     <div className='flex'>
                                         <button
                                             onClick={() => videoImgInputRef.current?.click()}
                                             className="w-4/5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2 rounded-r-xl shadow-md transition cursor-pointer"
-                                            >
+                                        >
                                             {editorT('replaceimgvideo')}
                                         </button>
                                         <button
-                                            onClick={() => {removevideoImg();}}
+                                            onClick={() => { removevideoImg(); }}
                                             className="flex justify-center items-center w-1/5 bg-red-400 hover:bg-red-700 text-white text-center rounded-l-xl shadow-md transition cursor-pointer"
-                                            >
+                                        >
                                             <Trash2 className="h-4 text-white" />
                                         </button>
                                     </div>
@@ -700,11 +709,11 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                                     </div>
 
                                     <label className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer">
-                                    <input
-                                        type="checkbox"
-                                        checked={activeElementRef.current?.getAttribute('target') === '_blank'}
-                                        onChange={(e) => toggleLinkTarget(e.target.checked)}
-                                    />
+                                        <input
+                                            type="checkbox"
+                                            checked={activeElementRef.current?.getAttribute('target') === '_blank'}
+                                            onChange={(e) => toggleLinkTarget(e.target.checked)}
+                                        />
                                         {editorT('openInNewTab')}
                                     </label>
                                 </div>
@@ -727,7 +736,7 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                                         {/* مدخل اللون الديناميكي مع تدرج */}
                                         <div className="relative w-8 h-8 rounded-full shadow-md overflow-hidden  border-2 border-white">
                                             {/* التدرج كخلفية */}
-                                            <div className="absolute inset-0 rounded-full" 
+                                            <div className="absolute inset-0 rounded-full"
                                                 style={{ background: 'linear-gradient(to right, red, orange, yellow, green, cyan, blue, violet)' }} />
                                             {/* input شفاف فوق التدرج */}
                                             <input
@@ -776,7 +785,7 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                                             <button onClick={() => moveSnippet(index, 'up')} className="p-1.5 hover:bg-slate-700 rounded-lg"><Move className="w-3.5 h-3.5 rotate-180" /></button>
                                             <button onClick={() => moveSnippet(index, 'down')} className="p-1.5 hover:bg-slate-700 rounded-lg"><Move className="w-3.5 h-3.5" /></button>
                                             <button onClick={() => { const newList = [...droppedSnippets]; newList.splice(index + 1, 0, { ...item, id: crypto.randomUUID() }); setDroppedSnippets(newList); }} className="p-1.5 hover:bg-slate-700 rounded-lg"><Copy className="w-3.5 h-3.5" /></button>
-                                            <button onClick={() => { if (window.confirm(editorT('deleteConfirm'))) setDroppedSnippets(prev => prev.filter((_, i) => i !== index)); }} className="p-1.5 hover:bg-red-900 rounded-lg"><Trash2 className="w-3.5 h-3.5" /></button>
+                                            <button onClick={() => setDeleteIndex(index)} className="p-1.5 hover:bg-red-900 rounded-lg"><Trash2 className="w-3.5 h-3.5" /></button>
                                         </div>
                                     )}
                                     <StableSnippet
@@ -810,6 +819,16 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                     </div>
                 </div>
             </div>
-        </div>
+
+
+            <ConfirmDialog
+                isOpen={deleteIndex !== null}
+                onClose={() => setDeleteIndex(null)}
+                onConfirm={confirmDeleteSnippet}
+                title={commonT('delete')}
+                message={editorT('deleteConfirm')}
+                isDeleting
+            />
+        </div >
     );
 }

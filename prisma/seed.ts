@@ -895,7 +895,6 @@ async function main() {
         language: 'en_US',
       }
     });
-    console.log('Created default website');
   }
 
   // Create Default Home Page
@@ -954,7 +953,6 @@ async function main() {
         }
       }
     });
-    console.log('Created default Home page');
   } else {
     console.log('Home page already exists');
   }
@@ -973,7 +971,6 @@ async function main() {
         password: 'admin123', // In a real app, hash this!
       }
     });
-    console.log(`Created default admin user: ${adminEmail}`);
   } else {
     console.log(`Admin user already exists: ${adminEmail}`);
   }
