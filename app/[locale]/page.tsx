@@ -27,6 +27,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
 
   let contentToRender = null;
   let isEmpty = true;
+  let footerToRender = null;
 
   if (page && page.content && page.isPublished) {
     try {
@@ -67,6 +68,47 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       }
     }
   }
+  if (page) {
+    const footer = await prisma.footer.findFirst({
+      where: {websiteId: page.websiteId},
+    });
+    if (footer && footer.content && footer.isPublished) {
+      try {
+        const contentStr = typeof footer.content === 'string' ? footer.content : JSON.stringify(footer.content);
+        const parsed = JSON.parse(contentStr);
+  
+        // Handle localized content format { en: [], ar: [] }
+        if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && (parsed.en || parsed.ar)) {
+          const localizedContent = parsed[locale] || parsed.en || [];
+          if (Array.isArray(localizedContent) && localizedContent.length > 0) {
+            footerToRender = (
+              <div className="flex flex-col">
+                {localizedContent.map((item: any) => (
+                  <div key={item.id} dangerouslySetInnerHTML={{ __html: item.htmlContent }} />
+                ))}
+              </div>
+            );
+          }
+        }
+        // Handle legacy array format
+        else if (Array.isArray(parsed) && parsed.length > 0) {
+          footerToRender = (
+            <div className="flex flex-col">
+              {parsed.map((item: any) => (
+                <div key={item.id} dangerouslySetInnerHTML={{ __html: item.htmlContent }} />
+              ))}
+            </div>
+          );
+        }
+      } catch (e) {
+        // Fallback for simple HTML string content
+        const contentStr = typeof footer.content === 'string' ? footer.content : String(footer.content);
+        if (contentStr) {
+          footerToRender = <div dangerouslySetInnerHTML={{ __html: contentStr }} />;
+        }
+      }
+    }
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -89,7 +131,9 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         )}
       </main>
 
-      <Footer />
+      {footerToRender || (
+          <div />
+        )}
     </div>
   );
 }

@@ -10,6 +10,7 @@ import {
     LogOut,
     Users,
     RefreshCw,
+    PanelBottom,
     History
 } from 'lucide-react';
 
@@ -35,6 +36,7 @@ export default function AdminSidebar() {
         { label: t('dashboard'), href: '/admin', icon: LayoutDashboard },
         { label: t('websites'), href: '/admin/websites', icon: Globe },
         { label: t('pages'), href: '/admin/pages', icon: FileText },
+        { label: t('footers'), href: '/admin/footers', icon: PanelBottom },
         { label: t('menus'), href: '/admin/menus', icon: MenuIcon },
         { label: t('snippets'), href: '/admin/snippets', icon: PlusSquare },
         { label: t('searchReplace'), href: '/admin/tools/search-replace', icon: RefreshCw },

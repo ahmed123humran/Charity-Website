@@ -120,7 +120,7 @@ export default function SetupPage() {
                                         value={formData.name}
                                         onChange={handleChange}
                                         placeholder={t('fullNamePlaceholder')}
-                                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                        className="w-full px-4 py-3 rounded-xl border border-slate-200 text-gray-400 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
                                         required
                                     />
                                 </div>
@@ -132,7 +132,7 @@ export default function SetupPage() {
                                         value={formData.phone}
                                         onChange={handleChange}
                                         placeholder="05xxxxxxx"
-                                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                        className="w-full px-4 py-3 rounded-xl border border-slate-200 text-gray-400 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
                                         required
                                     />
                                 </div>
@@ -157,7 +157,7 @@ export default function SetupPage() {
                                             value={formData.confirmPassword}
                                             onChange={handleChange}
                                             placeholder="••••••••"
-                                            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-gray-400 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
                                             required
                                         />
                                     </div>
@@ -175,7 +175,7 @@ export default function SetupPage() {
                                         value={formData.companyName}
                                         onChange={handleChange}
                                         placeholder={t('companyNamePlaceholder')}
-                                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                        className="w-full px-4 py-3 rounded-xl border border-slate-200 text-gray-400 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
                                         required
                                     />
                                 </div>
@@ -188,7 +188,7 @@ export default function SetupPage() {
                                             value={formData.domain}
                                             onChange={handleChange}
                                             placeholder="example.com"
-                                            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-gray-400 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
                                         />
                                         <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
                                             <Globe size={18} />

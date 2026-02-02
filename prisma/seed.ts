@@ -8,6 +8,366 @@ async function main() {
 
   const snippets = [
     {
+      name: 'Hero With Button',
+      category: 'Intro',
+      htmlContent: `
+    <section class="relative">
+      <div class="absolute w-full lg:w-[50%] h-full bg-black/70 lg:blur-3xl"></div>
+      <div class="bg-[url('/hero/hero.svg')] bg-cover bg-no-repeat w-full lg:h-screen">
+        <div class="relative p-5 lg:ps-10 xl:ps-20 py-10 lg:w-2/3 xl:w-1/2 text-center lg:text-start">
+          <h1 class="text-3xl md:text-4xl lg:text-6xl/20 xl:text-8xl/40 font-bold text-white">
+            امنح الأمل، أنقذ الأرواح
+          </h1>
+          <p class="lg:w-5/7 mt-12 text-gray-500">
+            هناك حقيقة مثبتة منذ زمن طويل وهي أن المحتوى المقروء لصفحة ما سيلهي القارئ عن التركيز على الشكل الخارجي للنص أو شكل توضع الفقرات في الصفحة التي يقرأها. ولذلك يتم استخدام طريقة لوريم إيبسوم لأنها تعطي توزيعاَ طبيعي
+          </p>
+          <a href="#" class="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 
+          outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive mt-8 px-10 py-2 text-base bg-primary text-white rounded-2xl">
+            ابدأ الآن
+          </a>
+        </div>
+      </div>
+    </section>
+      `
+    },
+    {
+      name: 'Image with next Text',
+      category: 'Content',
+      htmlContent: `
+        <section class="container mx-auto px-5 lg:px-10 xl:px-20 py-10 lg:py-30">
+          <div class="flex flex-wrap items-center">
+            <div class="w-full md:w-1/2 p-2">
+              <img src="/img_text_right/img.svg" alt="..." class="rounded-3xl w-full" />
+            </div>
+            <div class="w-full md:w-1/2 p-2">
+              <h1 class="text-3xl/10 md:text-3xl lg:text-4xl xl:text-6xl/20 font-bold text-black">
+                تحويل النوايا الحسنة إلى أفعال حسنة
+              </h1>
+              <p class="my-10 md:my-5 2xl:my-20 text-black">
+                هناك حقيقة مثبتة منذ زمن طويل وهي أن المحتوى المقروء لصفحة ما سيلهي القارئ عن التركيز على الشكل الخارجي للنص أو شكل توضع الفقرات في الصفحة التي يقرأها. ولذلك يتم استخدام طريقة لوريم إيبسوم لأنها تعطي توزيعاَ طبيعياَ -إلى حد ما- للأحرف عوضاً عن استخدام "هنا يوجد محتوى نصي، هنا يوجد محتوى نصي" فتجعلها تبدو (أي الأحرف) وكأنها نص مقروء. العديد من برامح النشر المكتبي وبرامح تحرير صفحات الويب تستخدم لوريم إيبسوم بشكل إفتراضي كنموذج عن النص، وإذا قمت بإدخال 
+              </p>
+              <div class="grid sm:grid-flow-col sm:grid-rows-2 gap-4">
+                <div class="inline-flex font-bold text-black">
+                  <span class="flex-none bg-amber-400 text-white rounded-full w-6 h-6 text-center me-3">
+                    1
+                  </span>
+                  <span>
+                    اختر مشروعك
+                  </span>
+                </div>
+                <div class="inline-flex font-bold text-black">
+                  <span class="flex-none bg-amber-400 text-white rounded-full w-6 h-6 text-center me-3">
+                    2
+                  </span>
+                  <span>
+                    تبرع بالمبلغ الذي ترغب فيه
+                  </span>
+                </div>
+                <div class="inline-flex font-bold text-black">
+                  <span class="flex-none bg-amber-400 text-white rounded-full w-6 h-6 text-center me-3">
+                    3
+                  </span>
+                  <span>
+                    سجل على موقعنا الإلكتروني
+                  </span>
+                </div>
+                <div class="inline-flex font-bold text-black">
+                  <span class="flex-none bg-amber-400 text-white rounded-full w-6 h-6 text-center me-3">
+                    4
+                  </span>
+                  <span>
+                    ترقبوا المزيد حول مشروعك
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      `
+    },
+
+    {
+      name: 'Title',
+      category: 'Content',
+      htmlContent: `
+        <section class="container mx-auto px-5 lg:px-10 xl:px-20 py-20">
+            <h1 class="text-center text-3xl/10 md:text-3xl lg:text-4xl xl:text-6xl/20 font-bold text-black">
+                متحدون من أجل الخير، أقوياء من أجل الأعمال الخيرية
+            </h1>
+            <div class="flex text-center justify-center text-gray-600 py-10">
+                <p class="md:w-2/3">
+                    هناك حقيقة مثبتة منذ زمن طويل وهي أن المحتوى المقروء لصفحة ما سيلهي القارئ عن التركيز على الشكل الخارجي للنص أو شكل توضع الفقرات في الصفحة التي يقرأها.
+                </p>
+            </div>
+        </section>
+      `
+    },
+    {
+      name: 'Features Cards',
+      category: 'Features',
+      htmlContent: `
+        <section class="bg-gray-200">
+          <div class="container mx-auto px-5 lg:px-10 xl:px-20 py-16">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div class="flex items-start">
+                <img src="/features_cards/open-book.svg" alt="..." class="me-4" width="40" height="40" />
+                <div>
+                  <h2 class="text-black font-bold text-2xl">تعليم</h2>
+                  <p class="text-gray-500">هناك حقيقة مثبتة منذ زمن طويل وهي أن المحتوى المقروء لصفحة</p>
+                </div>
+              </div>
+              <div class="flex items-start">
+                <img src="/features_cards/water-faucet.svg" alt="..." class="me-4" width="40" height="40" />
+                <div>
+                  <h2 class="text-black font-bold text-2xl">مياه نظيفة</h2>
+                  <p class="text-gray-500">هناك حقيقة مثبتة منذ زمن طويل وهي أن المحتوى المقروء لصفحة</p>
+                </div>
+              </div>
+              <div class="flex items-start">
+                <img src="/features_cards/medicine.svg" alt="..." class="me-4" width="40" height="40" />
+                <div>
+                  <h2 class="text-black font-bold text-2xl">الرعاية الصحية</h2>
+                  <p class="text-gray-500">هناك حقيقة مثبتة منذ زمن طويل وهي أن المحتوى المقروء لصفحة</p>
+                </div>
+              </div>
+              <div class="flex items-start">
+                <img src="/features_cards/social-support.svg" alt="..." class="me-4" width="40" height="40" />
+                <div>
+                  <h2 class="text-black font-bold text-2xl">المجتمعات المحلية</h2>
+                  <p class="text-gray-500">هناك حقيقة مثبتة منذ زمن طويل وهي أن المحتوى المقروء لصفحة</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      `
+    },
+    {
+      name: 'Gallery',
+      category: 'Content',
+      htmlContent: `
+        <section class="container mx-auto px-5 lg:px-10 xl:px-20 py-20">
+          <h1 class="text-center text-3xl/10 md:text-3xl lg:text-4xl xl:text-6xl/20 font-bold text-black">
+            معرضنا
+          </h1>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
+            <img src="/gallery/img_1.svg" alt="..." class="rounded-2xl w-full" />
+            <img src="/gallery/img_2.svg" alt="..." class="rounded-2xl w-full" />
+            <img src="/gallery/img_3.svg" alt="..." class="rounded-2xl w-full" />
+            <img src="/gallery/img_4.svg" alt="..." class="rounded-2xl w-full" />
+            <img src="/gallery/img_5.svg" alt="..." class="rounded-2xl w-full" />
+            <img src="/gallery/img_6.svg" alt="..." class="rounded-2xl w-full" />
+          </div>
+        </section>
+      `
+    },
+    {
+      name: 'Stats Cards',
+      category: 'Stats',
+      htmlContent: `
+        <section class="container mx-auto px-5 lg:px-10 xl:px-20 py-20">
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 text-center">
+            <div class="flex flex-col items-center">
+              <img src="/stats/rocket.svg" alt="..." width="40" height="40" />
+              <h3 class="text-black font-bold text-3xl my-4">1.2K+</h3>
+              <p class="text-gray-800">المشاريع المكتملة</p>
+            </div>
+            <div class="flex flex-col items-center">
+              <img src="/stats/charity.svg" alt="..." width="40" height="40" />
+              <h3 class="text-black font-bold text-3xl my-4">100</h3>
+              <p class="text-gray-800">تبرع شهريًا</p>
+            </div>
+            <div class="flex flex-col items-center">
+              <img src="/stats/world.svg" alt="..." width="40" height="40" />
+              <h3 class="text-black font-bold text-3xl my-4">480</h3>
+              <p class="text-gray-800">شركاء</p>
+            </div>
+            <div class="flex flex-col items-center">
+              <img src="/stats/donation.svg" alt="..." width="40" height="40" />
+              <h3 class="text-black font-bold text-3xl my-4">1.4 متر</h3>
+              <p class="text-gray-800">التبرعات</p>
+            </div>
+          </div>
+        </section>
+      `
+    },
+    {
+      name: 'Hero Section',
+      category: 'Content',
+      htmlContent: `
+        <section class="container mx-auto px-5 lg:px-10 xl:px-20 py-10 lg:py-30">
+          <div class="flex flex-wrap-reverse items-center">
+            
+            <div class="w-full md:w-1/2 p-2">
+              <svg 
+                stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 24 24" 
+                class="text-primary" width="100" xmlns="http://www.w3.org/2000/svg"
+                >
+                <path d="M6.5 10c-.223 0-.437.034-.65.065.069-.232.14-.468.254-.68.114-.308.292-.575.469-.844.148-.291.409-.488.601-.737.201-.242.475-.403.692-.604.213-.21.492-.315.714-.463.232-.133.434-.28.65-.35l.539-.222.474-.197-.485-1.938-.597.144c-.191.048-.424.104-.689.171-.271.05-.56.187-.882.312-.318.142-.686.238-1.028.466-.344.218-.741.4-1.091.692-.339.301-.748.562-1.05.945-.33.358-.656.734-.909 1.162-.293.408-.492.856-.702 1.299-.19.443-.343.896-.468 1.336-.237.882-.343 1.72-.384 2.437-.034.718-.014 1.315.028 1.747.015.204.043.402.063.539l.025.168.026-.006A4.5 4.5 0 1 0 6.5 10zm11 0c-.223 0-.437.034-.65.065.069-.232.14-.468.254-.68.114-.308.292-.575.469-.844.148-.291.409-.488.601-.737.201-.242.475-.403.692-.604.213-.21.492-.315.714-.463.232-.133.434-.28.65-.35l.539-.222.474-.197-.485-1.938-.597.144c-.191.048-.424.104-.689.171-.271.05-.56.187-.882.312-.317.143-.686.238-1.028.467-.344.218-.741.4-1.091.692-.339.301-.748.562-1.05.944-.33.358-.656.734-.909 1.162-.293.408-.492.856-.702 1.299-.19.443-.343.896-.468 1.336-.237.882-.343 1.72-.384 2.437-.034.718-.014 1.315.028 1.747.015.204.043.402.063.539l.025.168.026-.006A4.5 4.5 0 1 0 17.5 10z"></path>
+              </svg>
+
+              <h1 class="text-3xl/10 md:text-3xl lg:text-4xl xl:text-5xl/20 text-black font-bold">
+                معًا، نستطيع تغيير حياة الناس نحو الأفضل
+              </h1>
+
+              <p class="my-10 md:my-5 2xl:my-20 text-gray-600">
+                هناك حقيقة مثبتة منذ زمن طويل وهي أن المحتوى المقروء لصفحة ما
+                سيلهي القارئ عن التركيز على الشكل الخارجي للنص أو شكل توضع
+                الفقرات في الصفحة التي يقرأها. ولذلك يتم استخدام طريقة لوريم
+                إيبسوم لأنها تعطي توزيعاَ طبيعياَ -إلى حد ما- للأحرف عوضاً عن
+                استخدام "هنا يوجد محتوى نصي، هنا يوجد محتوى نصي".
+              </p>
+            </div>
+
+            <div class="w-full md:w-1/2 p-2">
+              <img src="/img_text_right/img.svg" alt="..." class="rounded-3xl w-full" />
+            </div>
+
+          </div>
+        </section>
+      `
+    },
+    {
+      name: 'Partner',
+      category: 'Content',
+      htmlContent: `
+        <section class="container mx-auto px-5 lg:px-10 xl:px-20 py-20">
+          <div class="grid grid-cols-3 md:grid-cols-5 gap-4 mt-8 justify-items-center">
+            <img src="/partner/encapsulated_qroup.svg" alt="..." class="w-1/2" />
+            <img src="/partner/red_cross.svg" alt="..." class="w-1/2" />
+            <img src="/partner/UN_emblem_blue.svg" alt="..." class="w-1/2" />
+            <img src="/partner/red_crescent.png" alt="..." class="w-1/2" />
+            <img src="/partner/xmlid.svg" alt="..." class="w-1/2" />
+          </div>
+        </section>
+      `
+    },
+    {
+      name: 'Vidio with text',
+      category: 'Content',
+      htmlContent: `
+        <section class="container mx-auto px-5 lg:px-10 xl:px-20 py-20">
+            <h1 class="text-3xl/10 md:text-3xl lg:text-5xl font-bold text-black">
+                تغيير حياة الناس من خلال الحب والكرم.
+            </h1>
+            <div class="w-full max-w my-10 overflow-hidden rounded-2xl shadow-xl">
+                <video
+                    class="w-full"
+                    controls
+                    src="/video/test.mp4"
+                >
+                </video>
+            </div>
+            <div class="flex flex-wrap gap-4 justify-around justify-items-center items-center">
+                <img src="/video/XMLID.svg" alt="..." class="w-full md:w-3/7 lg:w-3/10" />
+                <div class="w-full md:w-3/7 lg:w-3/10 flex flex-col">
+                    <h3 class="text-black font-bold text-3xl my-4">
+                        أقوم أيضاً بالتوصيل
+                    </h3>
+                    <p class="text-gray-600">
+                        هناك حقيقة مثبتة منذ زمن طويل وهي أن المحتوى المقروء لصفحة ما سيلهي القارئ عن التركيز على الشكل الخارجي للنص أو شكل توضع الفقرات في الصفحة التي يقرأها. ولذلك يتم استخدام طريقة لوريم إيبسوم لأنها تعطي توزيعاَ طبيعياَ
+                    </p>
+                    <a href="#" class="focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]  mt-8 py-2 text-base text-black rounded-2xl">
+                        يتعلم أكثر <span>&#x279C;</span>
+                    </a>
+                </div>
+                <div class="w-full md:w-3/7 lg:w-3/10 flex flex-col">
+                    <h3 class="text-black font-bold text-3xl my-4">
+                        تغيير حياة الناس
+                    </h3>
+                    <p class="text-gray-600">
+                        هناك حقيقة مثبتة منذ زمن طويل وهي أن المحتوى المقروء لصفحة ما سيلهي القارئ عن التركيز على الشكل الخارجي للنص أو شكل توضع الفقرات في الصفحة التي يقرأها. ولذلك يتم استخدام طريقة لوريم إيبسوم لأنها تعطي توزيعاَ طبيعياَ
+                    </p>
+                    <a href="#" class="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 
+                        outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive mt-8 px-10 py-2 text-base bg-primary text-white rounded-2xl">
+                        يتبرع
+                    </a>
+                </div>
+            </div>
+        </section>
+      `
+    },
+    {
+      name: 'Footer',
+      category: 'Footer',
+      htmlContent: `
+        <footer class="bg-black text-slate-300 py-20 border-t border-white/5 rtl:text-right">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+
+              <!-- About -->
+              <div class="space-y-4">
+                <img src="/gallery/img_1.svg" alt="..." class="rounded-md w-1/3" />
+                <div class="flex items-center gap-2">
+                  <span class="text-xl font-bold text-white tracking-widest lowercase">
+                    صدقة
+                  </span>
+                </div>
+
+                <p class="text-white text-sm leading-relaxed">
+                  هناك حقيقة مثبتة منذ زمن طويل وهي أن المحتوى المقروء لصفحة ما
+                  سيلهي القارئ عن التركيز على الشكل الخارجي
+                </p>
+
+                <p class="text-white text-sm">
+                  رقم الهاتف 00000000000
+                </p>
+
+                <p class="text-white text-sm">
+                  العنوان الرياض، المملكة العربية السعودية
+                </p>
+              </div>
+
+              <!-- About Links -->
+              <div>
+                <h3 class="text-white font-bold mb-6">معلومات عنا</h3>
+                <ul class="space-y-1 text-sm">
+                  <li><a href="/" class="hover:text-white transition-colors">نبذة عنا</a></li>
+                  <li><a href="#" class="hover:text-white transition-colors">القضايا التي ندعمها</a></li>
+                  <li><a href="#" class="hover:text-white transition-colors">المتطوعون</a></li>
+                  <li><a href="#" class="hover:text-white transition-colors">الشركاء</a></li>
+                  <li><a href="#" class="hover:text-white transition-colors">تواصل معنا</a></li>
+                </ul>
+              </div>
+
+              <!-- Useful Links -->
+              <div>
+                <h3 class="text-white font-bold mb-6">روابط مفيدة</h3>
+                <ul class="space-y-1 text-sm">
+                  <li><a href="/" class="hover:text-white transition-colors">الأسئلة الشائعة</a></li>
+                  <li><a href="#" class="hover:text-white transition-colors">الأخبار</a></li>
+                  <li><a href="#" class="hover:text-white transition-colors">التقارير</a></li>
+                  <li><a href="#" class="hover:text-white transition-colors">شروط الاستخدام</a></li>
+                  <li><a href="#" class="hover:text-white transition-colors">سياسة الخصوصية</a></li>
+                </ul>
+              </div>
+
+              <!-- Causes -->
+              <div>
+                <h3 class="text-white font-bold mb-6">الأسباب</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                  <img src="/gallery/img_1.svg" alt="..." class="rounded-md w-full blur-xs" />
+                  <img src="/gallery/img_2.svg" alt="..." class="rounded-md w-full blur-xs" />
+                  <img src="/gallery/img_3.svg" alt="..." class="rounded-md w-full blur-xs" />
+                  <img src="/gallery/img_4.svg" alt="..." class="rounded-md w-full blur-xs" />
+                  <img src="/gallery/img_5.svg" alt="..." class="rounded-md w-full blur-xs" />
+                  <img src="/gallery/img_6.svg" alt="..." class="rounded-md w-full blur-xs" />
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Copyright -->
+            <div class="mt-20 pt-8 border-t border-white/5 text-center text-xs text-slate-500">
+              <p>© 2026 جميع الحقوق محفوظة للجمعية الخيرية</p>
+            </div>
+
+          </div>
+        </footer>
+      `
+    },
+    {
       name: 'Modern Hero',
       category: 'Intro',
       htmlContent: `
@@ -481,22 +841,22 @@ async function main() {
             <div class="grid md:grid-cols-2 gap-5">
               <div>
                 <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Name</label>
-                <input type="text" class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors" placeholder="John Doe">
+                <input type="text" class="w-full px-4 py-3 rounded-xl border border-slate-200 text-gray-400 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors" placeholder="John Doe">
               </div>
               <div>
                 <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Company</label>
-                <input type="text" class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors" placeholder="Acme Inc.">
+                <input type="text" class="w-full px-4 py-3 rounded-xl border border-slate-200 text-gray-400 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors" placeholder="Acme Inc.">
               </div>
             </div>
             
             <div class="grid md:grid-cols-2 gap-5">
               <div>
                 <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Email</label>
-                <input type="email" class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors" placeholder="john@example.com">
+                <input type="email" class="w-full px-4 py-3 rounded-xl border border-slate-200 text-gray-400 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors" placeholder="john@example.com">
               </div>
               <div>
                 <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Mobile</label>
-                 <input type="tel" class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors" placeholder="+1 (555) 000-0000">
+                 <input type="tel" class="w-full px-4 py-3 rounded-xl border border-slate-200 text-gray-400 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors" placeholder="+1 (555) 000-0000">
               </div>
             </div>
             
@@ -554,9 +914,17 @@ async function main() {
     const features = findSnip('Features Grid');
     const stats = findSnip('Stats Row');
     const cta = findSnip('Call to Action');
+    const footer = findSnip('Footer');
 
     // Construct content array (simulating dropped snippets)
     const contentItems = [hero, stats, features, cta].filter(Boolean).map(s => ({
+      id: crypto.randomUUID(), // unique instance ID
+      snippetId: s!.id,
+      htmlContent: s!.htmlContent,
+      name: s!.name
+    }));
+        
+    const footerItems = [footer].filter(Boolean).map(s => ({
       id: crypto.randomUUID(), // unique instance ID
       snippetId: s!.id,
       htmlContent: s!.htmlContent,
@@ -572,6 +940,17 @@ async function main() {
         content: {
           en: contentItems,
           ar: contentItems // Use same content for now, or could duplicate/localize if snippets supported it
+        }
+      }
+    });
+    await prisma.footer.create({
+      data: {
+        title: { en: 'Footer Defualt', ar: 'التذييل الإفتراضي' },
+        websiteId: website.id,
+        isPublished: true,
+        content: {
+          en: footerItems,
+          ar: footerItems // Use same content for now, or could duplicate/localize if snippets supported it
         }
       }
     });

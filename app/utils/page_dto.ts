@@ -1,3 +1,16 @@
+export type CreateFooterDto = {
+    title: string;
+    content?: string;
+    websiteId: string;
+    userId?: number;
+};
+
+export type UpdateFooterDto = {
+    title?: string;
+    content?: string;
+    isPublished?: boolean;
+};
+
 export type CreatePageDto = {
     title: string;
     url: string;

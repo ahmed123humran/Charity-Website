@@ -48,7 +48,9 @@
         "saved": "تم الحفظ بنجاح!",
         "error": "حدث خطأ ما",
         "notAuthorized": "ليس لديك صلاحية للقيام بهذا الإجراء",
-        "loading": "جاري التحميل..."
+        "loading": "جاري التحميل...",
+        "svgerror": "الملف يجب أن يكون SVG",
+        "videoerror": "الملف يجب أن يكون mp4, webm"
     },
     "HomePage": {
         "heroTitle": "تمكين الجمعيات من أجل",
@@ -95,6 +97,7 @@
         "dashboard": "لوحة التحكم",
         "websites": "المواقع",
         "pages": "الصفحات",
+        "footers": "التذييلات",
         "menus": "القوائم",
         "snippets": "القصاصات",
         "users": "المستخدمين",
@@ -109,12 +112,18 @@
         "searchWebsites": "بحث في المواقع...",
         "noWebsites": "لم يتم العثور على مواقع. انقر على \"موقع جديد\" للبدء.",
         "newPage": "صفحة جديدة",
+        "newFooter": "تذييل جديدة",
         "editPage": "تعديل الصفحة",
+        "editFooter": "تعديل التذييل",
         "pageTitle": "عنوان الصفحة",
+        "footerTitle": "عنوان التذييل",
         "urlPath": "مسار URL",
         "managePages": "إنشاء وإدارة محتوى مواقعك.",
+        "manageFooters": "إنشاء وإدارة محتوى مواقعك.",
         "searchPages": "بحث في الصفحات...",
+        "searchFooters": "بحث في التذييلات...",
         "noPages": "لم يتم العثور على صفحات. انقر على \"صفحة جديدة\" للبدء.",
+        "noFooters": "لم يتم العثور على تذييلات. انقر على \"تذييل جديدة\" للبدء.",
         "published": "منشور",
         "draft": "مسودة",
         "targetWebsite": "الموقع المستهدف",
@@ -183,6 +192,7 @@
         "noRecentWebsites": "ستظهر قائمة المواقع المضافة مؤخراً هنا.",
         "noRecentPages": "ستظهر قائمة الصفحات المضافة مؤخراً هنا.",
         "designPage": "تصميم الصفحة",
+        "designFooter": "تصميم التذييل",
         "managingWebsite": "إدارة الموقع",
         "searchReplace": "البحث والاستبدال",
         "activityLogs": "سجل النشاطات",
@@ -221,6 +231,7 @@
     "Editor": {
         "styleDesigner": "مصمم التنسيقات",
         "activeElement": "العنصر النشط",
+        "squarerounded": "الحواف",
         "typography": "الخطوط",
         "size": "الحجم",
         "textColor": "لون النص",
@@ -231,6 +242,12 @@
         "snippetsLibrary": "مكتبة القصاصات",
         "deleteConfirm": "هل أنت متأكد من حذف هذا القسم؟",
         "preview": "معاينة",
-        "exitPreview": "إلغاء المعاينة"
+        "exitPreview": "إلغاء المعاينة",
+        "replaceimg": "تغيير الصورة",
+        "replacesvg": "استبدال SVG",
+        "replacevideo": "استبدال الفيديو",
+        "link": "الرابط",
+        "openInNewTab": "فتح في تبويب جديد",
+        "replaceimgvideo": "استبدال صورة بداية الفيديو"
     }
 }

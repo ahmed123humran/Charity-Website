@@ -48,7 +48,9 @@
         "saved": "Saved successfully!",
         "error": "An error occurred",
         "notAuthorized": "You are not authorized to perform this action",
-        "loading": "Loading..."
+        "loading": "Loading...",
+        "svgerror": "The file must be SVG",
+        "videoerror": "The file must be mp4, webm"
     },
     "HomePage": {
         "heroTitle": "Empowering Charities to",
@@ -95,6 +97,7 @@
         "dashboard": "Dashboard",
         "websites": "Websites",
         "pages": "Pages",
+        "footers": "Footers",
         "menus": "Menus",
         "snippets": "Snippets",
         "users": "Users",
@@ -109,12 +112,18 @@
         "searchWebsites": "Search websites...",
         "noWebsites": "No websites found. Click \"New Website\" to get started.",
         "newPage": "New Page",
+        "newFooter": "New Footer",
         "editPage": "Edit Page",
+        "editFooter": "Edit Footer",
         "pageTitle": "Page Title",
+        "footerTitle": "Footer Title",
         "urlPath": "URL Path",
         "managePages": "Create and manage content for your websites.",
+        "manageFooters": "Create and manage content for your websites.",
         "searchPages": "Search pages...",
+        "searchFooters": "Search footers...",
         "noPages": "No pages found. Click \"New Page\" to get started.",
+        "noFooters": "No footers found. Click \"New Footer\" to get started.",
         "published": "Published",
         "draft": "Draft",
         "targetWebsite": "Target Website",
@@ -183,6 +192,7 @@
         "noRecentWebsites": "List of recently added websites will appear here.",
         "noRecentPages": "List of recently added pages will appear here.",
         "designPage": "Design Page",
+        "designFooter": "Design Footer",
         "managingWebsite": "Managing Website",
         "searchReplace": "Search & Replace",
         "activityLogs": "Activity Logs",
@@ -222,6 +232,7 @@
         "styleDesigner": "Style Designer",
         "activeElement": "Active Element",
         "typography": "Typography",
+        "squarerounded": "Border",
         "size": "Size",
         "textColor": "Text Color",
         "background": "Background",
@@ -231,6 +242,12 @@
         "snippetsLibrary": "Snippets Library",
         "deleteConfirm": "Are you sure you want to delete this section?",
         "preview": "Preview",
-        "exitPreview": "Exit Preview"
+        "exitPreview": "Exit Preview",
+        "replaceimg": "Replace IMG",
+        "replacesvg": "Replace SVG",
+        "replacevideo": "Replace Video",
+        "link": "Link",
+        "openInNewTab": "Open in a new tab",
+        "replaceimgvideo": "Replace Img Video"
     }
 }

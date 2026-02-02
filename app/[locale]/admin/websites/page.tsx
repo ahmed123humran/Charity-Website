@@ -147,7 +147,7 @@ export default function WebsitesPage() {
                         <input
                             type="text"
                             placeholder={t('searchWebsites')}
-                            className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-primary/20 rtl:pl-4 rtl:pr-10 text-start"
+                            className="w-full pl-10 pr-4 py-2 border border-slate-200 text-gray-400 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-primary/20 rtl:pl-4 rtl:pr-10 text-start"
                         />
                     </div>
                 </div>
@@ -248,7 +248,7 @@ export default function WebsitesPage() {
                                         value={nameEn}
                                         onChange={(e) => setNameEn(e.target.value)}
                                         required
-                                        className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 ltr"
+                                        className="w-full px-4 py-2 border border-slate-200 text-gray-400 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 ltr"
                                         placeholder="e.g. Health Charity"
                                     />
                                 </div>
@@ -259,7 +259,7 @@ export default function WebsitesPage() {
                                         value={nameAr}
                                         onChange={(e) => setNameAr(e.target.value)}
                                         required
-                                        className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 rtl"
+                                        className="w-full px-4 py-2 border border-slate-200 text-gray-400 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 rtl"
                                         placeholder="مثال: جمعية صحية"
                                     />
                                 </div>
@@ -270,7 +270,7 @@ export default function WebsitesPage() {
                                     type="text"
                                     value={domain}
                                     onChange={(e) => setDomain(e.target.value)}
-                                    className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 text-start"
+                                    className="w-full px-4 py-2 border border-slate-200 text-gray-400 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 text-start"
                                     placeholder="e.g. health.example.com"
                                 />
                             </div>
@@ -287,7 +287,7 @@ export default function WebsitesPage() {
                                         type="text"
                                         value={themeColor}
                                         onChange={(e) => setThemeColor(e.target.value)}
-                                        className="flex-1 px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-primary/20 font-mono"
+                                        className="flex-1 px-4 py-2 border border-slate-200 text-gray-400 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-primary/20 font-mono"
                                         placeholder="#4f46e5"
                                     />
                                     <div

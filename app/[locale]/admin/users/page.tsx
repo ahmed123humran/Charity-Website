@@ -232,7 +232,7 @@ export default function UsersManagement() {
                                         type="text"
                                         value={name}
                                         onChange={(e) => setName(e.target.value)}
-                                        className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary outline-hidden rtl:pl-4 rtl:pr-10 text-start"
+                                        className="w-full pl-10 pr-4 py-2 border border-slate-200 text-gray-400 rounded-lg focus:ring-2 focus:ring-primary outline-hidden rtl:pl-4 rtl:pr-10 text-start"
                                         placeholder={t('fullName')}
                                     />
                                 </div>
@@ -246,7 +246,7 @@ export default function UsersManagement() {
                                         required={!isEditing}
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
-                                        className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary outline-hidden rtl:pl-4 rtl:pr-10 text-start"
+                                        className="w-full pl-10 pr-4 py-2 border border-slate-200 text-gray-400 rounded-lg focus:ring-2 focus:ring-primary outline-hidden rtl:pl-4 rtl:pr-10 text-start"
                                         placeholder={t('emailAddress')}
                                     />
                                 </div>
@@ -256,7 +256,7 @@ export default function UsersManagement() {
                                 <select
                                     value={role}
                                     onChange={(e: any) => setRole(e.target.value)}
-                                    className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary outline-hidden"
+                                    className="w-full px-4 py-2 border border-slate-200 text-gray-400 rounded-lg focus:ring-2 focus:ring-primary outline-hidden"
                                 >
                                     <option value="ADMIN">{t('adminRole')}</option>
                                     <option value="EDITOR">{t('editorRole')}</option>
@@ -274,7 +274,7 @@ export default function UsersManagement() {
                                         required={!isEditing}
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
-                                        className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary outline-hidden rtl:pl-4 rtl:pr-10 text-start"
+                                        className="w-full pl-10 pr-4 py-2 border border-slate-200 text-gray-400 rounded-lg focus:ring-2 focus:ring-primary outline-hidden rtl:pl-4 rtl:pr-10 text-start"
                                         placeholder="••••••••"
                                     />
                                 </div>
