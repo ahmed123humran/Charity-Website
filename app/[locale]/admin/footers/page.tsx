@@ -8,6 +8,7 @@ import { getLocalizedName } from '@/app/utils/locale';
 import ConfirmDialog from '@/app/components/ConfirmDialog';
 import toast from 'react-hot-toast';
 import { useAppSelector } from '@/app/store/hooks';
+import FootersTour from '@/app/components/FootersTour';
 
 interface Website {
     id: string;
@@ -155,6 +156,7 @@ export default function FootersManagement() {
 
     return (
         <div className="space-y-8">
+            <FootersTour />
             <div className="flex justify-between items-center">
                 <div>
                     <h1 className="text-3xl font-bold text-slate-900">{t('footers')}</h1>
@@ -162,6 +164,7 @@ export default function FootersManagement() {
                 </div>
                 {(userRole === 'ADMIN' || userRole === 'EDITOR') && (
                     <button
+                        id="new-footer-btn"
                         onClick={() => {
                             setIsEditing(false);
                             setShowModal(true);
@@ -174,7 +177,7 @@ export default function FootersManagement() {
                 )}
             </div>
 
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div id="footers-list" className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                 <div className="p-4 border-b border-slate-100 flex items-center gap-4">
                     <div className="relative flex-1">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 rtl:left-auto rtl:right-3" />

@@ -44,8 +44,12 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ message: validation.error.message }, { status: 400 });
         }
 
+        const websiteData = validation.data;
+
         const newWebsite = await prisma.website.create({
-            data: validation.data
+            data: {
+                ...websiteData
+            }
         });
 
         const user = await getServerUser();

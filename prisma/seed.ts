@@ -958,22 +958,22 @@ async function main() {
   }
 
   // Default Admin User
-  const adminEmail = 'admin@ragmi.org';
-  const existingUser = await prisma.user.findUnique({
-    where: { email: adminEmail }
-  });
+  // const adminEmail = 'admin@ragmi.org';
+  // const existingUser = await prisma.user.findUnique({
+  //   where: { email: adminEmail }
+  // });
 
-  if (!existingUser) {
-    await prisma.user.create({
-      data: {
-        email: adminEmail,
-        name: 'Admin User',
-        password: 'admin123', // In a real app, hash this!
-      }
-    });
-  } else {
-    console.log(`Admin user already exists: ${adminEmail}`);
-  }
+  // if (!existingUser) {
+  //   await prisma.user.create({
+  //     data: {
+  //       email: adminEmail,
+  //       name: 'Admin User',
+  //       password: 'admin123', // In a real app, hash this!
+  //     }
+  //   });
+  // } else {
+  //   console.log(`Admin user already exists: ${adminEmail}`);
+  // }
 }
 
 main()

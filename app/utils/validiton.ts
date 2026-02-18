@@ -56,11 +56,24 @@ export const updateUserSchema = z.object({
     role: z.enum(['ADMIN', 'EDITOR', 'VIEWER']).optional(),
 });
 
+export const createSocialMediaSchema = z.object({
+    name: localizedString.optional(),
+    url: z.string().min(1),
+    image: z.string().optional(),
+});
+
+export const updateSocialMediaSchema = z.object({
+    name: localizedString.optional(),
+    url: z.string().min(1).optional(),
+    image: z.string().optional(),
+});
+
 export const createWebsiteSchema = z.object({
     name: localizedString,
     domain: z.string().optional(),
     themeColor: z.string().optional(),
     language: z.string().optional(),
+    logo: z.string().optional(),
 });
 
 export const updateWebsiteSchema = z.object({
@@ -68,6 +81,7 @@ export const updateWebsiteSchema = z.object({
     domain: z.string().optional(),
     themeColor: z.string().optional(),
     language: z.string().optional(),
+    logo: z.string().optional(),
 });
 
 export const createMenuSchema = z.object({
@@ -90,6 +104,7 @@ export const updateMenuSchema = z.object({
 
 export const createSnippetSchema = z.object({
     name: z.string().min(1),
+    nameAr: z.string().optional(),
     category: z.string().min(1),
     htmlContent: z.string().min(1),
     thumbnail: z.string().optional(),
@@ -97,6 +112,7 @@ export const createSnippetSchema = z.object({
 
 export const updateSnippetSchema = z.object({
     name: z.string().min(1).optional(),
+    nameAr: z.string().optional(),
     category: z.string().min(1).optional(),
     htmlContent: z.string().min(1).optional(),
     thumbnail: z.string().optional(),

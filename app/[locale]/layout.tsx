@@ -8,6 +8,8 @@ import { notFound } from 'next/navigation';
 import { locales } from '@/navigation';
 import ToastProvider from '@/app/components/ToastProvider';
 import ReduxProvider from '@/app/components/ReduxProvider';
+import FloatingSocialMenu from '@/app/components/FloatingSocialMenu';
+import { getLocalizedName } from '@/app/utils/locale';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -22,10 +24,58 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "Ragmi - Empowering Charities",
-  description: "Modern charity platform for sustainable development.",
-};
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+  const website = await prisma.website.findFirst({
+    orderBy: { updatedAt: 'desc' }
+  });
+
+  const siteName = getLocalizedName(website?.name, locale) || "Ragmi";
+  const siteDescription = getLocalizedName(website?.description, locale) || "Modern charity platform for sustainable development.";
+  const siteLogo = website?.logo || "/favicon.ico";
+
+  return {
+    title: {
+      default: siteName,
+      template: `%s | ${siteName}`,
+    },
+    description: siteDescription,
+    keywords: ["Charity", "Society", locale === 'ar' ? "جمعية" : "Association", siteName],
+    metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
+    alternates: {
+      canonical: '/',
+      languages: {
+        'en-US': '/en',
+        'ar-SA': '/ar',
+      },
+    },
+    openGraph: {
+      title: siteName,
+      description: siteDescription,
+      url: './',
+      siteName: siteName,
+      images: [
+        {
+          url: siteLogo,
+          width: 800,
+          height: 600,
+        },
+      ],
+      locale: locale === 'ar' ? 'ar_SA' : 'en_US',
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: siteName,
+      description: siteDescription,
+      images: [siteLogo],
+    },
+    icons: {
+      icon: siteLogo,
+      apple: siteLogo,
+    },
+  };
+}
 
 export default async function RootLayout({
   children,
@@ -62,6 +112,7 @@ export default async function RootLayout({
         <ReduxProvider>
           <NextIntlClientProvider messages={messages}>
             <ToastProvider />
+            <FloatingSocialMenu />
             {children}
           </NextIntlClientProvider>
         </ReduxProvider>

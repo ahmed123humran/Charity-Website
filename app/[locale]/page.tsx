@@ -3,6 +3,36 @@ import Footer from "@/app/components/Footer";
 import prisma from "@/app/utils/db";
 import ContentStatus from "@/app/components/ContentStatus";
 import { redirect } from "next/navigation";
+import { Metadata } from "next";
+import { getLocalizedName, getContentSnippet } from "@/app/utils/locale";
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+  const [page, website] = await Promise.all([
+    prisma.page.findFirst({
+      where: { OR: [{ url: '/' }, { url: 'home' }, { url: '' }] },
+      orderBy: { updatedAt: 'desc' }
+    }),
+    prisma.website.findFirst({ orderBy: { updatedAt: 'desc' } })
+  ]);
+
+  const siteName = getLocalizedName(website?.name, locale) || "Ragmi";
+  const siteDescription = getLocalizedName(website?.description, locale) || "Modern charity platform for sustainable development.";
+  const homeDescription = page ? getContentSnippet(page.content, locale) : siteDescription;
+  const siteLogo = website?.logo || "/favicon.ico";
+
+  return {
+    title: {
+      absolute: siteName, // Using absolute for home to avoid "Home | SiteName" if siteName is already the title
+    },
+    description: homeDescription || siteDescription,
+    openGraph: {
+      title: siteName,
+      description: homeDescription || siteDescription,
+      images: siteLogo ? [{ url: siteLogo }] : [],
+    }
+  };
+}
 
 export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -70,13 +100,13 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   }
   if (page) {
     const footer = await prisma.footer.findFirst({
-      where: {websiteId: page.websiteId},
+      where: { websiteId: page.websiteId },
     });
     if (footer && footer.content && footer.isPublished) {
       try {
         const contentStr = typeof footer.content === 'string' ? footer.content : JSON.stringify(footer.content);
         const parsed = JSON.parse(contentStr);
-  
+
         // Handle localized content format { en: [], ar: [] }
         if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && (parsed.en || parsed.ar)) {
           const localizedContent = parsed[locale] || parsed.en || [];
@@ -132,8 +162,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       </main>
 
       {footerToRender || (
-          <div />
-        )}
+        <div />
+      )}
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Search, Replace, FileText, PlusSquare, AlertTriangle, CheckCircle2, Loader2, RefreshCw, Menu as MenuIcon } from 'lucide-react';
 import toast from 'react-hot-toast';
+import SearchReplaceTour from '@/app/components/SearchReplaceTour';
 
 export default function SearchReplaceTool() {
     const t = useTranslations('Admin');
@@ -80,7 +81,8 @@ export default function SearchReplaceTool() {
 
     return (
         <div className="max-w-4xl mx-auto space-y-8">
-            <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
+            <SearchReplaceTour />
+            <div id="search-replace-form" className="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
                 <div className="flex items-center gap-4 mb-8">
                     <div className="p-3 bg-indigo-50 text-indigo-600 rounded-2xl shadow-sm">
                         <RefreshCw className="w-8 h-8" />

@@ -11,6 +11,8 @@
         "confirmPassword": "تأكيد كلمة المرور",
         "companyName": "اسم المؤسسة",
         "companyNamePlaceholder": "مثال: جمعية رقمي الخيرية",
+        "companyDescription": "وصف المؤسسة",
+        "companyDescriptionPlaceholder": "اكتب نبذة عن رؤية وأهداف الجمعية لتظهر في الموقع...",
         "domainName": "اسم النطاق",
         "domainHint": "يمكنك ترك هذا الحقل فارغاً إذا لم يكن لديك نطاق بعد.",
         "back": "رجوع",
@@ -50,7 +52,9 @@
         "notAuthorized": "ليس لديك صلاحية للقيام بهذا الإجراء",
         "loading": "جاري التحميل...",
         "svgerror": "الملف يجب أن يكون SVG",
-        "videoerror": "الملف يجب أن يكون mp4, webm"
+        "videoerror": "الملف يجب أن يكون mp4, webm",
+        "back": "رجوع",
+        "notice": "تنبيه"
     },
     "HomePage": {
         "heroTitle": "تمكين الجمعيات من أجل",
@@ -108,6 +112,7 @@
         "websiteName": "اسم الموقع",
         "domain": "النطاق",
         "themeColor": "لون القالب",
+        "websiteLogo": "لوجو المؤسسة",
         "manageWebsites": "إدارة وتهيئة نطاقات الجمعيات.",
         "searchWebsites": "بحث في المواقع...",
         "noWebsites": "لم يتم العثور على مواقع. انقر على \"موقع جديد\" للبدء.",
@@ -138,6 +143,8 @@
         "newPasswordHint": "كلمة مرور جديدة (اتركها فارغة للإبقاء على الحالية)",
         "createAccount": "إنشاء حساب",
         "role": "الصلاحية",
+        "information": "معلومات الصلاحيات",
+        "rolesDescription": "كل دور له صلاحيات محددة: المسؤول يتحكم بكل شيء، المحرر يدير المحتوى فقط، والمشاهد يستعرض البيانات.",
         "adminRole": "مدير نظام",
         "editorRole": "محرر",
         "viewerRole": "مشاهد",
@@ -169,7 +176,8 @@
             "Contact": "اتصال",
             "Footer": "تذييل",
             "Header": "ترويسة",
-            "CTA": "زر إجراء"
+            "CTA": "زر إجراء",
+            "Stats": "إحصائيات"
         },
         "snippetsDescription": "إنشاء وحدات بناء عامة لمواقعك.",
         "htmlFragment": "قطعة HTML",
@@ -189,6 +197,7 @@
         "preview": "معاينة",
         "recentWebsites": "المواقع الأخيرة",
         "recentPages": "الصفحات الأخيرة",
+        "viewAll": "مشاهدة الكل",
         "noRecentWebsites": "ستظهر قائمة المواقع المضافة مؤخراً هنا.",
         "noRecentPages": "ستظهر قائمة الصفحات المضافة مؤخراً هنا.",
         "designPage": "تصميم الصفحة",
@@ -226,7 +235,15 @@
         "enterSearchText": "يرجى إدخال نص للبحث عنه",
         "noMatchesFound": "لم يتم العثور على نتائج",
         "replaceSuccess": "تم الاستبدال بنجاح في {count} مواقع",
-        "all": "الكل"
+        "all": "الكل",
+        "socialMedia": "وسائل التواصل الاجتماعي",
+        "manageSocialMedia": "إدارة تواجد مؤسستك على منصات التواصل الاجتماعي.",
+        "newSocialMedia": "رابط تواصل جديد",
+        "editSocialMedia": "تعديل رابط التواصل",
+        "socialName": "اسم المنصة",
+        "socialUrl": "الرابط أو رقم الجوال",
+        "socialIcon": "الأيقونة (مرفق / رابط)",
+        "noSocialMedia": "لم يتم العثور على روابط تواصل. انقر على \"رابط تواصل جديد\" للبدء."
     },
     "Editor": {
         "styleDesigner": "مصمم التنسيقات",

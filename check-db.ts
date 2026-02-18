@@ -1,10 +1,13 @@
 import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 async function main() {
-    console.log('User count:', await prisma.user.count());
-    console.log('Website count:', await prisma.website.count());
-    console.log('Page count:', await prisma.page.count());
-    console.log('Snippet count:', await prisma.snippet.count());
-    console.log('Footer count:', await prisma.footer.count());
+    try {
+        const tableInfo = await prisma.$queryRaw`SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'Website'`;
+        console.log(tableInfo);
+    } catch (e) {
+        console.error(e);
+    } finally {
+        await prisma.$disconnect();
+    }
 }
-main().finally(() => prisma.$disconnect());
+main();

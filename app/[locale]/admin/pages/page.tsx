@@ -8,6 +8,7 @@ import { getLocalizedName } from '@/app/utils/locale';
 import ConfirmDialog from '@/app/components/ConfirmDialog';
 import toast from 'react-hot-toast';
 import { useAppSelector } from '@/app/store/hooks';
+import PagesTour from '@/app/components/PagesTour';
 
 interface Website {
     id: string;
@@ -56,9 +57,13 @@ export default function PagesManagement() {
             ]);
             const pagesData = await pagesRes.json();
             const websitesData = await websitesRes.json();
-            setPages(pagesData);
-            setWebsites(websitesData);
-            if (!isEditing && websitesData.length > 0) setWebsiteId(websitesData[0].id);
+
+            setPages(Array.isArray(pagesData) ? pagesData : []);
+            setWebsites(Array.isArray(websitesData) ? websitesData : []);
+
+            if (!isEditing && Array.isArray(websitesData) && websitesData.length > 0) {
+                setWebsiteId(websitesData[0].id);
+            }
         } catch (error) {
             console.error('Failed to fetch data:', error);
             toast.error(commonT('error'));
@@ -159,6 +164,7 @@ export default function PagesManagement() {
 
     return (
         <div className="space-y-8">
+            <PagesTour />
             <div className="flex justify-between items-center">
                 <div>
                     <h1 className="text-3xl font-bold text-slate-900">{t('pages')}</h1>
@@ -166,6 +172,7 @@ export default function PagesManagement() {
                 </div>
                 {(userRole === 'ADMIN' || userRole === 'EDITOR') && (
                     <button
+                        id="new-page-btn"
                         onClick={() => {
                             setIsEditing(false);
                             setShowModal(true);
@@ -178,7 +185,7 @@ export default function PagesManagement() {
                 )}
             </div>
 
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div id="pages-list" className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                 <div className="p-4 border-b border-slate-100 flex items-center gap-4">
                     <div className="relative flex-1">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 rtl:left-auto rtl:right-3" />
@@ -214,7 +221,7 @@ export default function PagesManagement() {
                                         {t('noPages')}
                                     </td>
                                 </tr>
-                            ) : pages.map((page) => (
+                            ) : pages.map((page, index) => (
                                 <tr key={page.id} className="hover:bg-slate-50/50 transition-colors">
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-3">
@@ -272,6 +279,7 @@ export default function PagesManagement() {
                                             {(userRole === 'ADMIN' || userRole === 'EDITOR') && (
                                                 <>
                                                     <button
+                                                        id={index === 0 ? "design-page-action" : undefined}
                                                         onClick={() => router.push(`/admin/pages/${page.id}/editor`)}
                                                         className="p-2 text-slate-400 hover:text-primary transition-colors"
                                                         title={t('designPage')}
@@ -356,7 +364,12 @@ export default function PagesManagement() {
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">{t('urlPath')}</label>
+                                    <label className="flex items-center gap-1.5 text-sm font-medium text-slate-700 mb-1">
+                                        {t('urlPath')}
+                                        <span title="الجزء الذي يظهر بعد اسم النطاق في المتصفح (مثال: about-us)" className="cursor-help text-primary/60">
+                                            <FileText className="w-3.5 h-3.5" />
+                                        </span>
+                                    </label>
                                     <div className="flex">
                                         <span className="inline-flex items-center px-3 rounded-s-lg border border-e-0 border-slate-200 bg-slate-50 text-slate-500 text-sm">
                                             /

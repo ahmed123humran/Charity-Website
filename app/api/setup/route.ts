@@ -10,9 +10,9 @@ export async function POST(request: NextRequest) {
         }
 
         const body = await request.json();
-        const { name, phone, password, companyName, domain } = body;
+        const { name, phone, password, companyName, companyDescription, domain } = body;
 
-        if (!name || !phone || !password || !companyName) {
+        if (!name || !phone || !password || !companyName || !companyDescription) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
@@ -33,6 +33,10 @@ export async function POST(request: NextRequest) {
                     en: companyName,
                     ar: companyName
                 },
+                description: {
+                    en: companyDescription,
+                    ar: companyDescription
+                },
                 domain: domain || null,
                 themeColor: '#714B67',
                 language: 'ar_SA'
@@ -40,19 +44,72 @@ export async function POST(request: NextRequest) {
         });
 
         // 4. Create or Update a default Homepage
-        // Try to find some default snippets to populate the page if they exist
         const dbSnippets = await prisma.snippet.findMany({
             where: {
                 name: {
-                    in: ['Modern Hero', 'Stats Row', 'Features Grid']
+                    in: [
+                        'Modern Hero', 
+                        'Stats Row', 
+                        'Features Grid', 
+                        'Hero Section', 
+                        'Hero - Figma Style', 
+                        'Title',
+                        'Hero With Button',
+                        'Image with next Text',
+                        'Features Cards'
+                    ]
                 }
             }
         });
 
+        const replacePlaceholders = (html: string) => {
+            let processedHtml = html;
+            
+            // 1. Replace Company Name (Headlines)
+            const namePatterns = [
+                /امنح الأمل، أنقذ الأرواح/g,
+                /متحدون من أجل الخير، أقوياء من أجل الأعمال الخيرية/g,
+                /معًا، نستطيع تغيير حياة الناس نحو الأفضل/g,
+                /تحويل النوايا الحسنة إلى أفعال حسنة/g,
+                /Transform Your <span[^>]*>Digital Presence<\/span>/g,
+                /Help us <br>\s*<span[^>]*>save lives<\/span> today\./g
+            ];
+
+            namePatterns.forEach(pattern => {
+                if (pattern.source.includes('<span')) {
+                    // Special handling for spanned text to preserve styles if possible, but simplest is to replace with company name inside a styled span
+                    processedHtml = processedHtml.replace(pattern, (match) => {
+                        const spanMatch = match.match(/<span[^>]*>(.*?)<\/span>/);
+                        if (spanMatch) {
+                            return match.replace(spanMatch[1], companyName);
+                        }
+                        return companyName;
+                    });
+                } else {
+                    processedHtml = processedHtml.replace(pattern, companyName);
+                }
+            });
+
+            // 2. Replace Descriptions (Paragraphs)
+            const descPatterns = [
+                /هناك حقيقة مثبتة منذ زمن طويل وهي أن المحتوى المقروء لصفحة ما سيلهي القارئ عن التركيز على الشكل الخارجي للنص أو شكل توضع الفقرات في الصفحة التي يقرأها\.[^<]*/g,
+                /هناك حقيقة مثبتة منذ زمن طويل وهي أن المحتوى المقروء لصفحة ما[^<]*/g,
+                /Create stunning websites with our intuitive builder\. Powerful, flexible, and designed for modern needs\./g,
+                /Your contribution provides immediate aid to those in crisis\. Join our community of changemakers and make a tangible impact\./g,
+                /Create stunning websites with our intuitive builder[^<]*/g
+            ];
+
+            descPatterns.forEach(pattern => {
+                processedHtml = processedHtml.replace(pattern, companyDescription);
+            });
+
+            return processedHtml;
+        };
+
         const contentItems = dbSnippets.map(s => ({
             id: typeof crypto !== 'undefined' ? crypto.randomUUID() : Math.random().toString(36).substring(7),
             snippetId: s.id,
-            htmlContent: s.htmlContent,
+            htmlContent: replacePlaceholders(s.htmlContent),
             name: s.name
         }));
 

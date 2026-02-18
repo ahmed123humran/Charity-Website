@@ -62,9 +62,13 @@ export async function PUT(request: NextRequest, { params }: Props) {
             return NextResponse.json({ message: 'Website not found' }, { status: 404 });
         }
 
+        const websiteData = validation.data;
+
         const updatedWebsite = await prisma.website.update({
             where: { id },
-            data: validation.data
+            data: {
+                ...websiteData as any
+            }
         });
 
         await logActivity({

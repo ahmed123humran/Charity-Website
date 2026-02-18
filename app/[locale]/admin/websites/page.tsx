@@ -2,12 +2,13 @@
 
 import { useRouter } from '@/navigation';
 import { useState, useEffect } from 'react';
-import { Plus, Search, Globe, MoreVertical, Edit2, Trash2, ExternalLink } from 'lucide-react';
+import { Plus, Search, Globe, MoreVertical, Edit2, Trash2, ExternalLink, Image as ImageIcon } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { getLocalizedName } from '@/app/utils/locale';
 import ConfirmDialog from '@/app/components/ConfirmDialog';
 import toast from 'react-hot-toast';
 import { useAppSelector } from '@/app/store/hooks';
+import WebsiteTour from '@/app/components/WebsiteTour';
 
 interface Website {
     id: string;
@@ -15,6 +16,7 @@ interface Website {
     domain: string | null;
     themeColor: string;
     language: string;
+    logo: string | null;
     createdAt: string;
 }
 
@@ -36,6 +38,7 @@ export default function WebsitesPage() {
     const [nameAr, setNameAr] = useState('');
     const [domain, setDomain] = useState('');
     const [themeColor, setThemeColor] = useState('#4f46e5');
+    const [logo, setLogo] = useState('');
 
     useEffect(() => {
         fetchWebsites();
@@ -45,12 +48,29 @@ export default function WebsitesPage() {
         try {
             const res = await fetch('/api/websites');
             const data = await res.json();
-            setWebsites(data);
+            setWebsites(Array.isArray(data) ? data : []);
         } catch (error) {
             console.error('Failed to fetch websites:', error);
             toast.error(commonT('error'));
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleFileUpload = async (file: File) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        try {
+            const res = await fetch('/api/upload', { method: 'POST', body: formData });
+            const data = await res.json();
+            if (res.ok) {
+                setLogo(data.url);
+                toast.success('Logo uploaded');
+            } else {
+                toast.error(data.message || 'Upload failed');
+            }
+        } catch (error) {
+            toast.error('Upload error');
         }
     };
 
@@ -63,7 +83,12 @@ export default function WebsitesPage() {
             const res = await fetch(url, {
                 method,
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: { en: nameEn, ar: nameAr }, domain, themeColor }),
+                body: JSON.stringify({
+                    name: { en: nameEn, ar: nameAr },
+                    domain,
+                    themeColor,
+                    logo,
+                }),
             });
             if (res.ok) {
                 closeModal();
@@ -100,10 +125,11 @@ export default function WebsitesPage() {
     };
 
     const openEditModal = (site: Website) => {
-        setNameEn(site.name?.en || '');
-        setNameAr(site.name?.ar || '');
+        setNameEn(site.name.en || '');
+        setNameAr(site.name.ar || '');
         setDomain(site.domain || '');
-        setThemeColor(site.themeColor || '#4f46e5');
+        setThemeColor(site.themeColor);
+        setLogo(site.logo || '');
         setCurrentId(site.id);
         setIsEditing(true);
         setShowModal(true);
@@ -116,11 +142,13 @@ export default function WebsitesPage() {
         setNameAr('');
         setDomain('');
         setThemeColor('#4f46e5');
+        setLogo('');
         setCurrentId(null);
     };
 
     return (
         <div className="space-y-8">
+            <WebsiteTour />
             <div className="flex justify-between items-center">
                 <div>
                     <h1 className="text-3xl font-bold text-slate-900">{t('websites')}</h1>
@@ -128,6 +156,7 @@ export default function WebsitesPage() {
                 </div>
                 {(userRole === 'ADMIN' || userRole === 'EDITOR') && (
                     <button
+                        id="new-website-btn"
                         onClick={() => {
                             setIsEditing(false);
                             setShowModal(true);
@@ -140,7 +169,7 @@ export default function WebsitesPage() {
                 )}
             </div>
 
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div id="website-table" className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                 <div className="p-4 border-b border-slate-100 flex items-center gap-4">
                     <div className="relative flex-1">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 rtl:left-auto rtl:right-3" />
@@ -180,12 +209,20 @@ export default function WebsitesPage() {
                                 <tr key={site.id} className="hover:bg-slate-50/50 transition-colors">
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-3">
-                                            <div
-                                                className="w-10 h-10 rounded-lg flex items-center justify-center font-bold text-white shadow-sm flex-shrink-0"
-                                                style={{ backgroundColor: site.themeColor || '#4f46e5' }}
-                                            >
-                                                {getLocalizedName(site.name, locale)[0]?.toUpperCase()}
-                                            </div>
+                                            {site.logo ? (
+                                                <img
+                                                    src={site.logo}
+                                                    alt=""
+                                                    className="w-10 h-10 rounded-lg object-contain bg-slate-100 p-1 flex-shrink-0"
+                                                />
+                                            ) : (
+                                                <div
+                                                    className="w-10 h-10 rounded-lg flex items-center justify-center font-bold text-white shadow-sm flex-shrink-0"
+                                                    style={{ backgroundColor: site.themeColor || '#4f46e5' }}
+                                                >
+                                                    {getLocalizedName(site.name, locale)[0]?.toUpperCase()}
+                                                </div>
+                                            )}
                                             <span className="font-semibold text-slate-900">{getLocalizedName(site.name, locale)}</span>
                                         </div>
                                     </td>
@@ -232,7 +269,7 @@ export default function WebsitesPage() {
             {/* Modal */}
             {showModal && (
                 <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl border border-slate-200">
+                    <div className="bg-white rounded-2xl w-full max-w-5xl shadow-2xl border border-slate-200">
                         <div className="p-6 border-b border-slate-100 flex justify-between items-center">
                             <h2 className="text-xl font-bold text-slate-900">
                                 {isEditing ? t('editWebsite') : t('newWebsite')}
@@ -296,6 +333,44 @@ export default function WebsitesPage() {
                                     />
                                 </div>
                             </div>
+
+                            <div className="pt-2">
+                                <label className="block text-sm font-medium text-slate-700 mb-2">{t('websiteLogo')}</label>
+                                <div className="flex items-center gap-6 p-4 border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50/50 hover:bg-slate-50 transition-colors group">
+                                    <div className="w-16 h-16 rounded-xl bg-white border border-slate-200 flex items-center justify-center overflow-hidden flex-shrink-0 shadow-sm transition-transform group-hover:scale-105">
+                                        {logo ? (
+                                            <img src={logo} alt="Logo Preview" className="w-full h-full object-contain p-2" />
+                                        ) : (
+                                            <ImageIcon className="w-8 h-8 text-slate-300" />
+                                        )}
+                                    </div>
+                                    <div className="flex-1 space-y-3">
+                                        <div className="flex gap-2">
+                                            <div className="relative flex-1">
+                                                <input
+                                                    type="text"
+                                                    value={logo}
+                                                    onChange={(e) => setLogo(e.target.value)}
+                                                    className="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-primary/20 transition-all font-mono"
+                                                    placeholder="Logo URL (or upload)"
+                                                />
+                                            </div>
+                                            <div className="relative overflow-hidden cursor-pointer bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2">
+                                                <span>{commonT('create')}</span>
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0])}
+                                                    className="absolute inset-0 opacity-0 cursor-pointer"
+                                                />
+                                            </div>
+                                        </div>
+                                        <p className="text-[10px] text-slate-400 font-medium">Recommended: Square SVG or transparent PNG (min 200x200px)</p>
+                                    </div>
+                                </div>
+                            </div>
+
+
                             <div className="flex gap-3 pt-4">
                                 <button
                                     type="button"

@@ -7,6 +7,7 @@ import { getLocalizedName } from '@/app/utils/locale';
 import ConfirmDialog from '@/app/components/ConfirmDialog';
 import toast from 'react-hot-toast';
 import { useAppSelector } from '@/app/store/hooks';
+import MenusTour from '@/app/components/MenusTour';
 
 interface Website {
     id: string;
@@ -69,11 +70,13 @@ export default function MenusManagement() {
             const websitesData = await websitesRes.json();
             const pagesData = await pagesRes.json();
 
-            setMenus(menusData);
-            setWebsites(websitesData);
-            setPages(pagesData);
+            setMenus(Array.isArray(menusData) ? menusData : []);
+            setWebsites(Array.isArray(websitesData) ? websitesData : []);
+            setPages(Array.isArray(pagesData) ? pagesData : []);
 
-            if (!isEditing && websitesData.length > 0) setWebsiteId(websitesData[0].id);
+            if (!isEditing && Array.isArray(websitesData) && websitesData.length > 0) {
+                setWebsiteId(websitesData[0].id);
+            }
         } catch (error) {
             console.error('Failed to fetch data:', error);
             toast.error(commonT('error'));
@@ -177,6 +180,7 @@ export default function MenusManagement() {
 
     return (
         <div className="space-y-8">
+            <MenusTour />
             <div className="flex justify-between items-center">
                 <div>
                     <h1 className="text-3xl font-bold text-slate-900">{t('menus')}</h1>
@@ -184,6 +188,7 @@ export default function MenusManagement() {
                 </div>
                 {(userRole === 'ADMIN' || userRole === 'EDITOR') && (
                     <button
+                        id="new-menu-btn"
                         onClick={() => {
                             setIsEditing(false);
                             setShowModal(true);
@@ -196,7 +201,7 @@ export default function MenusManagement() {
                 )}
             </div>
 
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div id="menus-list" className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                 <div className="p-4 border-b border-slate-100 flex items-center gap-4">
                     <div className="relative flex-1">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 rtl:left-auto rtl:right-3" />
@@ -311,7 +316,12 @@ export default function MenusManagement() {
 
                             {/* Page Selection */}
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">{t('linkToPage')}</label>
+                                <label className="flex items-center gap-1.5 text-sm font-medium text-slate-700 mb-1">
+                                    {t('linkToPage')}
+                                    <span title="ربط هذا العنصر بصفحة موجودة بالفعل ليتم ملء البيانات تلقائياً." className="cursor-help text-primary/60">
+                                        <ChevronRight className="w-3.5 h-3.5" />
+                                    </span>
+                                </label>
                                 <select
                                     value={pageId}
                                     onChange={(e) => handlePageSelect(e.target.value)}
@@ -365,7 +375,12 @@ export default function MenusManagement() {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">{t('sequence')}</label>
+                                <label className="flex items-center gap-1.5 text-sm font-medium text-slate-700 mb-1">
+                                    {t('sequence')}
+                                    <span title="يحدد ترتيب العنصر في القائمة، الأرقام الصغيرة تظهر أولاً." className="cursor-help text-primary/60">
+                                        <ListOrdered className="w-3.5 h-3.5" />
+                                    </span>
+                                </label>
                                 <input
                                     type="number"
                                     value={sequence}

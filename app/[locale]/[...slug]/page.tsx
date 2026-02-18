@@ -4,7 +4,7 @@ import Footer from '@/app/components/Footer';
 import prisma from '@/app/utils/db';
 import { Metadata } from 'next';
 
-import { getLocalizedName } from '@/app/utils/locale';
+import { getLocalizedName, getContentSnippet } from '@/app/utils/locale';
 
 interface Props {
     params: Promise<{ slug: string[]; locale: string }>;
@@ -13,14 +13,38 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { slug, locale } = await params;
     const url = slug.join('/');
-    const page = await prisma.page.findUnique({
-        where: { url },
-    });
+
+    // Fetch page and website info in parallel
+    const [page, website] = await Promise.all([
+        prisma.page.findUnique({ where: { url } }),
+        prisma.website.findFirst({ orderBy: { updatedAt: 'desc' } })
+    ]);
 
     if (!page) return {};
 
+    const pageTitle = getLocalizedName(page.title, locale);
+    const siteName = getLocalizedName(website?.name, locale) || "Ragmi";
+    const pageDescription = getContentSnippet(page.content, locale);
+    const siteLogo = website?.logo || "/favicon.ico";
+
     return {
-        title: getLocalizedName(page.title, locale),
+        title: pageTitle,
+        description: pageDescription,
+        openGraph: {
+            title: `${pageTitle} | ${siteName}`,
+            description: pageDescription,
+            url: `./${url}`,
+            siteName: siteName,
+            images: siteLogo ? [{ url: siteLogo }] : [],
+            type: 'article',
+            locale: locale === 'ar' ? 'ar_SA' : 'en_US',
+        },
+        twitter: {
+            card: 'summary_large_image',
+            title: `${pageTitle} | ${siteName}`,
+            description: pageDescription,
+            images: siteLogo ? [siteLogo] : [],
+        },
     };
 }
 

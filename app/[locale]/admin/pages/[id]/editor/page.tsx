@@ -13,10 +13,12 @@ import {
 import { getLocalizedName } from '@/app/utils/locale';
 import ConfirmDialog from '@/app/components/ConfirmDialog';
 import toast from 'react-hot-toast';
+import EditorTour from '@/app/components/EditorTour';
 
 interface Snippet {
     id: string;
     name: string;
+    nameAr: string | null;
     category: string;
     htmlContent: string;
     thumbnail?: string;
@@ -556,9 +558,12 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
 
     return (
         <div className="flex flex-col h-screen bg-slate-100 overflow-hidden font-sans">
+            <EditorTour />
             <div className="h-14 bg-[#1E293B] flex justify-between items-center px-6 z-50 text-white shadow-xl">
                 <div className="flex items-center gap-6">
-                    <button onClick={handleSave} disabled={saving} className="bg-[#3B82F6] hover:bg-blue-600 text-white px-6 py-2 rounded-lg text-xs font-bold transition-all shadow-lg flex items-center gap-2">
+                    <button
+                        id="save-button"
+                        onClick={handleSave} disabled={saving} className="bg-[#3B82F6] hover:bg-blue-600 text-white px-6 py-2 rounded-lg text-xs font-bold transition-all shadow-lg flex items-center gap-2">
                         <Save className="w-3.5 h-3.5" /> {saving ? '...' : commonT('saveChanges')}
                     </button>
                     <button onClick={() => setPreviewMode(!previewMode)} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${previewMode ? 'bg-amber-500 text-white' : 'hover:bg-slate-800'}`}>
@@ -578,7 +583,9 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
             </div>
 
             <div className="flex flex-1 overflow-hidden relative">
-                <div className={`w-72 bg-white border-r border-slate-200 overflow-y-auto z-40 flex flex-col transition-all duration-300 ${previewMode ? '-ml-72' : 'ml-0'}`}>
+                <div
+                    id="editor-sidebar"
+                    className={`w-72 bg-white border-r border-slate-200 overflow-y-auto z-40 flex flex-col transition-all duration-300 ${previewMode ? '-ml-72' : 'ml-0'}`}>
                     <div className="p-4 border-b border-slate-100 flex items-center justify-between">
                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{editorT('styleDesigner')}</span>
                         <Settings className="w-3.5 h-3.5 text-indigo-500" />
@@ -774,7 +781,9 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                         <button className="p-2 text-slate-400 rounded-lg"><Smartphone className="w-4 h-4" /></button>
                     </div>
 
-                    <div ref={canvasRef} onDragOver={handleDragOver} onDrop={handleDrop} onClick={() => { if (activeSnippetId) commitChanges(activeSnippetId); setActiveSnippetId(null); activeElementRef.current = null; setActiveTagName(null); }}
+                    <div
+                        id="editor-canvas"
+                        ref={canvasRef} onDragOver={handleDragOver} onDrop={handleDrop} onClick={() => { if (activeSnippetId) commitChanges(activeSnippetId); setActiveSnippetId(null); activeElementRef.current = null; setActiveTagName(null); }}
                         className={`w-full max-w-5xl bg-white shadow-2xl rounded-2xl overflow-y-auto scroll-smooth transition-all duration-500 relative min-h-[600px] ${previewMode ? 'ring-0' : 'ring-1 ring-slate-300'}`}
                     >
                         <div className="flex flex-col min-h-full">
@@ -812,7 +821,7 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                     <div className="p-4 space-y-3">
                         {snippets.map(s => (
                             <div key={s.id} draggable onDragStart={(e) => handleDragStart(e, s)} className="p-5 bg-white border border-slate-200 rounded-2xl cursor-grab hover:border-indigo-400 hover:shadow-xl transition-all group overflow-hidden">
-                                <div className="text-xs font-black text-slate-800 uppercase group-hover:text-indigo-600">{s.name}</div>
+                                <div className="text-xs font-black text-slate-800 uppercase group-hover:text-indigo-600">{locale === 'ar' && s.nameAr ? s.nameAr : s.name}</div>
                                 <div className="text-[9px] text-slate-400 mt-1 uppercase font-bold">{t(`categories.${s.category}`)}</div>
                             </div>
                         ))}

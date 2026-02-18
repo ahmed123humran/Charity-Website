@@ -5,6 +5,7 @@ import { Search, History, User as UserIcon, Tag, Clock, Eye, ChevronDown, Chevro
 import { useTranslations } from 'next-intl';
 import toast from 'react-hot-toast';
 import { useAppSelector } from '@/app/store/hooks';
+import ActivityTour from '@/app/components/ActivityTour';
 
 interface ActivityLog {
     id: string;
@@ -90,6 +91,7 @@ export default function ActivitiesPage() {
 
     return (
         <div className="space-y-8">
+            <ActivityTour />
             <div className="flex justify-between items-center">
                 <div>
                     <h1 className="text-3xl font-bold text-slate-900 flex items-center gap-3">
@@ -100,7 +102,7 @@ export default function ActivitiesPage() {
                 </div>
             </div>
 
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div id="activity-logs-list" className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                 <div className="p-4 border-b border-slate-100 flex items-center gap-4">
                     <div className="relative flex-1">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 rtl:left-auto rtl:right-3" />

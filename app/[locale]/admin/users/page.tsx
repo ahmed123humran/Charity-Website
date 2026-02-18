@@ -6,6 +6,8 @@ import { useTranslations, useLocale } from 'next-intl';
 import toast from 'react-hot-toast';
 import ConfirmDialog from '@/app/components/ConfirmDialog';
 import { useAppSelector } from '@/app/store/hooks';
+import UsersTour from '@/app/components/UsersTour';
+import { Info } from 'lucide-react';
 
 interface User {
     id: number;
@@ -41,7 +43,7 @@ export default function UsersManagement() {
         try {
             const res = await fetch('/api/users');
             const data = await res.json();
-            setUsers(data);
+            setUsers(Array.isArray(data) ? data : []);
         } catch (error) {
             console.error('Failed to fetch users:', error);
             toast.error(commonT('error'));
@@ -131,6 +133,7 @@ export default function UsersManagement() {
 
     return (
         <div className="p-8 max-w-7xl mx-auto">
+            <UsersTour />
             <div className="flex justify-between items-center mb-10">
                 <div>
                     <h1 className="text-3xl font-bold text-slate-900">{t('userManagement')}</h1>
@@ -138,6 +141,7 @@ export default function UsersManagement() {
                 </div>
                 {userRole === 'ADMIN' && (
                     <button
+                        id="new-user-btn"
                         onClick={() => {
                             setIsEditing(false);
                             setShowModal(true);
@@ -150,7 +154,7 @@ export default function UsersManagement() {
                 )}
             </div>
 
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div id="users-list" className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-start border-collapse">
                         <thead>
@@ -211,6 +215,18 @@ export default function UsersManagement() {
                             ))}
                         </tbody>
                     </table>
+                </div>
+            </div>
+
+            <div id="user-roles-info" className="mt-8 p-6 bg-slate-50 rounded-2xl border border-slate-200 flex items-start gap-4">
+                <div className="p-2 bg-white rounded-xl shadow-sm text-primary">
+                    <Info size={20} />
+                </div>
+                <div>
+                    <h3 className="font-bold text-slate-900">{t('role')} {t('information') || 'معلومات الصلاحيات'}</h3>
+                    <p className="text-sm text-slate-500 mt-1">
+                        {t('rolesDescription') || 'كل دور له صلاحيات محددة: المسؤول يتحكم بكل شيء، المحرر يدير المحتوى فقط، والمشاهد يستعرض البيانات.'}
+                    </p>
                 </div>
             </div>
 

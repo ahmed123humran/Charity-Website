@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+// Forced reload after schema update
 
 const prismaClientSingleton = () => {
     return new PrismaClient();

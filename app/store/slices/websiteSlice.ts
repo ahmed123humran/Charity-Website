@@ -5,6 +5,7 @@ export interface WebsiteState {
     id: string | null;
     name: { en?: string; ar?: string } | null;
     themeColor: string | null;
+    logo: string | null;
     loading: boolean;
     error: string | null;
 }
@@ -13,6 +14,7 @@ const initialState: WebsiteState = {
     id: null,
     name: null,
     themeColor: null,
+    logo: null,
     loading: false,
     error: null,
 };
@@ -36,7 +38,7 @@ export const fetchCurrentWebsite = createAsyncThunk(
 // Async thunk to update website
 export const updateWebsite = createAsyncThunk(
     'website/update',
-    async (data: { id: string; name: { en?: string; ar?: string }; themeColor?: string }, { rejectWithValue }) => {
+    async (data: { id: string; name: { en?: string; ar?: string }; themeColor?: string; logo?: string | null }, { rejectWithValue }) => {
         try {
             const response = await fetch(`/api/websites/${data.id}`, {
                 method: 'PUT',
@@ -57,10 +59,11 @@ const websiteSlice = createSlice({
     name: 'website',
     initialState,
     reducers: {
-        setWebsite: (state, action: PayloadAction<{ id: string; name: { en?: string; ar?: string }; themeColor: string }>) => {
+        setWebsite: (state, action: PayloadAction<{ id: string; name: { en?: string; ar?: string }; themeColor: string; logo?: string | null }>) => {
             state.id = action.payload.id;
             state.name = action.payload.name;
             state.themeColor = action.payload.themeColor;
+            state.logo = action.payload.logo || null;
         },
         setWebsiteName: (state, action: PayloadAction<{ en?: string; ar?: string }>) => {
             state.name = action.payload;
@@ -68,10 +71,14 @@ const websiteSlice = createSlice({
         setThemeColor: (state, action: PayloadAction<string>) => {
             state.themeColor = action.payload;
         },
+        setLogo: (state, action: PayloadAction<string | null>) => {
+            state.logo = action.payload;
+        },
         clearWebsite: (state) => {
             state.id = null;
             state.name = null;
             state.themeColor = null;
+            state.logo = null;
         },
     },
     extraReducers: (builder) => {
@@ -86,6 +93,7 @@ const websiteSlice = createSlice({
                 state.id = action.payload.id;
                 state.name = action.payload.name;
                 state.themeColor = action.payload.themeColor;
+                state.logo = action.payload.logo;
             })
             .addCase(fetchCurrentWebsite.rejected, (state, action) => {
                 state.loading = false;
@@ -101,6 +109,7 @@ const websiteSlice = createSlice({
                 state.id = action.payload.id;
                 state.name = action.payload.name;
                 state.themeColor = action.payload.themeColor;
+                state.logo = action.payload.logo;
             })
             .addCase(updateWebsite.rejected, (state, action) => {
                 state.loading = false;
@@ -109,5 +118,5 @@ const websiteSlice = createSlice({
     },
 });
 
-export const { setWebsite, setWebsiteName, setThemeColor, clearWebsite } = websiteSlice.actions;
+export const { setWebsite, setWebsiteName, setThemeColor, setLogo, clearWebsite } = websiteSlice.actions;
 export default websiteSlice.reducer;

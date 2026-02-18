@@ -11,6 +11,8 @@
         "confirmPassword": "Confirm Password",
         "companyName": "Company Name",
         "companyNamePlaceholder": "e.g., Ragmi Charity",
+        "companyDescription": "Organization Description",
+        "companyDescriptionPlaceholder": "Write about your vision and goals to appear on the website...",
         "domainName": "Domain Name",
         "domainHint": "You can leave this blank if you don't have a domain yet.",
         "back": "Back",
@@ -50,7 +52,9 @@
         "notAuthorized": "You are not authorized to perform this action",
         "loading": "Loading...",
         "svgerror": "The file must be SVG",
-        "videoerror": "The file must be mp4, webm"
+        "videoerror": "The file must be mp4, webm",
+        "back": "Back",
+        "notice": "Notice"
     },
     "HomePage": {
         "heroTitle": "Empowering Charities to",
@@ -108,6 +112,7 @@
         "websiteName": "Website Name",
         "domain": "Domain",
         "themeColor": "Theme Color",
+        "websiteLogo": "Organization Logo",
         "manageWebsites": "Manage and configure your charity domains.",
         "searchWebsites": "Search websites...",
         "noWebsites": "No websites found. Click \"New Website\" to get started.",
@@ -138,6 +143,8 @@
         "newPasswordHint": "New Password (leave blank to keep current)",
         "createAccount": "Create Account",
         "role": "Role",
+        "information": "Role Information",
+        "rolesDescription": "Each role has specific permissions: Admin controls everything, Editor manages content only, and Viewer can only browse data.",
         "adminRole": "Administrator",
         "editorRole": "Editor",
         "viewerRole": "Viewer",
@@ -169,7 +176,8 @@
             "Contact": "Contact",
             "Footer": "Footer",
             "Header": "Header",
-            "CTA": "Call to Action"
+            "CTA": "Call to Action",
+            "Stats": "Statistics"
         },
         "snippetsDescription": "Create global building blocks for your websites.",
         "htmlFragment": "HTML Fragment",
@@ -189,6 +197,7 @@
         "preview": "Preview",
         "recentWebsites": "Recent Websites",
         "recentPages": "Recent Pages",
+        "viewAll": "View All",
         "noRecentWebsites": "List of recently added websites will appear here.",
         "noRecentPages": "List of recently added pages will appear here.",
         "designPage": "Design Page",
@@ -226,7 +235,15 @@
         "enterSearchText": "Please enter text to search",
         "noMatchesFound": "No matches found",
         "replaceSuccess": "Successfully replaced in {count} locations",
-        "all": "All"
+        "all": "All",
+        "socialMedia": "Social Media",
+        "manageSocialMedia": "Manage your organization's social media presence across the web.",
+        "newSocialMedia": "New Social Media Link",
+        "editSocialMedia": "Edit Social Media Link",
+        "socialName": "Platform Name",
+        "socialUrl": "Social URL / Phone",
+        "socialIcon": "Icon (Attach/URL)",
+        "noSocialMedia": "No social media links found. Click \"New Social Media Link\" to get started."
     },
     "Editor": {
         "styleDesigner": "Style Designer",
