@@ -181,7 +181,7 @@ export default function MenusManagement() {
     return (
         <div className="space-y-8">
             <MenusTour />
-            <div className="flex justify-between items-center">
+            <div className="flex flex-wrap justify-between items-center gap-4">
                 <div>
                     <h1 className="text-3xl font-bold text-slate-900">{t('menus')}</h1>
                     <p className="text-slate-500 mt-1">{t('configureMenus')}</p>
@@ -337,7 +337,7 @@ export default function MenusManagement() {
                                 <p className="text-xs text-slate-500 mt-1">{t('linkPageHelp')}</p>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700 mb-1">{t('menuLabel')} (EN)</label>
                                     <input

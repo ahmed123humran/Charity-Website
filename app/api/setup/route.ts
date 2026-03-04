@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/app/utils/db';
+import { hashPassword } from '@/app/utils/password';
+import { createSession } from '@/app/utils/session';
 
 export async function POST(request: NextRequest) {
     try {
@@ -17,11 +19,12 @@ export async function POST(request: NextRequest) {
         }
 
         // 2. Create the Admin User
+        const hashedPassword = await hashPassword(password);
         const user = await prisma.user.create({
             data: {
                 name,
                 phone,
-                password, // Note: In production you should hash this
+                password: hashedPassword,
                 role: 'ADMIN'
             }
         });
@@ -48,11 +51,11 @@ export async function POST(request: NextRequest) {
             where: {
                 name: {
                     in: [
-                        'Modern Hero', 
-                        'Stats Row', 
-                        'Features Grid', 
-                        'Hero Section', 
-                        'Hero - Figma Style', 
+                        'Modern Hero',
+                        'Stats Row',
+                        'Features Grid',
+                        'Hero Section',
+                        'Hero - Figma Style',
                         'Title',
                         'Hero With Button',
                         'Image with next Text',
@@ -64,7 +67,7 @@ export async function POST(request: NextRequest) {
 
         const replacePlaceholders = (html: string) => {
             let processedHtml = html;
-            
+
             // 1. Replace Company Name (Headlines)
             const namePatterns = [
                 /امنح الأمل، أنقذ الأرواح/g,
@@ -143,8 +146,9 @@ export async function POST(request: NextRequest) {
             redirect: '/admin'
         }, { status: 200 });
 
-        // Set session cookie using phone as identifier if no email
-        response.cookies.set('admin-session', phone, {
+        // Set session cookie with signed JWT token
+        const token = await createSession(user.id, user.role);
+        response.cookies.set('admin-session', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'strict',

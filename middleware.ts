@@ -2,6 +2,7 @@ import createMiddleware from 'next-intl/middleware';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { locales, localePrefix } from './navigation';
+import { verifySession } from '@/app/utils/session';
 
 const intlMiddleware = createMiddleware({
     locales,
@@ -9,7 +10,7 @@ const intlMiddleware = createMiddleware({
     defaultLocale: 'en'
 });
 
-export default function proxy(request: NextRequest) {
+export default async function proxy(request: NextRequest) {
     const { pathname } = request.nextUrl;
     const session = request.cookies.get('admin-session');
 
@@ -19,7 +20,9 @@ export default function proxy(request: NextRequest) {
     const isLoginPath = locales.some(locale => pathname.startsWith(`/${locale}/login`)) || pathname.startsWith('/login');
 
     if (isAdminPath) {
-        if (!session || !session.value) {
+        // Verify JWT token signature and expiration
+        const payload = session?.value ? await verifySession(session.value) : null;
+        if (!payload) {
             // Determine locale to redirect to login
             const locale = pathname.split('/')[1];
             const validLocale = locales.includes(locale as any) ? locale : 'en';
@@ -28,7 +31,9 @@ export default function proxy(request: NextRequest) {
     }
 
     if (isLoginPath) {
-        if (session && session.value) {
+        // Verify JWT token before redirecting to admin
+        const payload = session?.value ? await verifySession(session.value) : null;
+        if (payload) {
             const locale = pathname.split('/')[1];
             const validLocale = locales.includes(locale as any) ? locale : 'en';
             return NextResponse.redirect(new URL(`/${validLocale}/admin`, request.url));

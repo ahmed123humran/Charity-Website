@@ -1,23 +1,26 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import GuidedTour, { TourStep } from './GuidedTour';
 
 export default function UsersTour() {
+    const t = useTranslations('Tours.users');
+
     const tourSteps: TourStep[] = [
         {
             target: '#new-user-btn',
-            title: 'إضافة مستخدم جديد',
-            content: 'يمكنك إضافة مديرين أو محررين جدد للمساهمة في إدارة المحتوى.',
+            title: t('step1_title'),
+            content: t('step1_content'),
         },
         {
             target: '#users-list',
-            title: 'قائمة المستخدمين',
-            content: 'هنا يمكنك استعراض جميع المستخدمين المسجلين، تعديل صلاحياتهم، أو إزالتهم.',
+            title: t('step2_title'),
+            content: t('step2_content'),
         },
         {
             target: '#user-roles-info',
-            title: 'الأدوار والصلاحيات',
-            content: 'يدعم النظام مستويات وصول مختلفة: (مدير) للتحكم الكامل، (محرر) للمحتوى فقط، و(مشاهد) للقراءة.',
+            title: t('step3_title'),
+            content: t('step3_content'),
         }
     ];
 

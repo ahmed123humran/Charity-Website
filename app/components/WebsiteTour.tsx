@@ -1,18 +1,21 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import GuidedTour, { TourStep } from './GuidedTour';
 
 export default function WebsiteTour() {
+    const t = useTranslations('Tours.websites');
+
     const tourSteps: TourStep[] = [
         {
             target: '#new-website-btn',
-            title: 'إضافة موقع جديد',
-            content: 'انقر هنا لبدء عملية إنشاء موقع إلكتروني جديد لجمعية أو جهة أخرى.',
+            title: t('step1_title'),
+            content: t('step1_content'),
         },
         {
-            target: '#website-table',
-            title: 'قائمة المواقع',
-            content: 'هنا تظهر جميع المواقع التي قمت بإنشائها، يمكنك تعديلها أو حذفها من قسم الإجراءات.',
+            target: '#website-table tbody tr:first-child',
+            title: t('step2_title'),
+            content: t('step2_content'),
         }
     ];
 

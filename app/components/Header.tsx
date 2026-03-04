@@ -2,6 +2,7 @@ import { getTranslations, getLocale } from 'next-intl/server';
 import { Link } from '@/navigation';
 import { LogIn } from 'lucide-react';
 import LanguageSwitcher from './LanguageSwitcher';
+import MobileMenu from './MobileMenu';
 import prisma from '@/app/utils/db';
 import { getLocalizedName } from '@/app/utils/locale';
 
@@ -57,11 +58,15 @@ export default async function Header() {
                         <LanguageSwitcher />
                         <Link
                             href="/login"
-                            className="flex items-center gap-2 text-white px-6 py-2.5 rounded-full font-bold transition-all hover:scale-105 active:scale-95 shadow-lg bg-primary shadow-primary-glow"
+                            className="hidden lg:flex items-center gap-2 text-white px-6 py-2.5 rounded-full font-bold transition-all hover:scale-105 active:scale-95 shadow-lg bg-primary shadow-primary-glow"
                         >
                             <LogIn className="w-4 h-4" />
                             {t('signIn')}
                         </Link>
+                        <MobileMenu
+                            menus={menus.map(m => ({ id: m.id, name: m.name, url: m.url }))}
+                            websiteName={websiteName}
+                        />
                     </div>
                 </div>
             </div>

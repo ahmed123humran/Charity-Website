@@ -1,18 +1,21 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import GuidedTour, { TourStep } from './GuidedTour';
 
 export default function SocialMediaTour() {
+    const t = useTranslations('Tours.social');
+
     const tourSteps: TourStep[] = [
         {
             target: '#new-social-btn',
-            title: 'ربط الحسابات',
-            content: 'أضف روابط حسابات التواصل الاجتماعي الخاصة بالجمعية لتظهر في الموقع.',
+            title: t('step1_title'),
+            content: t('step1_content'),
         },
         {
-            target: '#social-list',
-            title: 'الحسابات المضافة',
-            content: 'تحكم في الحسابات المضافة، قم بتعديل الروابط أو إخفاء منصات معينة.',
+            target: '#social-list tbody tr:first-child',
+            title: t('step2_title'),
+            content: t('step2_content'),
         }
     ];
 

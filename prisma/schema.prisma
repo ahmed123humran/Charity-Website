@@ -13,7 +13,7 @@ model User {
   name       String?
   createdAt  DateTime      @default(now())
   updatedAt  DateTime      @updatedAt
-  password   String        @default("admin123")
+  password   String
   phone      String?       @unique
   role       Role          @default(ADMIN)
   activities ActivityLog[]

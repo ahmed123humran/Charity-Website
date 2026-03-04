@@ -1,23 +1,31 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import GuidedTour, { TourStep } from './GuidedTour';
 
 export default function EditorTour() {
+    const t = useTranslations('Tours.editor');
+
     const tourSteps: TourStep[] = [
         {
-            target: '#editor-sidebar',
-            title: 'مكتبة المكونات',
-            content: 'اسحب المكونات من هنا وأفلتها في منطقة التصميم لبناء صفحتك.',
+            target: '#editor-snippets',
+            title: t('step1_title'),
+            content: t('step1_content'),
         },
         {
             target: '#editor-canvas',
-            title: 'منطقة التصميم',
-            content: 'هنا يمكنك معاينة الصفحة مباشرة، والضغط على أي عنصر لتعديله أو حذفه.',
+            title: t('step2_title'),
+            content: t('step2_content'),
+        },
+        {
+            target: '#editor-sidebar',
+            title: t('step3_title'),
+            content: t('step3_content'),
         },
         {
             target: '#save-button',
-            title: 'حفظ التغييرات',
-            content: 'بعد الانتهاء من التصميم، لا تنسَ حفظ التغييرات ليتم تحديث الموقع.',
+            title: t('step4_title'),
+            content: t('step4_content'),
         }
     ];
 

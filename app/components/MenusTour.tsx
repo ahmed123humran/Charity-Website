@@ -1,18 +1,21 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import GuidedTour, { TourStep } from './GuidedTour';
 
 export default function MenusTour() {
+    const t = useTranslations('Tours.menus');
+
     const tourSteps: TourStep[] = [
         {
             target: '#new-menu-btn',
-            title: 'إنشاء قائمة جديدة',
-            content: 'أنشئ قوائم التنقل (Navigation Menus) لترتيب روابط موقعك.',
+            title: t('step1_title'),
+            content: t('step1_content'),
         },
         {
-            target: '#menus-list',
-            title: 'ترتيب الروابط',
-            content: 'من هنا يمكنك إضافة روابط للقائمة، ترتيبها، وتحديد مكان ظهورها في الموقع.',
+            target: '#menus-list tbody tr:first-child',
+            title: t('step2_title'),
+            content: t('step2_content'),
         }
     ];
 

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/app/utils/db';
 import { logActivity } from '@/app/utils/logger';
+import { verifyPassword } from '@/app/utils/password';
+import { createSession } from '@/app/utils/session';
 
 export async function POST(request: NextRequest) {
     try {
@@ -18,18 +20,21 @@ export async function POST(request: NextRequest) {
             }
         });
 
-        // Basic password check (plain text for demo/v1 per previous pattern)
-        if (user && user.password === password) {
+        // Secure password verification using bcrypt
+        const isValid = user ? await verifyPassword(password, user.password) : false;
+        if (user && isValid) {
             const response = NextResponse.json({
                 message: 'Logged in successfully',
                 user: { id: user.id, email: user.email, name: user.name, role: user.role }
             }, { status: 200 });
 
-            response.cookies.set('admin-session', (user.email || user.phone) as string, {
+            // Create signed JWT token instead of storing raw email/phone
+            const token = await createSession(user.id, user.role);
+            response.cookies.set('admin-session', token, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
                 sameSite: 'strict',
-                maxAge: 60 * 60 * 24 // 1 day
+                maxAge: 60 * 60 * 24 * 7 // 7 days (matches JWT expiration)
             });
 
             await logActivity({

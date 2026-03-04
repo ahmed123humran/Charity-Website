@@ -1,28 +1,31 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import GuidedTour, { TourStep } from './GuidedTour';
 
 export default function DashboardTour() {
+    const t = useTranslations('Tours.dashboard');
+
     const tourSteps: TourStep[] = [
         {
             target: '#nav--admin',
-            title: 'لوحة التحكم',
-            content: 'هنا يمكنك مشاهدة إحصائيات سريعة عن موقعك وصفحاتك.',
+            title: t('step1_title'),
+            content: t('step1_content'),
         },
         {
             target: '#nav--admin-websites',
-            title: 'إدارة المواقع',
-            content: 'من هنا يمكنك التحكم في إعدادات الموقع، الشعار، والألوان.',
+            title: t('step2_title'),
+            content: t('step2_content'),
         },
         {
             target: '#nav--admin-pages',
-            title: 'الصفحات',
-            content: 'أنشئ صفحات جديدة وقم بتحرير محتواها بكل سهولة.',
+            title: t('step3_title'),
+            content: t('step3_content'),
         },
         {
             target: '#nav--admin-snippets',
-            title: 'المكونات الجاهزة',
-            content: 'استخدم المكونات الجاهزة لبناء صفحاتك بسرعة واحترافية.',
+            title: t('step4_title'),
+            content: t('step4_content'),
         }
     ];
 

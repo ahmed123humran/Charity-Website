@@ -4,6 +4,7 @@ import prisma from '@/app/utils/db';
 import { getServerUser } from '@/app/utils/auth';
 import { Role } from '@prisma/client';
 import { logActivity } from '@/app/utils/logger';
+import { hashPassword } from '@/app/utils/password';
 
 /**
  * @method GET
@@ -65,11 +66,17 @@ export async function POST(request: NextRequest) {
             }
         }
 
+        const passwordToHash = validation.data.password;
+        if (!passwordToHash) {
+            return NextResponse.json({ message: 'Password is required' }, { status: 400 });
+        }
+        const hashedPassword = await hashPassword(passwordToHash);
+
         const newUser = await prisma.user.create({
             data: {
                 ...validation.data,
                 role: body.role || 'EDITOR',
-                password: validation.data.password || 'admin123'
+                password: hashedPassword
             }
         });
 

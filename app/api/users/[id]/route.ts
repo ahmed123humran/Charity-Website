@@ -4,6 +4,7 @@ import prisma from '@/app/utils/db';
 import { getServerUser } from '@/app/utils/auth';
 import { Role } from '@prisma/client';
 import { logActivity } from '@/app/utils/logger';
+import { hashPassword } from '@/app/utils/password';
 
 interface Props {
     params: Promise<{ id: string }>;
@@ -64,9 +65,14 @@ export async function PUT(request: NextRequest, { params }: Props) {
             return NextResponse.json({ message: 'User not found' }, { status: 404 });
         }
 
+        const updateData = { ...validation.data };
+        if (updateData.password) {
+            updateData.password = await hashPassword(updateData.password);
+        }
+
         const updatedUser = await prisma.user.update({
             where: { id: parseInt(id) },
-            data: validation.data
+            data: updateData
         });
 
         await logActivity({

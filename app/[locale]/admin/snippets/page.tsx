@@ -7,6 +7,7 @@ import ConfirmDialog from '@/app/components/ConfirmDialog';
 import toast from 'react-hot-toast';
 import { useAppSelector } from '@/app/store/hooks';
 import SnippetsTour from '@/app/components/SnippetsTour';
+import { sanitizeHtml } from '@/app/utils/sanitize';
 
 interface Snippet {
     id: string;
@@ -149,17 +150,23 @@ export default function SnippetsManagement() {
             <div id="snippets-list" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {loading ? [1, 2, 3].map(i => <div key={i} className="bg-white rounded-2xl h-48 animate-pulse border border-slate-200" />) :
                     snippets.length === 0 ? <div className="col-span-full py-20 bg-white border border-dashed border-slate-300 rounded-3xl text-center"><h3 className="text-lg font-bold text-slate-900">{t('noSnippets')}</h3></div> :
-                        snippets.map(s => (
+                        snippets.map((s, index) => (
                             <div key={s.id} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden group hover:shadow-md transition-all">
                                 <div className="aspect-video bg-slate-50 flex items-center justify-center p-6 border-b border-slate-100 relative">
-                                    <div className="scale-50 origin-center opacity-40 pointer-events-none w-full h-full overflow-hidden" dangerouslySetInnerHTML={{ __html: s.htmlContent }} />
+                                    <div className="scale-50 origin-center opacity-40 pointer-events-none w-full h-full overflow-hidden" dangerouslySetInnerHTML={{ __html: sanitizeHtml(s.htmlContent) }} />
                                     <span className="absolute top-3 right-3 px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-white text-indigo-600 shadow-sm border border-indigo-100">{t(`categories.${s.category}`)}</span>
                                 </div>
                                 <div className="p-4 flex justify-between items-center bg-white">
                                     <span className="font-bold text-slate-800">{locale === 'ar' && s.nameAr ? s.nameAr : s.name}</span>
                                     <div className="flex gap-2">
                                         {(userRole === 'ADMIN' || userRole === 'EDITOR') && (
-                                            <button onClick={() => openEditModal(s)} className="p-2 text-slate-400 hover:text-indigo-600 transition-colors"><Edit2 className="w-4 h-4" /></button>
+                                            <button
+                                                id={index === 0 ? 'edit-snippet-btn-0' : undefined}
+                                                onClick={() => openEditModal(s)}
+                                                className="p-2 text-slate-400 hover:text-indigo-600 transition-colors"
+                                            >
+                                                <Edit2 className="w-4 h-4" />
+                                            </button>
                                         )}
                                         {userRole === 'ADMIN' && (
                                             <button onClick={() => setDeleteId(s.id)} className="p-2 text-slate-400 hover:text-red-500 transition-colors"><Trash2 className="w-4 h-4" /></button>
@@ -230,7 +237,7 @@ export default function SnippetsManagement() {
                                                 )}
                                             </div>
                                         )}
-                                        <div ref={previewRef} onClick={handlePreviewClick} dangerouslySetInnerHTML={{ __html: htmlContent }} className="bg-white shadow-2xl min-h-[400px]" />
+                                        <div ref={previewRef} onClick={handlePreviewClick} dangerouslySetInnerHTML={{ __html: sanitizeHtml(htmlContent) }} className="bg-white shadow-2xl min-h-[400px]" />
                                     </div>
                                 )}
                             </div>

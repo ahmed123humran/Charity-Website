@@ -30,7 +30,7 @@ export default async function AdminDashboard() {
 
     return (
         <div className="space-y-10 animate-fade-in">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
                     <h1 className="text-4xl font-black text-slate-900 tracking-tight">{t('overview')}</h1>
                     <p className="text-slate-400 font-medium mt-1">{t('subtitle')}</p>

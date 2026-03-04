@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/app/utils/db';
+import { verifySession } from '@/app/utils/session';
 
 export async function GET(request: NextRequest) {
     try {
@@ -9,13 +10,14 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ message: 'Not authenticated' }, { status: 401 });
         }
 
-        const user = await prisma.user.findFirst({
-            where: {
-                OR: [
-                    { email: session.value },
-                    { phone: session.value }
-                ]
-            },
+        // Verify JWT token and extract user ID
+        const payload = await verifySession(session.value);
+        if (!payload) {
+            return NextResponse.json({ message: 'Invalid or expired session' }, { status: 401 });
+        }
+
+        const user = await prisma.user.findUnique({
+            where: { id: payload.userId },
             select: {
                 id: true,
                 email: true,

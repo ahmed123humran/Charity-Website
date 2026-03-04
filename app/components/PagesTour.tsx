@@ -1,23 +1,26 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import GuidedTour, { TourStep } from './GuidedTour';
 
 export default function PagesTour() {
+    const t = useTranslations('Tours.pages');
+
     const tourSteps: TourStep[] = [
         {
             target: '#new-page-btn',
-            title: 'إنشاء صفحة جديدة',
-            content: 'ابدأ بإضافة صفحات جديدة لموقعك مثل (اتصل بنا، سياسة الخصوصية، الخ).',
+            title: t('step1_title'),
+            content: t('step1_content'),
         },
         {
-            target: '#pages-list',
-            title: 'إدارة الصفحات',
-            content: 'يمكنك هنا رؤية جميع الصفحات، حالتها (منشورة أو مسودة)، ورابط كل منها.',
+            target: '#pages-list tbody tr:first-child',
+            title: t('step2_title'),
+            content: t('step2_content'),
         },
         {
             target: '#design-page-action',
-            title: 'المصمم التفاعلي',
-            content: 'هذه الأيقونة تفتح لك مصمم الصفحات السهل لبناء محتوى الصفحة بالسحب والإفلات.',
+            title: t('step3_title'),
+            content: t('step3_content'),
         }
     ];
 

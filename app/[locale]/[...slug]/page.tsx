@@ -3,8 +3,8 @@ import Header from '@/app/components/Header';
 import Footer from '@/app/components/Footer';
 import prisma from '@/app/utils/db';
 import { Metadata } from 'next';
-
 import { getLocalizedName, getContentSnippet } from '@/app/utils/locale';
+import { sanitizeHtml } from '@/app/utils/sanitize';
 
 interface Props {
     params: Promise<{ slug: string[]; locale: string }>;
@@ -83,7 +83,7 @@ export default async function DynamicPage({ params }: Props) {
                 contentToRender = (
                     <div className="flex flex-col">
                         {localizedContent.map((item: any) => (
-                            <div key={item.id} dangerouslySetInnerHTML={{ __html: item.htmlContent }} />
+                            <div key={item.id} dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.htmlContent) }} />
                         ))}
                     </div>
                 );
@@ -91,16 +91,16 @@ export default async function DynamicPage({ params }: Props) {
                 contentToRender = (
                     <div className="flex flex-col">
                         {parsed.map((item: any) => (
-                            <div key={item.id} dangerouslySetInnerHTML={{ __html: item.htmlContent }} />
+                            <div key={item.id} dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.htmlContent) }} />
                         ))}
                     </div>
                 );
             } else {
-                contentToRender = <div dangerouslySetInnerHTML={{ __html: contentStr }} />;
+                contentToRender = <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(contentStr) }} />;
             }
         } catch (e) {
             const contentStr = typeof page.content === 'string' ? page.content : String(page.content);
-            contentToRender = <div dangerouslySetInnerHTML={{ __html: contentStr }} />;
+            contentToRender = <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(contentStr) }} />;
         }
     }
 
@@ -131,7 +131,7 @@ export default async function DynamicPage({ params }: Props) {
                 footerToRender = (
                     <div className="flex flex-col">
                         {localizedContent.map((item: any) => (
-                            <div key={item.id} dangerouslySetInnerHTML={{ __html: item.htmlContent }} />
+                            <div key={item.id} dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.htmlContent) }} />
                         ))}
                     </div>
                 );
@@ -139,12 +139,12 @@ export default async function DynamicPage({ params }: Props) {
                 footerToRender = (
                     <div className="flex flex-col">
                         {parsed.map((item: any) => (
-                            <div key={item.id} dangerouslySetInnerHTML={{ __html: item.htmlContent }} />
+                            <div key={item.id} dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.htmlContent) }} />
                         ))}
                     </div>
                 );
             } else {
-                footerToRender = <div dangerouslySetInnerHTML={{ __html: contentStr }} />;
+                footerToRender = <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(contentStr) }} />;
             }
         } catch (e) {
             // Optionally handle plain HTML string for footer

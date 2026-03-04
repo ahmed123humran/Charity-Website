@@ -165,7 +165,7 @@ export default function PagesManagement() {
     return (
         <div className="space-y-8">
             <PagesTour />
-            <div className="flex justify-between items-center">
+            <div className="flex flex-wrap justify-between items-center gap-4">
                 <div>
                     <h1 className="text-3xl font-bold text-slate-900">{t('pages')}</h1>
                     <p className="text-slate-500 mt-1">{t('managePages')}</p>
@@ -339,7 +339,7 @@ export default function PagesManagement() {
                                         {websites.length === 0 && <option disabled>No websites available</option>}
                                     </select>
                                 </div>
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-sm font-medium text-slate-700 mb-1">{t('pageTitle')} (EN)</label>
                                         <input

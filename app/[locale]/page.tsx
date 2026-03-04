@@ -5,6 +5,7 @@ import ContentStatus from "@/app/components/ContentStatus";
 import { redirect } from "next/navigation";
 import { Metadata } from "next";
 import { getLocalizedName, getContentSnippet } from "@/app/utils/locale";
+import { sanitizeHtml } from "@/app/utils/sanitize";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -71,7 +72,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           contentToRender = (
             <div className="flex flex-col">
               {localizedContent.map((item: any) => (
-                <div key={item.id} dangerouslySetInnerHTML={{ __html: item.htmlContent }} />
+                <div key={item.id} dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.htmlContent) }} />
               ))}
             </div>
           );
@@ -83,7 +84,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         contentToRender = (
           <div className="flex flex-col">
             {parsed.map((item: any) => (
-              <div key={item.id} dangerouslySetInnerHTML={{ __html: item.htmlContent }} />
+              <div key={item.id} dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.htmlContent) }} />
             ))}
           </div>
         );
@@ -93,7 +94,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       // Fallback for simple HTML string content
       const contentStr = typeof page.content === 'string' ? page.content : String(page.content);
       if (contentStr) {
-        contentToRender = <div dangerouslySetInnerHTML={{ __html: contentStr }} />;
+        contentToRender = <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(contentStr) }} />;
         isEmpty = false;
       }
     }
@@ -114,7 +115,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             footerToRender = (
               <div className="flex flex-col">
                 {localizedContent.map((item: any) => (
-                  <div key={item.id} dangerouslySetInnerHTML={{ __html: item.htmlContent }} />
+                  <div key={item.id} dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.htmlContent) }} />
                 ))}
               </div>
             );
@@ -125,7 +126,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           footerToRender = (
             <div className="flex flex-col">
               {parsed.map((item: any) => (
-                <div key={item.id} dangerouslySetInnerHTML={{ __html: item.htmlContent }} />
+                <div key={item.id} dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.htmlContent) }} />
               ))}
             </div>
           );
@@ -134,7 +135,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         // Fallback for simple HTML string content
         const contentStr = typeof footer.content === 'string' ? footer.content : String(footer.content);
         if (contentStr) {
-          footerToRender = <div dangerouslySetInnerHTML={{ __html: contentStr }} />;
+          footerToRender = <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(contentStr) }} />;
         }
       }
     }

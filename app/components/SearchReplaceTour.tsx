@@ -1,13 +1,16 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import GuidedTour, { TourStep } from './GuidedTour';
 
 export default function SearchReplaceTour() {
+    const t = useTranslations('Tours.searchReplace');
+
     const tourSteps: TourStep[] = [
         {
             target: '#search-replace-form',
-            title: 'البحث والاستبدال الذكي',
-            content: 'يمكنك تغيير نصوص معينة في كامل الموقع بضغطة واحدة، مفيد لتحديث الروابط أو الأسماء المكررة.',
+            title: t('step1_title'),
+            content: t('step1_content'),
         }
     ];
 
