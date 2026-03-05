@@ -252,7 +252,7 @@ async function main() {
             </h1>
             <div class="w-full max-w my-10 overflow-hidden rounded-2xl shadow-xl">
                 <video
-                    class="w-full"
+                    class="w-full aspect-video object-cover"
                     controls
                     src="/video/test.mp4"
                 >

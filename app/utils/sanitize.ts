@@ -11,6 +11,8 @@ export function sanitizeHtml(html: string): string {
     return DOMPurify.sanitize(html, {
         // Allow iframes for embedded videos (YouTube, Vimeo, etc.)
         ADD_TAGS: ['iframe'],
+        // Explicitly allow data URIs for media
+        ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|cid|xmpp|data):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
         ADD_ATTR: [
             'allow',
             'allowfullscreen',
@@ -25,6 +27,7 @@ export function sanitizeHtml(html: string): string {
             'stroke-width',
             'stroke-linecap',
             'stroke-linejoin',
+            'poster',
             'd',
             'cx',
             'cy',

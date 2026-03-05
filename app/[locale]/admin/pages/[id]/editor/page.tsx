@@ -205,20 +205,36 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
         if (!snippetData) return;
         try {
             const snippet: Snippet = JSON.parse(snippetData);
-            const newSnippet: DroppedSnippet = {
-                id: crypto.randomUUID(),
-                snippetId: snippet.id,
-                htmlContent: snippet.htmlContent,
-                name: snippet.name
-            };
-            const dropIndex = dragOverIndex !== null ? dragOverIndex : droppedSnippets.length;
-            setDroppedSnippets(prev => {
-                const newList = [...prev];
-                newList.splice(dropIndex, 0, newSnippet);
-                return newList;
-            });
+            addSnippet(snippet);
         } catch (err) { console.error('Drop failed', err); }
         setDragOverIndex(null);
+    };
+
+    const addSnippet = (snippet: Snippet, index?: number) => {
+        const newSnippet: DroppedSnippet = {
+            id: crypto.randomUUID(),
+            snippetId: snippet.id,
+            htmlContent: snippet.htmlContent,
+            name: snippet.name
+        };
+        const dropIndex = index !== undefined ? index : (dragOverIndex !== null ? dragOverIndex : droppedSnippets.length);
+        setDroppedSnippets(prev => {
+            const newList = [...prev];
+            newList.splice(dropIndex, 0, newSnippet);
+            return newList;
+        });
+
+        if (window.innerWidth < 1024) {
+            setShowRightPanel(false);
+            toast.success(editorT('snippetAdded'));
+        }
+    };
+
+    const handleSnippetClick = (snippet: Snippet) => {
+        if (previewMode) return;
+        if (window.innerWidth < 1024) {
+            addSnippet(snippet);
+        }
     };
 
     const commitChanges = (id: string) => {
@@ -235,8 +251,22 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
         }
     };
 
+    const rgbToHex = (color: string) => {
+        if (!color || color === 'transparent') return '#ffffff';
+        if (color.startsWith('#')) return color;
+        const rgb = color.match(/\d+/g);
+        if (!rgb || rgb.length < 3) return '#ffffff';
+        const hex = (x: string) => {
+            const h = parseInt(x).toString(16);
+            return h.length === 1 ? '0' + h : h;
+        };
+        return '#' + hex(rgb[0]) + hex(rgb[1]) + hex(rgb[2]);
+    };
+
     const updateActiveStyles = (el: HTMLElement) => {
         const computed = window.getComputedStyle(el);
+        const tag = el.tagName.toLowerCase();
+
         let styles: typeof activeStyles = {
             fontSize: '16px',
             color: '#000000',
@@ -245,27 +275,27 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
             borderRadius: '0px'
         };
 
-        if (el.tagName === 'SVG') {
-            // For SVG, fontSize can be interpreted as width/height
-            styles.color = (el.getAttribute('fill') || computed.color) as string;
+        if (tag === 'svg') {
+            styles.color = rgbToHex(el.getAttribute('fill') || computed.color);
             styles.fontSize = el.getAttribute('width') || computed.width;
-            styles.backgroundColor = el.getAttribute('background') || 'transparent';
+            styles.backgroundColor = rgbToHex(el.getAttribute('background') || 'transparent');
             styles.textAlign = 'center';
             styles.borderRadius = computed.borderRadius || '0px';
-        } else if (activeTagName === 'img') {
+        } else if (tag === 'img' || tag === 'video') {
             styles.borderRadius = computed.borderRadius || '0px';
+            styles.backgroundColor = rgbToHex(computed.backgroundColor);
         } else {
             styles = {
                 fontSize: computed.fontSize,
-                color: computed.color,
-                backgroundColor: computed.backgroundColor,
+                color: rgbToHex(computed.color),
+                backgroundColor: rgbToHex(computed.backgroundColor),
                 textAlign: computed.textAlign,
                 borderRadius: computed.borderRadius
             };
         }
 
         setActiveStyles(styles);
-        setActiveTagName(el.tagName.toLowerCase());
+        setActiveTagName(tag);
     };
 
     const handleContentClick = (e: React.MouseEvent, snippetId: string) => {
@@ -274,7 +304,25 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
         const wrapper = document.getElementById(`snippet-content-${snippetId}`);
 
         // Target editable elements
-        const smartTarget = target.closest('p, h1, h2, h3, h4, h5, h6, span, a, li, button, img, section, div:not([id^="snippet-content-"]), svg, video');
+        let smartTarget = target.closest('p, h1, h2, h3, h4, h5, h6, span, a, li, button, img, section, div:not([id^="snippet-content-"]), svg, video');
+
+        // Logic refinement: If we click a DIV that has 1 child and that child is media,
+        // we check if the DIV has visual styles (background/border). 
+        // If it doesn't, we "drill down" to the media for easier editing.
+        if (smartTarget && smartTarget.tagName === 'DIV') {
+            const mediaChild = smartTarget.querySelector('video, img, svg');
+            if (mediaChild && (smartTarget as HTMLElement).children.length === 1) {
+                const styles = window.getComputedStyle(smartTarget as HTMLElement);
+                const hasBg = styles.backgroundColor !== 'rgba(0, 0, 0, 0)' && styles.backgroundColor !== 'transparent';
+                const hasBorder = styles.borderWidth !== '0px';
+
+                // Drill down if container is blank wrapper OR if user clicked exactly on media
+                if ((!hasBg && !hasBorder) || target.tagName === 'VIDEO' || target.tagName === 'IMG' || target.tagName === 'svg') {
+                    smartTarget = mediaChild as HTMLElement;
+                }
+            }
+        }
+
         if (smartTarget && wrapper?.contains(smartTarget)) target = smartTarget as HTMLElement;
 
         e.stopPropagation();
@@ -486,17 +534,19 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
         if (!file || !activeElementRef.current) return;
 
         if (!file.type.includes('video')) {
-            toast.error(commonT('videoerror'))
+            toast.error(commonT('videoerror'));
             return;
         }
 
         const video = activeElementRef.current as HTMLVideoElement;
-        const url = URL.createObjectURL(file);
-
-        video.src = url;
-        video.load();
-
-        commitChanges(activeSnippetId!);
+        const reader = new FileReader();
+        reader.onload = () => {
+            const base64 = reader.result as string;
+            video.setAttribute('src', base64);
+            video.load();
+            commitChanges(activeSnippetId!);
+        };
+        reader.readAsDataURL(file);
     };
 
     const handleVideoImgReplace = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -504,20 +554,20 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
         if (!file || !activeElementRef.current) return;
 
         const video = activeElementRef.current as HTMLVideoElement;
-        const url = URL.createObjectURL(file);
-
-        video.poster = url;
-        video.load();
-
-        commitChanges(activeSnippetId!);
+        const reader = new FileReader();
+        reader.onload = () => {
+            const base64 = reader.result as string;
+            video.setAttribute('poster', base64);
+            video.load();
+            commitChanges(activeSnippetId!);
+        };
+        reader.readAsDataURL(file);
     };
 
     const removevideoImg = () => {
         const video = activeElementRef.current as HTMLVideoElement;
-
-        video.poster = '';
+        video.removeAttribute('poster');
         video.load();
-
         commitChanges(activeSnippetId!);
     };
 
@@ -587,10 +637,10 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                                     setShowLeftPanel(!showLeftPanel);
                                     if (!showLeftPanel && window.innerWidth < 1024) setShowRightPanel(false);
                                 }}
-                                className={`p-2 rounded-lg text-xs font-bold transition-all lg:hidden ${showLeftPanel ? 'bg-indigo-500 text-white' : 'hover:bg-slate-800 text-slate-400'}`}
+                                className={`p-2 rounded-lg text-xs font-bold transition-all hidden lg:flex ${showLeftPanel ? 'bg-indigo-500 text-white' : 'hover:bg-slate-800 text-slate-400'}`}
                                 title="Style panel"
                             >
-                                <PanelLeft className="w-3.5 h-3.5" />
+                                {locale === 'ar' ? <PanelRight className="w-3.5 h-3.5" /> : <PanelLeft className="w-3.5 h-3.5" />}
                             </button>
                             <button
                                 id="editor-right-panel-toggle"
@@ -601,7 +651,7 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                                 className={`p-2 rounded-lg text-xs font-bold transition-all lg:hidden ${showRightPanel ? 'bg-indigo-500 text-white' : 'hover:bg-slate-800 text-slate-400'}`}
                                 title="Snippets panel"
                             >
-                                <PanelRight className="w-3.5 h-3.5" />
+                                {locale === 'ar' ? <PanelLeft className="w-3.5 h-3.5" /> : <PanelRight className="w-3.5 h-3.5" />}
                             </button>
                         </>
                     )}
@@ -625,7 +675,15 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                 )}
                 <div
                     id="editor-sidebar"
-                    className={`bg-white border-r border-slate-200 overflow-y-auto flex flex-col transition-all duration-300 absolute lg:relative h-[calc(100vh-3.5rem)] z-[60] w-72 ${previewMode ? '-translate-x-full lg:-ml-72' : showLeftPanel ? 'translate-x-0 lg:ml-0' : '-translate-x-full lg:translate-x-0 lg:ml-0 hidden lg:flex'}`}>
+                    className={`bg-white border-slate-200 overflow-y-auto flex flex-col transition-all duration-300 absolute lg:relative h-[calc(100vh-3.5rem)] z-[60] w-72 lg:w-72 start-0 border-r lg:border-r 
+                        ${previewMode
+                            ? 'ltr:-translate-x-full rtl:translate-x-full lg:ltr:-ml-72 lg:rtl:-mr-72'
+                            : showLeftPanel
+                                ? 'translate-x-0 lg:ml-0 lg:mr-0'
+                                : 'ltr:-translate-x-full rtl:translate-x-full lg:translate-x-0 lg:ltr:-ml-72 lg:rtl:-mr-72 hidden lg:flex'
+                        }
+                        max-lg:w-full sm:max-lg:w-80 max-lg:shadow-2xl`}
+                >
                     <div className="p-4 border-b border-slate-100 flex items-center justify-between">
                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{editorT('styleDesigner')}</span>
                         <Settings className="w-3.5 h-3.5 text-indigo-500" />
@@ -824,28 +882,167 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                     <div
                         id="editor-canvas"
                         ref={canvasRef} onDragOver={handleDragOver} onDrop={handleDrop} onClick={() => { if (activeSnippetId) commitChanges(activeSnippetId); setActiveSnippetId(null); activeElementRef.current = null; setActiveTagName(null); }}
-                        className={`w-full max-w-7xl bg-white shadow-2xl rounded-2xl overflow-y-auto scroll-smooth transition-all duration-500 relative min-h-[600px] ${previewMode ? 'ring-0' : 'ring-1 ring-slate-300'}`}
+                        className={`w-full max-w-7xl bg-white shadow-2xl rounded-2xl overflow-y-auto scroll-smooth transition-all duration-500 relative min-h-[600px] ${previewMode ? 'ring-0' : 'ring-1 ring-slate-300 [&_video]:pointer-events-none'}`}
                     >
                         <div className="flex flex-col min-h-full">
-                            {droppedSnippets.map((item, index) => (
-                                <div key={item.id} className="group relative">
-                                    {!previewMode && (
-                                        <div className="absolute top-4 right-4 hidden group-hover:flex items-center gap-1.5 bg-[#1E293B] text-white px-2 py-1 rounded-xl z-50 shadow-2xl border border-white/10 scale-90 opacity-90 transition-all">
-                                            <button onClick={() => moveSnippet(index, 'up')} className="p-1.5 hover:bg-slate-700 rounded-lg"><Move className="w-3.5 h-3.5 rotate-180" /></button>
-                                            <button onClick={() => moveSnippet(index, 'down')} className="p-1.5 hover:bg-slate-700 rounded-lg"><Move className="w-3.5 h-3.5" /></button>
-                                            <button onClick={() => { const newList = [...droppedSnippets]; newList.splice(index + 1, 0, { ...item, id: crypto.randomUUID() }); setDroppedSnippets(newList); }} className="p-1.5 hover:bg-slate-700 rounded-lg"><Copy className="w-3.5 h-3.5" /></button>
-                                            <button onClick={() => setDeleteIndex(index)} className="p-1.5 hover:bg-red-900 rounded-lg"><Trash2 className="w-3.5 h-3.5" /></button>
-                                        </div>
-                                    )}
-                                    <StableSnippet
-                                        item={item}
-                                        isActive={activeSnippetId === item.id}
-                                        previewMode={previewMode}
-                                        onContentClick={handleContentClick}
-                                        isBeingEdited={activeSnippetId === item.id && activeElementRef.current !== null}
-                                    />
-                                </div>
-                            ))}
+                            {droppedSnippets.map((item, index) => {
+                                const isActive = activeSnippetId === item.id;
+                                return (
+                                    <div key={item.id} className="group relative">
+                                        {!previewMode && (
+                                            <div className="absolute top-4 right-4 hidden group-hover:flex items-center gap-1.5 bg-[#1E293B] text-white px-2 py-1 rounded-xl z-50 shadow-2xl border border-white/10 scale-90 opacity-90 transition-all">
+                                                <button onClick={() => moveSnippet(index, 'up')} className="p-1.5 hover:bg-slate-700 rounded-lg"><Move className="w-3.5 h-3.5 rotate-180" /></button>
+                                                <button onClick={() => moveSnippet(index, 'down')} className="p-1.5 hover:bg-slate-700 rounded-lg"><Move className="w-3.5 h-3.5" /></button>
+                                                <button onClick={() => { const newList = [...droppedSnippets]; newList.splice(index + 1, 0, { ...item, id: crypto.randomUUID() }); setDroppedSnippets(newList); }} className="p-1.5 hover:bg-slate-700 rounded-lg"><Copy className="w-3.5 h-3.5" /></button>
+                                                <button onClick={() => setDeleteIndex(index)} className="p-1.5 hover:bg-red-900 rounded-lg"><Trash2 className="w-3.5 h-3.5" /></button>
+                                            </div>
+                                        )}
+                                        {isActive && !previewMode && activeElementRef.current && (
+                                            <div
+                                                className="fixed bottom-6 left-1/2 -translate-x-1/2 flex flex-col gap-3 bg-slate-900/95 backdrop-blur-xl text-white p-4 rounded-3xl z-[100] shadow-2xl border border-white/20 lg:hidden animate-in fade-in slide-in-from-bottom-8 w-[92vw] max-w-sm"
+                                                onClick={(e) => e.stopPropagation()}
+                                            >
+                                                {/* Header & Tag Indicator */}
+                                                <div className="flex items-center justify-between border-b border-white/10 pb-2">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="bg-indigo-500 p-1.5 rounded-lg">
+                                                            <Settings className="w-3.5 h-3.5 text-white" />
+                                                        </div>
+                                                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-300">{activeTagName}</span>
+                                                    </div>
+                                                    <button onClick={() => { setActiveSnippetId(null); activeElementRef.current = null; }} className="p-1 hover:bg-white/10 rounded-full">
+                                                        <Plus className="w-4 h-4 rotate-45 text-slate-400" />
+                                                    </button>
+                                                </div>
+
+                                                <div className="flex flex-wrap items-center gap-4">
+                                                    {/* Typography: Size & Alignment */}
+                                                    {(!['img', 'video'].includes(activeTagName!)) && (
+                                                        <div className="flex flex-col gap-2 bg-white/5 p-2 rounded-2xl border border-white/5 flex-1 min-w-[140px]">
+                                                            <div className="flex items-center justify-between gap-1 px-1 border-b border-white/10 pb-2">
+                                                                <div className="flex items-center gap-1">
+                                                                    <button onMouseDown={(e) => { e.preventDefault(); applyStyle('fontSize', (parseInt(activeStyles.fontSize) - 1) + 'px'); }} className="p-1.5 hover:bg-white/10 rounded-lg"><Minus className="w-3.5 h-3.5" /></button>
+                                                                    <span className="text-[10px] font-black w-6 text-center">{activeStyles.fontSize.replace('px', '').replace('rem', '')}</span>
+                                                                    <button onMouseDown={(e) => { e.preventDefault(); applyStyle('fontSize', (parseInt(activeStyles.fontSize) + 1) + 'px'); }} className="p-1.5 hover:bg-white/10 rounded-lg"><PlusIcon className="w-3.5 h-3.5" /></button>
+                                                                </div>
+                                                                <div className="text-[9px] font-bold text-slate-500 uppercase tracking-tighter">Size</div>
+                                                            </div>
+                                                            <div className="flex items-center justify-around gap-1 pt-1">
+                                                                <button onMouseDown={(e) => { e.preventDefault(); applyStyle('textAlign', 'left'); }} className={`p-2 rounded-lg transition-all ${activeStyles.textAlign.includes('left') ? 'bg-indigo-500 text-white' : 'hover:bg-white/10 text-slate-400'}`}><AlignLeft className="w-4 h-4" /></button>
+                                                                <button onMouseDown={(e) => { e.preventDefault(); applyStyle('textAlign', 'center'); }} className={`p-2 rounded-lg transition-all ${activeStyles.textAlign.includes('center') ? 'bg-indigo-500 text-white' : 'hover:bg-white/10 text-slate-400'}`}><AlignCenter className="w-4 h-4" /></button>
+                                                                <button onMouseDown={(e) => { e.preventDefault(); applyStyle('textAlign', 'right'); }} className={`p-2 rounded-lg transition-all ${activeStyles.textAlign.includes('right') ? 'bg-indigo-500 text-white' : 'hover:bg-white/10 text-slate-400'}`}><AlignRight className="w-4 h-4" /></button>
+                                                                <button onMouseDown={(e) => { e.preventDefault(); applyStyle('textAlign', 'justify'); }} className={`p-2 rounded-lg transition-all ${activeStyles.textAlign.includes('justify') ? 'bg-indigo-500 text-white' : 'hover:bg-white/10 text-slate-400'}`}><Layout className="w-4 h-4" /></button>
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {/* Common: Border Radius & Colors */}
+                                                    <div className="flex items-center gap-3 bg-white/5 p-2 rounded-2xl border border-white/5">
+                                                        {/* Border Radius Toggle/Step */}
+                                                        <button
+                                                            onMouseDown={(e) => { e.preventDefault(); applyStyle('borderRadius', (parseInt(activeStyles.borderRadius || '0') + 4) % 28 + 'px'); }}
+                                                            className="p-2 hover:bg-white/10 rounded-xl"
+                                                            title="Border Radius"
+                                                        >
+                                                            <SquareRoundCorner className="w-4 h-4" />
+                                                        </button>
+
+                                                        {/* Colors */}
+                                                        <div className="flex items-center gap-2 pl-2 border-l border-white/10">
+                                                            {(!['img', 'video'].includes(activeTagName!)) && (
+                                                                <div className="relative group">
+                                                                    <div className="w-6 h-6 rounded-full border border-white/20 overflow-hidden" style={{ background: 'linear-gradient(to right, red, orange, yellow, green, cyan, blue, violet)' }}>
+                                                                        <input
+                                                                            type="color"
+                                                                            value={activeStyles.color}
+                                                                            onChange={(e) => applyStyleDebounced('foreColor', e.target.value)}
+                                                                            className="absolute inset-0 opacity-0 cursor-pointer"
+                                                                        />
+                                                                    </div>
+                                                                    <TypeIcon className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-slate-900 rounded-full p-0.5" />
+                                                                </div>
+                                                            )}
+                                                            {activeTagName !== 'video' && (
+                                                                <div className="relative group">
+                                                                    <div className="w-6 h-6 rounded-full border border-white/20 bg-slate-700 flex items-center justify-center overflow-hidden">
+                                                                        <div className="w-full h-full" style={{ backgroundColor: activeStyles.backgroundColor === 'transparent' ? '#334155' : activeStyles.backgroundColor }} />
+                                                                        <input
+                                                                            type="color"
+                                                                            value={activeStyles.backgroundColor === 'transparent' ? '#ffffff' : activeStyles.backgroundColor}
+                                                                            onChange={(e) => applyStyleDebounced('backgroundColor', e.target.value)}
+                                                                            className="absolute inset-0 opacity-0 cursor-pointer"
+                                                                        />
+                                                                    </div>
+                                                                    <PaintBucket className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-slate-900 rounded-full p-0.5" />
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Media Controls */}
+                                                {(['img', 'svg', 'video'].includes(activeTagName!)) && (
+                                                    <div className="flex gap-2 bg-white/5 p-2 rounded-2xl border border-white/5 overflow-x-auto">
+                                                        {activeTagName === 'img' && (
+                                                            <button onClick={() => imageInputRef.current?.click()} className="flex-1 bg-indigo-600 px-3 py-2 rounded-xl text-[10px] font-bold flex items-center justify-center gap-2 shrink-0">
+                                                                <ImageIcon className="w-3.5 h-3.5" /> {editorT('replaceimg')}
+                                                            </button>
+                                                        )}
+                                                        {activeTagName === 'svg' && (
+                                                            <button onClick={() => svgInputRef.current?.click()} className="flex-1 bg-emerald-600 px-3 py-2 rounded-xl text-[10px] font-bold flex items-center justify-center gap-2 shrink-0">
+                                                                <VectorSquare className="w-3.5 h-3.5" /> {editorT('replacesvg')}
+                                                            </button>
+                                                        )}
+                                                        {activeTagName === 'video' && (
+                                                            <>
+                                                                <button onClick={() => videoInputRef.current?.click()} className="flex-1 bg-emerald-600 px-3 py-2 rounded-xl text-[10px] font-bold flex items-center justify-center gap-2 shrink-0">
+                                                                    <FilePlay className="w-3.5 h-3.5" /> Video
+                                                                </button>
+                                                                <button onClick={() => videoImgInputRef.current?.click()} className="flex-1 bg-slate-700 px-3 py-2 rounded-xl text-[10px] font-bold flex items-center justify-center gap-2 shrink-0">
+                                                                    <ImageIcon className="w-3.5 h-3.5" /> Cover
+                                                                </button>
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                )}
+
+                                                {/* Link Controls */}
+                                                {activeTagName === 'a' && (
+                                                    <div className="flex flex-col gap-2 bg-white/5 p-3 rounded-2xl border border-white/5">
+                                                        <div className="flex items-center gap-2">
+                                                            <LinkIcon className="w-3.5 h-3.5 text-indigo-400" />
+                                                            <input
+                                                                type="text"
+                                                                placeholder="https://..."
+                                                                value={activeElementRef.current?.getAttribute('href') || ''}
+                                                                onChange={(e) => updateLinkHref(e.target.value)}
+                                                                className="flex-1 bg-transparent border-none text-[10px] focus:ring-0 p-0 text-slate-300"
+                                                            />
+                                                        </div>
+                                                        <label className="flex items-center gap-2 text-[10px] text-slate-400 cursor-pointer pt-2 border-t border-white/5">
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={activeElementRef.current?.getAttribute('target') === '_blank'}
+                                                                onChange={(e) => toggleLinkTarget(e.target.checked)}
+                                                                className="rounded border-white/20 bg-transparent text-indigo-600 w-3 h-3"
+                                                            />
+                                                            {editorT('openInNewTab')}
+                                                        </label>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+
+                                        <StableSnippet
+                                            item={item}
+                                            isActive={isActive}
+                                            previewMode={previewMode}
+                                            onContentClick={handleContentClick}
+                                            isBeingEdited={isActive && activeElementRef.current !== null}
+                                        />
+                                    </div>
+                                )
+                            })}
                             {!previewMode && (
                                 <div onDragOver={(e) => handleDragOver(e, droppedSnippets.length)} className={`h-40 border-2 border-dashed border-slate-300 m-8 rounded-3xl flex flex-col items-center justify-center transition-all gap-3 ${dragOverIndex === droppedSnippets.length ? 'bg-indigo-50 border-indigo-400' : 'bg-white hover:bg-slate-50'}`}>
                                     <Plus className={`w-10 h-10 ${dragOverIndex === droppedSnippets.length ? 'text-indigo-600' : 'text-slate-200'}`} />
@@ -862,11 +1059,24 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                 )}
                 <div
                     id="editor-right-sidebar"
-                    className={`bg-white border-l border-slate-200 overflow-y-auto transition-all duration-300 absolute lg:relative h-[calc(100vh-3.5rem)] z-[60] w-80 left-0 ${previewMode ? 'translate-x-full lg:-mr-80' : showRightPanel ? 'translate-x-0 lg:mr-0' : 'translate-x-full lg:translate-x-0 lg:mr-0 hidden lg:block'}`}>
+                    className={`bg-white border-l border-slate-200 overflow-y-auto transition-all duration-300 absolute lg:relative h-[calc(100vh-3.5rem)] z-[60] w-80 end-0 
+                        ${previewMode
+                            ? 'ltr:translate-x-full rtl:-translate-x-full lg:ltr:-mr-80 lg:rtl:-ml-80'
+                            : showRightPanel
+                                ? 'translate-x-0 lg:mr-0 lg:ml-0'
+                                : 'ltr:translate-x-full rtl:-translate-x-full lg:translate-x-0 lg:ltr:-mr-80 lg:rtl:-ml-80 hidden lg:block'
+                        }`}
+                >
                     <div className="p-4 border-b border-slate-100 text-[10px] font-black text-slate-400 uppercase tracking-widest">{editorT('snippetsLibrary')}</div>
                     <div id="editor-snippets" className="p-4 space-y-3">
                         {snippets.map(s => (
-                            <div key={s.id} draggable onDragStart={(e) => handleDragStart(e, s)} className="p-5 bg-white border border-slate-200 rounded-2xl cursor-grab hover:border-indigo-400 hover:shadow-xl transition-all group overflow-hidden">
+                            <div
+                                key={s.id}
+                                draggable
+                                onDragStart={(e) => handleDragStart(e, s)}
+                                onClick={() => { if (window.innerWidth < 1024) handleSnippetClick(s); }}
+                                className="p-4 bg-white border border-slate-200 rounded-2xl cursor-pointer lg:cursor-grab hover:border-indigo-400 hover:shadow-lg active:scale-95 transition-all group overflow-hidden"
+                            >
                                 <div className="text-xs font-black text-slate-800 uppercase group-hover:text-indigo-600">{locale === 'ar' && s.nameAr ? s.nameAr : s.name}</div>
                                 <div className="text-[9px] text-slate-400 mt-1 uppercase font-bold">{t(`categories.${s.category}`)}</div>
                             </div>
