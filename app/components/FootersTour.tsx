@@ -1,18 +1,21 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import GuidedTour, { TourStep } from './GuidedTour';
 
 export default function FootersTour() {
+    const t = useTranslations('Tours.footers');
+
     const tourSteps: TourStep[] = [
         {
             target: '#new-footer-btn',
-            title: 'إدارة التذييلات',
-            content: 'قم بتخصيص الجزء السفلي من موقعك (الفوتر) وإضافة الروابط والمعلومات المهمة.',
+            title: t('step1_title'),
+            content: t('step1_content'),
         },
         {
-            target: '#footers-list',
-            title: 'قائمة التذييلات',
-            content: 'استعرض القوالب المستخدمة في أسفل الموقع وقم بتعديل محتواها.',
+            target: '#footers-list tbody tr:first-child',
+            title: t('step2_title'),
+            content: t('step2_content'),
         }
     ];
 

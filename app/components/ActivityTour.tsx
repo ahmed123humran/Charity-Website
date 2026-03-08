@@ -1,13 +1,16 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import GuidedTour, { TourStep } from './GuidedTour';
 
 export default function ActivityTour() {
+    const t = useTranslations('Tours.activity');
+
     const tourSteps: TourStep[] = [
         {
-            target: '#activity-logs-list',
-            title: 'سجل النشاطات',
-            content: 'راقب كل العمليات التي تتم في لوحة التحكم للحفاظ على أمان وسلامة البيانات.',
+            target: '#activity-logs-list tbody tr:first-child',
+            title: t('step1_title'),
+            content: t('step1_content'),
         }
     ];
 

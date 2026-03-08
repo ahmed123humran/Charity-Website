@@ -1,24 +1,26 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import GuidedTour, { TourStep } from './GuidedTour';
 
 export default function SnippetsTour() {
+    const t = useTranslations('Tours.snippets');
+
     const tourSteps: TourStep[] = [
         {
             target: '#new-snippet-btn',
-            title: 'المكونات المخصصة',
-            content: 'أنشئ قطع محتوى جاهزة (Snippets) لاستخدامها بشكل متكرر في صفحات مختلفة.',
+            title: t('step1_title'),
+            content: t('step1_content'),
         },
         {
-            target: '#snippets-list',
-            title: 'مكتبة المكونات',
-            content: 'هنا تجد كل القطع البرمجية أو التصميمية التي قمت بحفظها لإعادة الاستخدام.',
+            target: '#snippets-list > div:first-child',
+            title: t('step2_title'),
+            content: t('step2_content'),
         },
         {
-            target: '#snippet-editor-modal',
-            title: 'محرر المكونات',
-            content: 'يمكنك تعديل المكون برمجياً كـ HTML أو مرئياً باستخدام السحب والإفلات.',
-            position: 'center'
+            target: '#edit-snippet-btn-0',
+            title: t('step3_title'),
+            content: t('step3_content'),
         }
     ];
 

@@ -13,7 +13,7 @@ model User {
   name       String?
   createdAt  DateTime      @default(now())
   updatedAt  DateTime      @updatedAt
-  password   String        @default("admin123")
+  password   String
   phone      String?       @unique
   role       Role          @default(ADMIN)
   activities ActivityLog[]
@@ -35,18 +35,18 @@ model ActivityLog {
 }
 
 model Website {
-  id         String   @id @default(cuid())
-  domain     String?  @unique
-  themeColor String   @default("#714B67")
-  language   String   @default("en_US")
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  logo       String?
-  description  Json?
-  name         Json
-  footers      Footer[]
-  menus        Menu[]
-  pages        Page[]
+  id          String   @id @default(cuid())
+  domain      String?  @unique
+  themeColor  String   @default("#714B67")
+  language    String   @default("en_US")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  name        Json
+  description Json?
+  logo        String?
+  footers     Footer[]
+  menus       Menu[]
+  pages       Page[]
 }
 
 model SocialMedia {
@@ -103,10 +103,10 @@ model Menu {
 model Snippet {
   id          String  @id @default(cuid())
   name        String
-  nameAr      String?
   category    String
   htmlContent String
   thumbnail   String?
+  nameAr      String?
 }
 
 enum Role {

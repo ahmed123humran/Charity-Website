@@ -266,5 +266,86 @@
         "link": "Link",
         "openInNewTab": "Open in a new tab",
         "replaceimgvideo": "Replace Img Video"
+    },
+    "Tours": {
+        "next": "Next",
+        "prev": "Back",
+        "finish": "Got it ✓",
+        "users": {
+            "step1_title": "Add New User",
+            "step1_content": "You can add new admins or editors to help manage the content.",
+            "step2_title": "Users List",
+            "step2_content": "Here you can browse all registered users, edit their permissions, or remove them.",
+            "step3_title": "Roles & Permissions",
+            "step3_content": "The system supports different access levels: (Admin) for full control, (Editor) for content only, and (Viewer) for read-only access."
+        },
+        "snippets": {
+            "step1_title": "Custom Components",
+            "step1_content": "Create ready-made content pieces (Snippets) to reuse across different pages.",
+            "step2_title": "Components Library",
+            "step2_content": "Here you can find all the code or design pieces you've saved for reuse.",
+            "step3_title": "Components Editor",
+            "step3_content": "You can edit the component via code as HTML or visually using drag and drop."
+        },
+        "activity": {
+            "step1_title": "Activity Logs",
+            "step1_content": "Monitor all operations in the dashboard to maintain data security and integrity."
+        },
+        "dashboard": {
+            "step1_title": "Dashboard",
+            "step1_content": "Here you can view quick statistics about your website and pages.",
+            "step2_title": "Websites Management",
+            "step2_content": "From here you can control website settings, logo, and colors.",
+            "step3_title": "Pages",
+            "step3_content": "Create new pages and edit their content with ease.",
+            "step4_title": "Ready-made Components",
+            "step4_content": "Use ready-made components to build your pages quickly and professionally."
+        },
+        "editor": {
+            "step1_title": "Components Library",
+            "step1_content": "Drag components from here and drop them into the design area to build your page.",
+            "step2_title": "Design Area",
+            "step2_content": "Here you can preview the page live, and click on any element to edit or delete it.",
+            "step3_title": "Sidebar Tools",
+            "step3_content": "From here you can control page settings, logo, and colors.",
+            "step4_title": "Save Changes",
+            "step4_content": "After finishing the design, don't forget to save changes to update the website."
+        },
+        "footers": {
+            "step1_title": "Footers Management",
+            "step1_content": "Customize the bottom part of your website (Footer) and add important links and information.",
+            "step2_title": "Footers List",
+            "step2_content": "Browse the templates used at the bottom of the site and edit their content."
+        },
+        "menus": {
+            "step1_title": "Create New Menu",
+            "step1_content": "Create navigation menus to organize your website links.",
+            "step2_title": "Menu Links",
+            "step2_content": "From here you can add links to the menu, arrange them, and determine where they appear on the site."
+        },
+        "pages": {
+            "step1_title": "Create New Page",
+            "step1_content": "Start by adding new pages to your site such as (Contact Us, Privacy Policy, etc.).",
+            "step2_title": "Pages Management",
+            "step2_content": "Here you can see all pages, their status (published or draft), and the link for each.",
+            "step3_title": "Interactive Designer",
+            "step3_content": "This icon opens the easy page designer to build page content with drag and drop."
+        },
+        "searchReplace": {
+            "step1_title": "Smart Search & Replace",
+            "step1_content": "You can change specific text across the entire site with one click, useful for updating links or recurring names."
+        },
+        "social": {
+            "step1_title": "Link Accounts",
+            "step1_content": "Add links to the organization's social media accounts to appear on the site.",
+            "step2_title": "Added Accounts",
+            "step2_content": "Control added accounts, edit links, or hide specific platforms."
+        },
+        "websites": {
+            "step1_title": "Add New Website",
+            "step1_content": "Click here to start the process of creating a new website for a charity or other entity.",
+            "step2_title": "Websites List",
+            "step2_content": "Here all the websites you created appear, you can edit or delete them from the actions section."
+        }
     }
 }

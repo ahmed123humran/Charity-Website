@@ -149,7 +149,7 @@ export default function WebsitesPage() {
     return (
         <div className="space-y-8">
             <WebsiteTour />
-            <div className="flex justify-between items-center">
+            <div className="flex flex-wrap justify-between items-center gap-4">
                 <div>
                     <h1 className="text-3xl font-bold text-slate-900">{t('websites')}</h1>
                     <p className="text-slate-500 mt-1">{t('manageWebsites')}</p>
@@ -277,7 +277,7 @@ export default function WebsitesPage() {
                             <button onClick={closeModal} className="text-slate-400 hover:text-slate-600">&times;</button>
                         </div>
                         <form onSubmit={handleSubmit} className="p-6 space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700 mb-1">{t('websiteName')} (EN)</label>
                                     <input

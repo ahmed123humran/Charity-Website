@@ -19,8 +19,8 @@ export default async function AdminLayout({
     <div className="flex bg-[#f8fafc] min-h-screen font-sans selection:bg-primary/10">
       <AdminSidebar />
       <DashboardTour />
-      <main className="flex-1 ms-72 transition-all min-w-0">
-        <div className="p-10 max-w-[1600px] mx-auto">
+      <main className="flex-1 ms-0 lg:ms-72 transition-all min-w-0 pt-14 lg:pt-0">
+        <div className="p-4 sm:p-6 lg:p-10 max-w-[1600px] mx-auto">
           {children}
         </div>
       </main>

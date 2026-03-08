@@ -8,11 +8,13 @@ import {
     Image as ImageIcon, Copy, MousePointer2, X, FilePlay,
     Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight, Palette,
     Type as TypeIcon, Minus, Plus as PlusIcon, PaintBucket, Settings,
-    Eye, EyeOff, Monitor, Laptop, Smartphone, SquareRoundCorner, VectorSquare
+    Eye, EyeOff, Monitor, Laptop, Smartphone, SquareRoundCorner, VectorSquare,
+    PanelLeft
 } from 'lucide-react';
 import { getLocalizedName } from '@/app/utils/locale';
 import toast from 'react-hot-toast';
 import EditorTour from '@/app/components/EditorTour';
+import { sanitizeHtml } from '@/app/utils/sanitize';
 
 import ConfirmDialog from '@/app/components/ConfirmDialog';
 
@@ -55,7 +57,7 @@ const StableSnippet = memo(({
     return (
         <div
             id={`snippet-content-${item.id}`}
-            dangerouslySetInnerHTML={{ __html: item.htmlContent }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.htmlContent) }}
             onClick={(e) => onContentClick(e, item.id)}
             className={`transition-all duration-300 min-h-[50px] ${!previewMode ? 'hover:outline-2 hover:outline-dashed hover:outline-indigo-300 cursor-text' : ''} ${!previewMode && isActive ? 'outline-2 outline outline-indigo-500 shadow-xl z-10' : ''}`}
         />
@@ -84,6 +86,7 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
     const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
     const [editorLocale, setEditorLocale] = useState('en');
     const [previewMode, setPreviewMode] = useState(false);
+    const [showLeftPanel, setShowLeftPanel] = useState(true);
 
     // Dialog state
     const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
@@ -559,33 +562,42 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
     return (
         <div className="flex flex-col h-screen bg-slate-100 overflow-hidden font-sans">
             <EditorTour />
-            <div className="h-14 bg-[#1E293B] flex justify-between items-center px-6 z-50 text-white shadow-xl">
-                <div className="flex items-center gap-6">
+            <div className="h-14 bg-[#1E293B] flex justify-between items-center px-3 sm:px-6 z-50 text-white shadow-xl overflow-x-auto">
+                <div className="flex items-center gap-2 sm:gap-6 shrink-0">
                     <button
                         id="save-button"
-                        onClick={handleSave} disabled={saving} className="bg-[#3B82F6] hover:bg-blue-600 text-white px-6 py-2 rounded-lg text-xs font-bold transition-all shadow-lg flex items-center gap-2">
-                        <Save className="w-3.5 h-3.5" /> {saving ? '...' : commonT('saveChanges')}
+                        onClick={handleSave} disabled={saving} className="bg-[#3B82F6] hover:bg-blue-600 text-white px-3 sm:px-6 py-2 rounded-lg text-xs font-bold transition-all shadow-lg flex items-center gap-2">
+                        <Save className="w-3.5 h-3.5" /> <span className="hidden sm:inline">{saving ? '...' : commonT('saveChanges')}</span>
                     </button>
-                    <button onClick={() => setPreviewMode(!previewMode)} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${previewMode ? 'bg-amber-500 text-white' : 'hover:bg-slate-800'}`}>
-                        {previewMode ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />} {previewMode ? editorT('exitPreview') : editorT('preview')}
+                    <button onClick={() => setPreviewMode(!previewMode)} className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs font-bold transition-all ${previewMode ? 'bg-amber-500 text-white' : 'hover:bg-slate-800'}`}>
+                        {previewMode ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />} <span className="hidden sm:inline">{previewMode ? editorT('exitPreview') : editorT('preview')}</span>
                     </button>
+                    {!previewMode && (
+                        <button onClick={() => setShowLeftPanel(!showLeftPanel)} className={`p-2 rounded-lg text-xs font-bold transition-all lg:hidden ${showLeftPanel ? 'bg-indigo-500 text-white' : 'hover:bg-slate-800 text-slate-400'}`} title="Style panel">
+                            <PanelLeft className="w-3.5 h-3.5" />
+                        </button>
+                    )}
                 </div>
-                <div className="flex items-center gap-6">
+                <div className="flex items-center gap-3 sm:gap-6 shrink-0">
                     <div className="flex bg-[#0F172A] p-1 rounded-lg">
-                        <button onClick={() => switchLocale('ar')} className={`px-4 py-1 rounded text-[10px] font-bold transition-all ${editorLocale === 'ar' ? 'bg-[#3B82F6] text-white shadow-lg' : 'text-slate-400'}`}>AR</button>
-                        <button onClick={() => switchLocale('en')} className={`px-4 py-1 rounded text-[10px] font-bold transition-all ${editorLocale === 'en' ? 'bg-[#3B82F6] text-white shadow-lg' : 'text-slate-400'}`}>EN</button>
+                        <button onClick={() => switchLocale('ar')} className={`px-3 sm:px-4 py-1 rounded text-[10px] font-bold transition-all ${editorLocale === 'ar' ? 'bg-[#3B82F6] text-white shadow-lg' : 'text-slate-400'}`}>AR</button>
+                        <button onClick={() => switchLocale('en')} className={`px-3 sm:px-4 py-1 rounded text-[10px] font-bold transition-all ${editorLocale === 'en' ? 'bg-[#3B82F6] text-white shadow-lg' : 'text-slate-400'}`}>EN</button>
                     </div>
-                    <div className="flex items-center gap-3 border-l border-slate-700 pl-6">
-                        <span className="text-xs font-bold text-slate-300">{getLocalizedName(footer?.title, locale)}</span>
+                    <div className="flex items-center gap-3 border-l border-slate-700 pl-3 sm:pl-6">
+                        <span className="text-xs font-bold text-slate-300 hidden sm:block">{getLocalizedName(footer?.title, locale)}</span>
                         <button onClick={() => router.back()} className="p-2 hover:bg-slate-800 rounded-lg"><ArrowLeft className="w-4 h-4" /></button>
                     </div>
                 </div>
             </div>
 
             <div className="flex flex-1 overflow-hidden relative">
+                {/* Mobile overlay for left panel */}
+                {showLeftPanel && !previewMode && (
+                    <div className="fixed inset-0 bg-black/30 z-30 lg:hidden" onClick={() => setShowLeftPanel(false)} />
+                )}
                 <div
                     id="editor-sidebar"
-                    className={`w-72 bg-white border-r border-slate-200 overflow-y-auto z-40 flex flex-col transition-all duration-300 ${previewMode ? 'hidden' : 'ml-0'}`}>
+                    className={`bg-white border-r border-slate-200 overflow-y-auto flex flex-col transition-all duration-300 absolute lg:relative h-full z-40 w-72 ${previewMode ? '-translate-x-full lg:hidden' : showLeftPanel ? 'translate-x-0 lg:ml-0' : '-translate-x-full lg:translate-x-0 lg:ml-0 hidden lg:flex'}`}>
                     <div className="p-4 border-b border-slate-100 flex items-center justify-between">
                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{editorT('styleDesigner')}</span>
                         <Settings className="w-3.5 h-3.5 text-indigo-500" />
@@ -775,7 +787,7 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                     </div>
                 </div>
 
-                <div className="flex-1 overflow-hidden flex flex-col items-center p-8 bg-[#E2E8F0]">
+                <div className="flex-1 overflow-hidden flex flex-col items-center p-4 sm:p-8 bg-[#E2E8F0]">
                     <div className="flex gap-4 mb-4 bg-white p-1 rounded-xl shadow-sm border border-slate-200">
                         <button className="p-2 text-indigo-600 bg-indigo-50 rounded-lg"><Monitor className="w-4 h-4" /></button>
                         <button className="p-2 text-slate-400 rounded-lg"><Smartphone className="w-4 h-4" /></button>

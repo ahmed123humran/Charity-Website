@@ -141,7 +141,7 @@ export default function SocialMediaManagement() {
     return (
         <div className="space-y-8">
             <SocialMediaTour />
-            <div className="flex justify-between items-center">
+            <div className="flex flex-wrap justify-between items-center gap-4">
                 <div>
                     <h1 className="text-3xl font-bold text-slate-900">{t('socialMedia')}</h1>
                     <p className="text-slate-500 mt-1">{t('manageSocialMedia')}</p>
@@ -252,7 +252,7 @@ export default function SocialMediaManagement() {
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">{t('socialName')} (EN)</label>
                                     <input type="text" value={nameEn} onChange={e => setNameEn(e.target.value)} required className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/20 transition-all outline-hidden" placeholder="e.g. Facebook" />

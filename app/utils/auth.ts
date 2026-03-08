@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers';
 import prisma from '@/app/utils/db';
+import { verifySession } from '@/app/utils/session';
 
 export async function getServerUser() {
     const cookieStore = await cookies();
@@ -7,13 +8,12 @@ export async function getServerUser() {
 
     if (!session?.value) return null;
 
-    const user = await prisma.user.findFirst({
-        where: {
-            OR: [
-                { email: session.value },
-                { phone: session.value }
-            ]
-        }
+    // Verify JWT token and extract user ID
+    const payload = await verifySession(session.value);
+    if (!payload) return null;
+
+    const user = await prisma.user.findUnique({
+        where: { id: payload.userId }
     });
 
     return user;

@@ -252,7 +252,7 @@ async function main() {
             </h1>
             <div class="w-full max-w my-10 overflow-hidden rounded-2xl shadow-xl">
                 <video
-                    class="w-full"
+                    class="w-full aspect-video object-cover"
                     controls
                     src="/video/test.mp4"
                 >
@@ -922,7 +922,7 @@ async function main() {
       htmlContent: s!.htmlContent,
       name: s!.name
     }));
-        
+
     const footerItems = [footer].filter(Boolean).map(s => ({
       id: crypto.randomUUID(), // unique instance ID
       snippetId: s!.id,
@@ -958,22 +958,28 @@ async function main() {
   }
 
   // Default Admin User
-  // const adminEmail = 'admin@ragmi.org';
-  // const existingUser = await prisma.user.findUnique({
-  //   where: { email: adminEmail }
-  // });
+  const adminEmail = 'admin@ragmi.org';
+  const existingUser = await prisma.user.findUnique({
+    where: { email: adminEmail }
+  });
 
-  // if (!existingUser) {
-  //   await prisma.user.create({
-  //     data: {
-  //       email: adminEmail,
-  //       name: 'Admin User',
-  //       password: 'admin123', // In a real app, hash this!
-  //     }
-  //   });
-  // } else {
-  //   console.log(`Admin user already exists: ${adminEmail}`);
-  // }
+  if (!existingUser) {
+    await prisma.user.create({
+      data: {
+        email: adminEmail,
+        name: 'Admin User',
+        password: 'admin123',
+      }
+    });
+    console.log(`Created admin user: ${adminEmail} (password: admin123)`);
+  } else {
+    // Re-set existing admin to plain text password
+    await prisma.user.update({
+      where: { id: existingUser.id },
+      data: { password: '123123' }
+    });
+    console.log(`Updated admin user: ${adminEmail} (password: 123123)`);
+  }
 }
 
 main()
