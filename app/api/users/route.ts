@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     try {
         const user = await getServerUser();
         if (!user || (user.role !== Role.ADMIN && user.role !== Role.EDITOR)) {
-            return NextResponse.json({ message: 'Unauthorized' }, { status: 403 });
+            return NextResponse.json({ message: 'unauthorized' }, { status: 403 });
         }
         const users = await prisma.user.findMany({
             include: {
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json(users, { status: 200 });
     }
     catch (error) {
-        return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({ message: 'internalServerError' }, { status: 500 });
     }
 }
 
@@ -40,12 +40,12 @@ export async function POST(request: NextRequest) {
     try {
         const user = await getServerUser();
         if (!user || user.role !== Role.ADMIN) {
-            return NextResponse.json({ message: 'Unauthorized: Only Admin can create users' }, { status: 403 });
+            return NextResponse.json({ message: 'adminOnly' }, { status: 403 });
         }
         const body = await request.json();
         const validation = createUserSchema.safeParse(body);
         if (!validation.success) {
-            return NextResponse.json({ message: validation.error.message }, { status: 400 });
+            return NextResponse.json({ message: validation.error.issues[0].message }, { status: 400 });
         }
 
         const { email, phone } = validation.data;
@@ -62,13 +62,13 @@ export async function POST(request: NextRequest) {
             });
 
             if (exists) {
-                return NextResponse.json({ message: 'User with this email or phone already exists' }, { status: 409 });
+                return NextResponse.json({ message: 'userExists' }, { status: 409 });
             }
         }
 
         const passwordToHash = validation.data.password;
         if (!passwordToHash) {
-            return NextResponse.json({ message: 'Password is required' }, { status: 400 });
+            return NextResponse.json({ message: 'passwordRequired' }, { status: 400 });
         }
         const hashedPassword = await hashPassword(passwordToHash);
 
@@ -92,6 +92,6 @@ export async function POST(request: NextRequest) {
         return NextResponse.json(newUser, { status: 201 });
     }
     catch (error) {
-        return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({ message: 'internalServerError' }, { status: 500 });
     }
 }

@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json(footers, { status: 200 });
     }
     catch (error) {
-        return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({ message: 'internalServerError' }, { status: 500 });
     }
 }
 
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
     try {
         const user = await getServerUser();
         if (!user || (user.role !== Role.ADMIN && user.role !== Role.EDITOR)) {
-            return NextResponse.json({ message: 'Unauthorized: Only Admin and Editor can create footers' }, { status: 403 });
+            return NextResponse.json({ message: 'unauthorized: Only Admin and Editor can create footers' }, { status: 403 });
         }
 
         const body = (await request.json()) as CreateFooterDto;
@@ -54,21 +54,21 @@ export async function POST(request: NextRequest) {
         // Helper to find snippet by name
         const findSnip = (name: string) => dbSnippets.find(s => s.name === name);
         const footer = findSnip('Footer');
-        
+
         // Construct content array (simulating dropped snippets)
         const contentItems = [footer].filter(Boolean).map(s => ({
-        id: crypto.randomUUID(), // unique instance ID
-        snippetId: s!.id,
-        htmlContent: s!.htmlContent,
-        name: s!.name
+            id: crypto.randomUUID(), // unique instance ID
+            snippetId: s!.id,
+            htmlContent: s!.htmlContent,
+            name: s!.name
         }));
 
         const newFooter = await prisma.footer.create({
             data: {
                 title: title as any,
                 content: {
-                en: contentItems,
-                ar: contentItems // Use same content for now, or could duplicate/localize if snippets supported it
+                    en: contentItems,
+                    ar: contentItems // Use same content for now, or could duplicate/localize if snippets supported it
                 },
                 websiteId,
                 userId
@@ -88,6 +88,6 @@ export async function POST(request: NextRequest) {
     }
     catch (error) {
         console.error(error);
-        return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({ message: 'internalServerError' }, { status: 500 });
     }
 }

@@ -88,7 +88,12 @@ export default function PagesManagement() {
                 fetchData();
                 toast.success(isEditing ? commonT('updated') : commonT('created'));
             } else {
-                toast.error(commonT('error'));
+                const err = await res.json();
+                try {
+                    toast.error(commonT(err.message) || err.message || commonT('error'));
+                } catch (e) {
+                    toast.error(err.message || commonT('error'));
+                }
             }
         } catch (error) {
             console.error(`Failed to ${isEditing ? 'update' : 'create'} page:`, error);
@@ -108,7 +113,12 @@ export default function PagesManagement() {
                 fetchData();
                 toast.success(commonT('deleted'));
             } else {
-                toast.error(commonT('error'));
+                const err = await res.json();
+                try {
+                    toast.error(commonT(err.message) || err.message || commonT('error'));
+                } catch (e) {
+                    toast.error(err.message || commonT('error'));
+                }
             }
         } catch (error) {
             console.error('Failed to delete page:', error);
@@ -132,13 +142,18 @@ export default function PagesManagement() {
             } else {
                 // Revert on failure
                 setPages(pages.map(p => p.id === id ? { ...p, isPublished: currentStatus } : p));
-                toast.error('Failed to update status');
+                const err = await res.json();
+                try {
+                    toast.error(commonT(err.message) || err.message || commonT('statusUpdateError'));
+                } catch (e) {
+                    toast.error(err.message || commonT('statusUpdateError'));
+                }
             }
         } catch (error) {
             console.error('Failed to toggle publish status:', error);
             // Revert on failure
             setPages(pages.map(p => p.id === id ? { ...p, isPublished: currentStatus } : p));
-            toast.error('Failed to update status');
+            toast.error(commonT('statusUpdateError'));
         }
     };
 
@@ -177,7 +192,7 @@ export default function PagesManagement() {
                             setIsEditing(false);
                             setShowModal(true);
                         }}
-                        className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-primary-dark transition-colors shadow-sm"
+                        className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-primary-dark transition-colors shadow-sm cursor-pointer"
                     >
                         <Plus className="w-5 h-5" />
                         {t('newPage')}
@@ -241,7 +256,7 @@ export default function PagesManagement() {
                                         {(userRole === 'ADMIN' || userRole === 'EDITOR') ? (
                                             <button
                                                 onClick={() => togglePublish(page.id, page.isPublished)}
-                                                className="text-start focus:outline-hidden"
+                                                className="text-start focus:outline-hidden cursor-pointer"
                                                 disabled={loading}
                                             >
                                                 {page.isPublished ? (
@@ -271,7 +286,7 @@ export default function PagesManagement() {
                                     <td className="px-6 py-4 text-end">
                                         <div className="flex justify-end gap-2">
                                             <button
-                                                className="p-2 text-slate-400 hover:text-primary transition-colors"
+                                                className="p-2 text-slate-400 hover:text-primary transition-colors cursor-pointer"
                                                 title={commonT('about')}
                                             >
                                                 <ArrowUpRight className="w-4 h-4" />
@@ -281,14 +296,14 @@ export default function PagesManagement() {
                                                     <button
                                                         id={index === 0 ? "design-page-action" : undefined}
                                                         onClick={() => router.push(`/admin/pages/${page.id}/editor`)}
-                                                        className="p-2 text-slate-400 hover:text-primary transition-colors"
+                                                        className="p-2 text-slate-400 hover:text-primary transition-colors cursor-pointer"
                                                         title={t('designPage')}
                                                     >
                                                         <Layout className="w-4 h-4" />
                                                     </button>
                                                     <button
                                                         onClick={() => openEditModal(page)}
-                                                        className="p-2 text-slate-400 hover:text-primary transition-colors"
+                                                        className="p-2 text-slate-400 hover:text-primary transition-colors cursor-pointer"
                                                         title={commonT('edit')}
                                                     >
                                                         <Edit2 className="w-4 h-4" />
@@ -298,7 +313,7 @@ export default function PagesManagement() {
                                             {userRole === 'ADMIN' && (
                                                 <button
                                                     onClick={() => handleDeleteClick(page.id)}
-                                                    className="p-2 text-slate-400 hover:text-red-500 transition-colors"
+                                                    className="p-2 text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
                                                     title={commonT('delete')}
                                                 >
                                                     <Trash2 className="w-4 h-4" />
@@ -322,7 +337,7 @@ export default function PagesManagement() {
                                 <h2 className="text-xl font-bold text-slate-900">
                                     {isEditing ? t('editPage') : t('newPage')}
                                 </h2>
-                                <button onClick={closeModal} className="text-slate-400 hover:text-slate-600">&times;</button>
+                                <button onClick={closeModal} className="text-slate-400 hover:text-slate-600 cursor-pointer text-2xl">&times;</button>
                             </div>
                             <form onSubmit={handleSubmit} className="p-6 space-y-4">
                                 <div>
@@ -388,13 +403,13 @@ export default function PagesManagement() {
                                     <button
                                         type="button"
                                         onClick={closeModal}
-                                        className="flex-1 px-4 py-2 border border-slate-200 text-slate-600 rounded-lg font-medium hover:bg-slate-50 transition-colors"
+                                        className="flex-1 px-4 py-2 border border-slate-200 text-slate-600 rounded-lg font-medium hover:bg-slate-50 transition-colors cursor-pointer"
                                     >
                                         {commonT('cancel')}
                                     </button>
                                     <button
                                         type="submit"
-                                        className="flex-1 px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary-dark transition-colors"
+                                        className="flex-1 px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary-dark transition-colors cursor-pointer"
                                     >
                                         {isEditing ? commonT('saveChanges') : commonT('create')}
                                     </button>

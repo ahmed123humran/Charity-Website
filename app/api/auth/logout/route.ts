@@ -14,7 +14,7 @@ export async function POST() {
         });
     }
 
-    const response = NextResponse.json({ message: 'Logged out successfully' }, { status: 200 });
+    const response = NextResponse.json({ message: 'loggedOutSuccess' }, { status: 200 });
 
     // Clear the session cookie
     response.cookies.set('admin-session', '', {

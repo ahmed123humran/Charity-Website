@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { hashPassword } from '@/app/utils/password';
 
 const prisma = new PrismaClient();
 
@@ -9,6 +10,7 @@ async function main() {
   const snippets = [
     {
       name: 'Hero With Button',
+      nameAr: 'قسم البداية مع زر',
       category: 'Intro',
       htmlContent: `
     <section class="relative">
@@ -32,6 +34,7 @@ async function main() {
     },
     {
       name: 'Image with next Text',
+      nameAr: 'صورة مع نص بجانبها',
       category: 'Content',
       htmlContent: `
         <section class="container mx-auto px-5 lg:px-10 xl:px-20 py-10 lg:py-30">
@@ -88,6 +91,7 @@ async function main() {
 
     {
       name: 'Title',
+      nameAr: 'عنوان',
       category: 'Content',
       htmlContent: `
         <section class="container mx-auto px-5 lg:px-10 xl:px-20 py-20">
@@ -104,6 +108,7 @@ async function main() {
     },
     {
       name: 'Features Cards',
+      nameAr: 'بطاقات الميزات',
       category: 'Features',
       htmlContent: `
         <section class="bg-gray-200">
@@ -144,6 +149,7 @@ async function main() {
     },
     {
       name: 'Gallery',
+      nameAr: 'معرض الصور',
       category: 'Content',
       htmlContent: `
         <section class="container mx-auto px-5 lg:px-10 xl:px-20 py-20">
@@ -163,6 +169,7 @@ async function main() {
     },
     {
       name: 'Stats Cards',
+      nameAr: 'بطاقات الإحصائيات',
       category: 'Stats',
       htmlContent: `
         <section class="container mx-auto px-5 lg:px-10 xl:px-20 py-20">
@@ -193,6 +200,7 @@ async function main() {
     },
     {
       name: 'Hero Section',
+      nameAr: 'قسم البداية',
       category: 'Content',
       htmlContent: `
         <section class="container mx-auto px-5 lg:px-10 xl:px-20 py-10 lg:py-30">
@@ -229,6 +237,7 @@ async function main() {
     },
     {
       name: 'Partner',
+      nameAr: 'شركاء',
       category: 'Content',
       htmlContent: `
         <section class="container mx-auto px-5 lg:px-10 xl:px-20 py-20">
@@ -244,6 +253,7 @@ async function main() {
     },
     {
       name: 'Vidio with text',
+      nameAr: 'فيديو مع نص',
       category: 'Content',
       htmlContent: `
         <section class="container mx-auto px-5 lg:px-10 xl:px-20 py-20">
@@ -289,6 +299,7 @@ async function main() {
     },
     {
       name: 'Footer',
+      nameAr: 'تذييل الصفحة',
       category: 'Footer',
       htmlContent: `
         <footer class="bg-black text-slate-300 py-20 border-t border-white/5 rtl:text-right">
@@ -369,6 +380,7 @@ async function main() {
     },
     {
       name: 'Modern Hero',
+      nameAr: 'قسم بداية عصري',
       category: 'Intro',
       htmlContent: `
   <section class="relative py-20 lg:py-32 overflow-hidden bg-white dark:bg-slate-900 transition-colors">
@@ -401,6 +413,7 @@ async function main() {
     },
     {
       name: 'Hero - Figma Style',
+      nameAr: 'قسم بداية - تصميم فيجما',
       category: 'Intro',
       htmlContent: `
 <section class="relative py-20 lg:py-28 bg-white dark:bg-slate-900 overflow-hidden">
@@ -498,6 +511,7 @@ async function main() {
     },
     {
       name: 'Features Grid',
+      nameAr: 'شبكة الميزات',
       category: 'Features',
       htmlContent: `
 <section class="py-20 bg-slate-50 dark:bg-slate-950 transition-colors">
@@ -544,6 +558,7 @@ async function main() {
     },
     {
       name: 'Content Image Left',
+      nameAr: 'محتوى مع صورة يسار',
       category: 'Content',
       htmlContent: `
 <section class="py-20 bg-white dark:bg-slate-900 transition-colors">
@@ -598,6 +613,7 @@ async function main() {
     },
     {
       name: 'Stats Row',
+      nameAr: 'صف الإحصائيات',
       category: 'Content',
       htmlContent: `
 <section class="py-16 bg-slate-900 text-white border-t border-slate-800">
@@ -626,6 +642,7 @@ async function main() {
     },
     {
       name: 'Donation Campaign',
+      nameAr: 'حملة تبرعات',
       category: 'Features',
       htmlContent: `
 <section class="py-20 bg-white dark:bg-slate-900">
@@ -720,6 +737,7 @@ async function main() {
     },
     {
       name: 'Call to Action',
+      nameAr: 'دعوة لاتخاذ إجراء',
       category: 'CTA',
       htmlContent: `
 <section class="py-20">
@@ -750,6 +768,7 @@ async function main() {
     },
     {
       name: 'Testimonials',
+      nameAr: 'آراء العملاء',
       category: 'Content',
       htmlContent: `
 <section class="py-20 bg-slate-50 dark:bg-slate-950">
@@ -794,6 +813,7 @@ async function main() {
     },
     {
       name: 'Contact Form - Detailed',
+      nameAr: 'نموذج اتصال مفصل',
       category: 'Contact',
       htmlContent: `
 <section class="py-20 bg-white dark:bg-slate-900">
@@ -962,23 +982,17 @@ async function main() {
   const existingUser = await prisma.user.findUnique({
     where: { email: adminEmail }
   });
-
+  const hashedPassword = await hashPassword('admin123');
   if (!existingUser) {
     await prisma.user.create({
       data: {
         email: adminEmail,
         name: 'Admin User',
-        password: 'admin123',
+        password: hashedPassword, // In a real app, hash this!
       }
     });
-    console.log(`Created admin user: ${adminEmail} (password: admin123)`);
   } else {
-    // Re-set existing admin to plain text password
-    await prisma.user.update({
-      where: { id: existingUser.id },
-      data: { password: '123123' }
-    });
-    console.log(`Updated admin user: ${adminEmail} (password: 123123)`);
+    console.log(`Admin user already exists: ${adminEmail}`);
   }
 }
 

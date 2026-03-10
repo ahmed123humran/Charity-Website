@@ -40,7 +40,12 @@ export default function SearchReplaceTool() {
                     toast(t('noMatchesFound'), { icon: '🔍' });
                 }
             } else {
-                toast.error(commonT('error'));
+                const err = await res.json();
+                try {
+                    toast.error(commonT(err.message) || err.message || commonT('error'));
+                } catch (e) {
+                    toast.error(err.message || commonT('error'));
+                }
             }
         } catch (error) {
             console.error('Search error:', error);
@@ -67,7 +72,12 @@ export default function SearchReplaceTool() {
                 setSearchText('');
                 setReplaceText('');
             } else {
-                toast.error(commonT('error'));
+                const err = await res.json();
+                try {
+                    toast.error(commonT(err.message) || err.message || commonT('error'));
+                } catch (e) {
+                    toast.error(err.message || commonT('error'));
+                }
             }
         } catch (error) {
             console.error('Replace error:', error);
@@ -84,7 +94,7 @@ export default function SearchReplaceTool() {
             <SearchReplaceTour />
             <div id="search-replace-form" className="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
                 <div className="flex items-center gap-4 mb-8">
-                    <div className="p-3 bg-indigo-50 text-indigo-600 rounded-2xl shadow-sm">
+                    <div className="p-3 bg-indigo-50 text-primary rounded-2xl shadow-sm">
                         <RefreshCw className="w-8 h-8" />
                     </div>
                     <div>
@@ -97,12 +107,12 @@ export default function SearchReplaceTool() {
                     <div className="space-y-2">
                         <label className="text-sm font-bold text-slate-700 ml-1">{t('findText')}</label>
                         <div className="relative group">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-primary transition-colors" />
                             <input
                                 type="text"
                                 value={searchText}
                                 onChange={(e) => setSearchText(e.target.value)}
-                                className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none text-slate-800 placeholder:text-slate-400 text-start"
+                                className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-primary transition-all outline-none text-slate-800 placeholder:text-slate-400 text-start text-gray-400 outline-hidden"
                                 placeholder={t('findPlaceholder')}
                             />
                         </div>
@@ -111,12 +121,12 @@ export default function SearchReplaceTool() {
                     <div className="space-y-2">
                         <label className="text-sm font-bold text-slate-700 ml-1">{t('replaceWith')}</label>
                         <div className="relative group">
-                            <Replace className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
+                            <Replace className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-primary transition-colors" />
                             <input
                                 type="text"
                                 value={replaceText}
                                 onChange={(e) => setReplaceText(e.target.value)}
-                                className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none text-slate-800 placeholder:text-slate-400 text-start"
+                                className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-primary transition-all outline-none text-slate-800 placeholder:text-slate-400 text-start text-gray-400 outline-hidden"
                                 placeholder={t('replacePlaceholder')}
                             />
                         </div>
@@ -129,18 +139,18 @@ export default function SearchReplaceTool() {
                             <button
                                 key={type}
                                 onClick={() => setTargetType(type as any)}
-                                className={`px-5 py-2 rounded-xl text-sm font-bold transition-all ${targetType === type ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-500 hover:text-slate-700'}`}
+                                className={`px-5 py-2 rounded-xl text-sm font-bold transition-all ${targetType === type ? 'bg-white shadow-sm text-primary' : 'text-slate-500 hover:text-slate-700'}`}
                             >
                                 {t(type)}
                             </button>
                         ))}
                     </div>
 
-                    <div className="flex gap-3">
+                    <div className="flex gap-3 cursor-pointer">
                         <button
                             onClick={handleSearch}
                             disabled={isSearching || !searchText}
-                            className="flex items-center gap-2 px-8 py-3 bg-white border-2 border-slate-200 text-slate-700 font-bold rounded-2xl hover:bg-slate-50 transition-all disabled:opacity-50"
+                            className="flex items-center gap-2 px-8 py-3 bg-white border-2 border-slate-200 text-slate-700 font-bold rounded-2xl hover:bg-slate-50 transition-all disabled:opacity-50 cursor-pointer"
                         >
                             {isSearching ? <Loader2 className="w-5 h-5 animate-spin" /> : <Search className="w-5 h-5" />}
                             {t('previewMatches')}
@@ -148,7 +158,7 @@ export default function SearchReplaceTool() {
                         <button
                             onClick={() => setShowConfirm(true)}
                             disabled={results.length === 0 || !searchText}
-                            className="flex items-center gap-2 px-8 py-3 bg-indigo-600 text-white font-bold rounded-2xl hover:bg-indigo-700 shadow-xl shadow-indigo-500/20 transition-all disabled:opacity-50 group"
+                            className="flex items-center gap-2 px-8 py-3 bg-primary text-white font-bold rounded-2xl hover:bg-primary/90 shadow-xl shadow-primary/20 transition-all disabled:opacity-50 group cursor-pointer"
                         >
                             <Replace className="w-5 h-5 group-hover:rotate-180 transition-transform duration-500" />
                             {t('replaceAll')}
@@ -163,7 +173,7 @@ export default function SearchReplaceTool() {
                         <div>
                             <h2 className="font-bold text-slate-900 flex items-center gap-2 text-lg">
                                 {t('matchesFound')}
-                                <span className="bg-indigo-100 text-indigo-700 px-3 py-0.5 rounded-full text-xs font-black">{totalMatches}</span>
+                                <span className="bg-indigo-100 text-primary px-3 py-0.5 rounded-full text-xs font-black">{totalMatches}</span>
                             </h2>
                         </div>
                         <div className="text-sm font-medium text-slate-500">{t('acrossItems', { count: results.length })}</div>
@@ -176,11 +186,11 @@ export default function SearchReplaceTool() {
                                         {res.type === 'page' ? <FileText className="w-5 h-5" /> : res.type === 'snippet' ? <PlusSquare className="w-5 h-5" /> : <MenuIcon className="w-5 h-5" />}
                                     </div>
                                     <div>
-                                        <div className="font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">{res.name}</div>
+                                        <div className="font-bold text-slate-900 group-hover:text-primary transition-colors">{res.name}</div>
                                         <div className="text-xs font-bold text-slate-400 tracking-widest uppercase">{t(res.type)}</div>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-2 px-4 py-1.5 bg-slate-100 rounded-full font-black text-slate-600 group-hover:bg-indigo-50 group-hover:text-indigo-700 transition-colors">
+                                <div className="flex items-center gap-2 px-4 py-1.5 bg-slate-100 rounded-full font-black text-slate-600 group-hover:bg-indigo-50 group-hover:text-primary transition-colors">
                                     {t('countMatches', { count: res.found })}
                                 </div>
                             </div>
@@ -206,14 +216,14 @@ export default function SearchReplaceTool() {
                         <div className="grid grid-cols-2 gap-4">
                             <button
                                 onClick={() => setShowConfirm(false)}
-                                className="w-full py-4 text-slate-600 font-black rounded-2xl border-2 border-slate-100 hover:bg-slate-50 transition-all uppercase tracking-widest text-sm"
+                                className="w-full py-4 text-slate-600 font-black rounded-2xl border-2 border-slate-100 hover:bg-slate-50 transition-all uppercase tracking-widest text-sm cursor-pointer"
                             >
                                 {commonT('back')}
                             </button>
                             <button
                                 onClick={handleReplace}
                                 disabled={isReplacing}
-                                className="w-full py-4 bg-indigo-600 text-white font-black rounded-2xl hover:bg-indigo-700 shadow-xl shadow-indigo-500/20 transition-all uppercase tracking-widest text-sm disabled:opacity-50 flex items-center justify-center gap-2"
+                                className="w-full py-4 bg-primary text-white font-black rounded-2xl hover:bg-primary/90 shadow-xl shadow-primary/20 transition-all uppercase tracking-widest text-sm disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
                             >
                                 {isReplacing ? <Loader2 className="w-5 h-5 animate-spin" /> : <CheckCircle2 className="w-5 h-5" />}
                                 {commonT('confirm')}

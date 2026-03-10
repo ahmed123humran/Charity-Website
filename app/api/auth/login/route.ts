@@ -20,11 +20,11 @@ export async function POST(request: NextRequest) {
             }
         });
 
-        // Direct password comparison for development (no hashing)
-        const isValid = user ? user.password === password : false;
+        // Secure password verification using bcrypt
+        const isValid = user ? await verifyPassword(password, user.password) : false;
         if (user && isValid) {
             const response = NextResponse.json({
-                message: 'Logged in successfully',
+                message: 'loggedInSuccess',
                 user: { id: user.id, email: user.email, name: user.name, role: user.role }
             }, { status: 200 });
 
@@ -48,8 +48,8 @@ export async function POST(request: NextRequest) {
             return response;
         }
 
-        return NextResponse.json({ message: 'Invalid email or password' }, { status: 401 });
+        return NextResponse.json({ message: 'invalidCredentials' }, { status: 401 });
     } catch (error) {
-        return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({ message: 'internalServerError' }, { status: 500 });
     }
 }

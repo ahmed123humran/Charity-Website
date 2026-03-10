@@ -87,6 +87,6 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ results });
     } catch (error) {
         console.error('Search API error:', error);
-        return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({ message: 'internalServerError' }, { status: 500 });
     }
 }

@@ -108,6 +108,6 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ success: true, count: totalUpdated });
     } catch (error) {
         console.error('Replace API error:', error);
-        return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({ message: 'internalServerError' }, { status: 500 });
     }
 }

@@ -65,12 +65,16 @@ export default function WebsitesPage() {
             const data = await res.json();
             if (res.ok) {
                 setLogo(data.url);
-                toast.success('Logo uploaded');
+                toast.success(commonT('uploadSuccess'));
             } else {
-                toast.error(data.message || 'Upload failed');
+                try {
+                    toast.error(commonT(data.message) || data.message || commonT('uploadError'));
+                } catch (e) {
+                    toast.error(data.message || commonT('uploadError'));
+                }
             }
         } catch (error) {
-            toast.error('Upload error');
+            toast.error(commonT('uploadError'));
         }
     };
 
@@ -96,7 +100,12 @@ export default function WebsitesPage() {
                 router.refresh(); // Refresh server components to update global theme
                 toast.success(isEditing ? commonT('updated') : commonT('created'));
             } else {
-                toast.error(commonT('error'));
+                const err = await res.json();
+                try {
+                    toast.error(commonT(err.message) || err.message || commonT('error'));
+                } catch (e) {
+                    toast.error(err.message || commonT('error'));
+                }
             }
         } catch (error) {
             console.error(`Failed to ${isEditing ? 'update' : 'create'} website:`, error);
@@ -161,7 +170,7 @@ export default function WebsitesPage() {
                             setIsEditing(false);
                             setShowModal(true);
                         }}
-                        className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-primary-dark transition-colors shadow-sm"
+                        className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-primary-dark transition-colors shadow-sm cursor-pointer"
                     >
                         <Plus className="w-5 h-5" />
                         {t('newWebsite')}
@@ -242,7 +251,7 @@ export default function WebsitesPage() {
                                             {(userRole === 'ADMIN' || userRole === 'EDITOR') && (
                                                 <button
                                                     onClick={() => openEditModal(site)}
-                                                    className="p-2 text-slate-400 hover:text-primary transition-colors"
+                                                    className="p-2 text-slate-400 hover:text-primary transition-colors cursor-pointer"
                                                     title={commonT('edit')}
                                                 >
                                                     <Edit2 className="w-4 h-4" />
@@ -251,7 +260,7 @@ export default function WebsitesPage() {
                                             {userRole === 'ADMIN' && (
                                                 <button
                                                     onClick={() => handleDeleteClick(site.id)}
-                                                    className="p-2 text-slate-400 hover:text-red-500 transition-colors"
+                                                    className="p-2 text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
                                                     title={commonT('delete')}
                                                 >
                                                     <Trash2 className="w-4 h-4" />
@@ -274,7 +283,7 @@ export default function WebsitesPage() {
                             <h2 className="text-xl font-bold text-slate-900">
                                 {isEditing ? t('editWebsite') : t('newWebsite')}
                             </h2>
-                            <button onClick={closeModal} className="text-slate-400 hover:text-slate-600">&times;</button>
+                            <button onClick={closeModal} className="text-slate-400 hover:text-slate-600 text-2xl cursor-pointer">&times;</button>
                         </div>
                         <form onSubmit={handleSubmit} className="p-6 space-y-4">
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -318,7 +327,7 @@ export default function WebsitesPage() {
                                         type="color"
                                         value={themeColor}
                                         onChange={(e) => setThemeColor(e.target.value)}
-                                        className="w-12 h-10 p-1 rounded-lg border border-slate-200 cursor-pointer bg-white"
+                                        className="w-12 h-10 p-1 rounded-lg border border-slate-200 cursor-pointer bg-white text-gray-400 outline-hidden"
                                     />
                                     <input
                                         type="text"
@@ -351,17 +360,17 @@ export default function WebsitesPage() {
                                                     type="text"
                                                     value={logo}
                                                     onChange={(e) => setLogo(e.target.value)}
-                                                    className="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-primary/20 transition-all font-mono"
+                                                    className="w-full px-4 py-2 bg-white border border-slate-200 text-gray-400 rounded-lg text-xs focus:outline-hidden focus:ring-2 focus:ring-primary/20 transition-all font-mono"
                                                     placeholder="Logo URL (or upload)"
                                                 />
                                             </div>
-                                            <div className="relative overflow-hidden cursor-pointer bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2">
+                                            <div className="relative overflow-hidden cursor-pointer bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2">
                                                 <span>{commonT('create')}</span>
                                                 <input
                                                     type="file"
                                                     accept="image/*"
                                                     onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0])}
-                                                    className="absolute inset-0 opacity-0 cursor-pointer"
+                                                    className="absolute inset-0 opacity-0 cursor-pointer text-gray-400 outline-hidden"
                                                 />
                                             </div>
                                         </div>
@@ -375,13 +384,13 @@ export default function WebsitesPage() {
                                 <button
                                     type="button"
                                     onClick={closeModal}
-                                    className="flex-1 px-4 py-2 border border-slate-200 text-slate-600 rounded-lg font-medium hover:bg-slate-50 transition-colors"
+                                    className="flex-1 px-4 py-2 border border-slate-200 text-slate-600 rounded-lg font-medium hover:bg-slate-50 transition-colors cursor-pointer"
                                 >
                                     {commonT('cancel')}
                                 </button>
                                 <button
                                     type="submit"
-                                    className="flex-1 px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary-dark transition-colors"
+                                    className="flex-1 px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary-dark transition-colors cursor-pointer"
                                 >
                                     {isEditing ? commonT('saveChanges') : commonT('create')}
                                 </button>

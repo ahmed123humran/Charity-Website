@@ -10,6 +10,7 @@ import GuidedTour, { TourStep } from '@/app/components/GuidedTour';
 
 export default function SetupPage() {
     const t = useTranslations('Setup');
+    const commonT = useTranslations('Common');
     const router = useRouter();
     const params = useParams();
     const locale = params.locale as string;
@@ -68,7 +69,11 @@ export default function SetupPage() {
                 router.push(`/${locale}/admin`);
             } else {
                 const data = await res.json();
-                toast.error(data.error || t('setupError'));
+                try {
+                    toast.error(commonT(data.error) || data.error || t('setupError'));
+                } catch (e) {
+                    toast.error(data.error || t('setupError'));
+                }
             }
         } catch (error) {
             toast.error(t('setupError'));

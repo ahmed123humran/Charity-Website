@@ -21,7 +21,9 @@
         "fillAllFields": "Please fill all required fields.",
         "passwordsDontMatch": "Passwords do not match.",
         "setupComplete": "Setup completed successfully!",
-        "setupError": "Something went wrong. Please try again."
+        "setupError": "Something went wrong. Please try again.",
+        "userExists": "User with this email or phone already exists",
+        "internalServerError": "Internal Server Error"
     },
     "Common": {
         "title": "Ragmi",
@@ -54,7 +56,20 @@
         "svgerror": "The file must be SVG",
         "videoerror": "The file must be mp4, webm",
         "back": "Back",
-        "notice": "Notice"
+        "notice": "Notice",
+        "uploadSuccess": "Uploaded successfully!",
+        "uploadError": "Upload error",
+        "statusUpdateError": "Failed to update status",
+        "invalidCredentials": "Invalid email or password",
+        "unauthorized": "Unauthorized",
+        "internalServerError": "Internal Server Error",
+        "passwordRequired": "Password is required",
+        "passwordTooShort": "Password must be at least 6 characters long",
+        "invalidEmail": "Invalid email address",
+        "userExists": "User with this email or phone already exists",
+        "adminOnly": "Unauthorized: Only administrators can perform this action",
+        "notFound": "Item not found",
+        "loggedOutSuccess": "Logged out successfully"
     },
     "HomePage": {
         "heroTitle": "Empowering Charities to",
@@ -95,7 +110,11 @@
         "passwordLabel": "Password",
         "btn": "Sign In",
         "noAccountYet": "No administrator account yet?",
-        "signingIn": "Signing in..."
+        "signingIn": "Signing in...",
+        "loggedInSuccess": "Logged in successfully",
+        "invalidCredentials": "Invalid email or password",
+        "unauthorized": "Unauthorized",
+        "internalServerError": "Internal Server Error"
     },
     "Admin": {
         "dashboard": "Dashboard",
@@ -265,7 +284,10 @@
         "replacevideo": "Replace Video",
         "link": "Link",
         "openInNewTab": "Open in a new tab",
-        "replaceimgvideo": "Replace Img Video"
+        "replaceimgvideo": "Replace Img Video",
+        "desktop": "Desktop",
+        "mobile": "Mobile",
+        "tablet": "Tablet"
     },
     "Tours": {
         "next": "Next",

@@ -109,7 +109,12 @@ export default function MenusManagement() {
                 fetchData();
                 toast.success(isEditing ? commonT('updated') : commonT('created'));
             } else {
-                toast.error(commonT('error'));
+                const err = await res.json();
+                try {
+                    toast.error(commonT(err.message) || err.message || commonT('error'));
+                } catch (e) {
+                    toast.error(err.message || commonT('error'));
+                }
             }
         } catch (error) {
             console.error(`Failed to ${isEditing ? 'update' : 'create'} menu:`, error);
@@ -129,7 +134,12 @@ export default function MenusManagement() {
                 fetchData();
                 toast.success(commonT('deleted'));
             } else {
-                toast.error(commonT('error'));
+                const err = await res.json();
+                try {
+                    toast.error(commonT(err.message) || err.message || commonT('error'));
+                } catch (e) {
+                    toast.error(err.message || commonT('error'));
+                }
             }
         } catch (error) {
             console.error('Failed to delete menu:', error);
@@ -193,7 +203,7 @@ export default function MenusManagement() {
                             setIsEditing(false);
                             setShowModal(true);
                         }}
-                        className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-primary-dark transition-colors shadow-sm"
+                        className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-primary-dark transition-colors shadow-sm cursor-pointer"
                     >
                         <Plus className="w-5 h-5" />
                         {t('newMenuItem')}
@@ -264,7 +274,7 @@ export default function MenusManagement() {
                                             {(userRole === 'ADMIN' || userRole === 'EDITOR') && (
                                                 <button
                                                     onClick={() => openEditModal(menu)}
-                                                    className="p-2 text-slate-400 hover:text-primary transition-colors"
+                                                    className="p-2 text-slate-400 hover:text-primary transition-colors cursor-pointer"
                                                     title={commonT('edit')}
                                                 >
                                                     <Edit2 className="w-4 h-4" />
@@ -273,7 +283,7 @@ export default function MenusManagement() {
                                             {userRole === 'ADMIN' && (
                                                 <button
                                                     onClick={() => handleDeleteClick(menu.id)}
-                                                    className="p-2 text-slate-400 hover:text-red-500 transition-colors"
+                                                    className="p-2 text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
                                                     title={commonT('delete')}
                                                 >
                                                     <Trash2 className="w-4 h-4" />
@@ -296,7 +306,7 @@ export default function MenusManagement() {
                             <h2 className="text-xl font-bold text-slate-900">
                                 {isEditing ? t('editMenuItem') : t('newMenuItem')}
                             </h2>
-                            <button onClick={closeModal} className="text-slate-400 hover:text-slate-600">&times;</button>
+                            <button onClick={closeModal} className="text-slate-400 hover:text-slate-600 cursor-pointer text-2xl">&times;</button>
                         </div>
                         <form onSubmit={handleSubmit} className="p-6 space-y-4">
                             <div>
@@ -375,7 +385,7 @@ export default function MenusManagement() {
                                 />
                             </div>
                             <div>
-                                <label className="flex items-center gap-1.5 text-sm font-medium text-slate-700 mb-1">
+                                <label className="flex items-center gap-1.5 text-sm font-medium text-slate-700 mb-1 text-gray-400 outline-hidden">
                                     {t('sequence')}
                                     <span title="يحدد ترتيب العنصر في القائمة، الأرقام الصغيرة تظهر أولاً." className="cursor-help text-primary/60">
                                         <ListOrdered className="w-3.5 h-3.5" />
@@ -393,13 +403,13 @@ export default function MenusManagement() {
                                 <button
                                     type="button"
                                     onClick={closeModal}
-                                    className="flex-1 px-4 py-2 border border-slate-200 text-slate-600 rounded-lg font-medium hover:bg-slate-50 transition-colors"
+                                    className="flex-1 px-4 py-2 border border-slate-200 text-slate-600 rounded-lg font-medium hover:bg-slate-50 transition-colors cursor-pointer"
                                 >
                                     {commonT('cancel')}
                                 </button>
                                 <button
                                     type="submit"
-                                    className="flex-1 px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary-dark transition-colors"
+                                    className="flex-1 px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary-dark transition-colors cursor-pointer"
                                 >
                                     {isEditing ? commonT('saveChanges') : commonT('create')}
                                 </button>

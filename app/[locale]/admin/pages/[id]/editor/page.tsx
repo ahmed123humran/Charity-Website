@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, memo } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from '@/navigation';
 import {
-    Save, ArrowLeft, Plus, Move, Trash2, Layout, Type, LinkIcon,
+    Save, ArrowLeft, ArrowRight, Plus, Move, Trash2, Layout, Type, LinkIcon,
     Image as ImageIcon, Copy, MousePointer2, X, FilePlay,
     Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight, Palette,
     Type as TypeIcon, Minus, Plus as PlusIcon, PaintBucket, Settings,
@@ -59,16 +59,19 @@ const StableSnippet = memo(({
             id={`snippet-content-${item.id}`}
             dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.htmlContent) }}
             onClick={(e) => onContentClick(e, item.id)}
-            className={`transition-all duration-300 min-h-[50px] ${!previewMode ? 'hover:outline-2 hover:outline-dashed hover:outline-indigo-300 cursor-text' : ''} ${!previewMode && isActive ? 'outline-2 outline outline-indigo-500 shadow-xl z-10' : ''}`}
+            className={`transition-all duration-300 min-h-[50px] ${!previewMode ? 'hover:outline-2 hover:outline-dashed hover:outline-primary/30 cursor-text' : ''} ${!previewMode && isActive ? 'outline-2 outline outline-indigo-500 shadow-xl z-10' : ''}`}
         />
     );
 }, (prev, next) => {
+    // ALWAYS re-render if preview mode changes to ensure outlines disappear/appear correctly
+    if (prev.previewMode !== next.previewMode) return false;
+
     // CRITICAL: If the snippet is actively being edited, we NEVER re-render it from state
     // This allows the user to type freely without React overwriting the DOM nodes
     if (next.isBeingEdited) return true;
+
     return prev.item.htmlContent === next.item.htmlContent &&
-        prev.isActive === next.isActive &&
-        prev.previewMode === next.previewMode;
+        prev.isActive === next.isActive;
 });
 
 export default function VisualEditor({ params }: { params: Promise<{ id: string }> }) {
@@ -183,6 +186,15 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
         }
 
         setEditorLocale(newLocale);
+        document.querySelectorAll('[id^="snippet-content-"] *').forEach(el => {
+            const htmlEl = el as HTMLElement;
+            htmlEl.style.removeProperty('outline');
+            htmlEl.style.removeProperty('outline-offset');
+            if (htmlEl.getAttribute('style') === '' || (htmlEl.getAttribute('style') && htmlEl.style.length === 0)) {
+                htmlEl.removeAttribute('style');
+            }
+            htmlEl.removeAttribute('contenteditable');
+        });
         setActiveSnippetId(null);
         activeElementRef.current = null;
         setActiveTagName(null);
@@ -240,13 +252,18 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
     const commitChanges = (id: string) => {
         const wrapper = document.getElementById(`snippet-content-${id}`);
         if (wrapper) {
+            // Clean a CLONE so the live DOM keeps its visual outline for the user
             const clone = wrapper.cloneNode(true) as HTMLElement;
             clone.querySelectorAll('*').forEach(el => {
                 const htmlEl = el as HTMLElement;
-                htmlEl.style.outline = '';
-                htmlEl.style.outlineOffset = '';
-                el.removeAttribute('contenteditable');
+                htmlEl.style.removeProperty('outline');
+                htmlEl.style.removeProperty('outline-offset');
+                if (htmlEl.getAttribute('style') === '' || (htmlEl.getAttribute('style') && htmlEl.style.length === 0)) {
+                    htmlEl.removeAttribute('style');
+                }
+                htmlEl.removeAttribute('contenteditable');
             });
+
             setDroppedSnippets(prev => prev.map(s => s.id === id ? { ...s, htmlContent: clone.innerHTML } : s));
         }
     };
@@ -325,13 +342,20 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
 
         if (smartTarget && wrapper?.contains(smartTarget)) target = smartTarget as HTMLElement;
 
-        e.stopPropagation();
+        // Surgical Cleanup: Only remove old outlines if we are switching selection
+        if (activeElementRef.current && activeElementRef.current !== target) {
+            const oldEl = activeElementRef.current;
+            oldEl.style.removeProperty('outline');
+            oldEl.style.removeProperty('outline-offset');
+            if (oldEl.getAttribute('style') === '' || (oldEl.getAttribute('style') && oldEl.style.length === 0)) {
+                oldEl.removeAttribute('style');
+            }
+            oldEl.removeAttribute('contenteditable');
 
-        // If clicking a new element, commit old one
-        if (activeElementRef.current && activeElementRef.current !== target && activeSnippetId) {
-            activeElementRef.current.style.outline = '';
-            activeElementRef.current.style.outlineOffset = '';
-            commitChanges(activeSnippetId);
+            // If switching snippets, commit old one
+            if (activeSnippetId && activeSnippetId !== snippetId) {
+                commitChanges(activeSnippetId);
+            }
         }
 
         activeElementRef.current = target;
@@ -340,22 +364,13 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
 
         if (target.tagName !== 'IMG' && !target.classList.contains('no-edit')) {
             if (target.tagName === 'SVG') {
-                // Mark SVG as editable
                 target.style.outline = '2px solid #3b82f6';
                 target.style.outlineOffset = '2px';
             } else {
                 target.contentEditable = 'true';
                 target.style.outline = '2px solid #3b82f6';
                 target.style.outlineOffset = '2px';
-
-                // We only commit on blur or when clicking away to stay efficient
-                const onBlur = () => {
-                    target.contentEditable = 'false';
-                    target.style.outline = '';
-                    commitChanges(snippetId);
-                    target.removeEventListener('blur', onBlur);
-                };
-                target.addEventListener('blur', onBlur);
+                target.focus();
             }
         } else {
             target.style.outline = '2px solid #3b82f6';
@@ -623,11 +638,14 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                 <div className="flex items-center gap-2 sm:gap-6 shrink-0">
                     <button
                         id="save-button"
-                        onClick={handleSave} disabled={saving} className="bg-[#3B82F6] hover:bg-blue-600 text-white px-3 sm:px-6 py-2 rounded-lg text-xs font-bold transition-all shadow-lg flex items-center gap-2">
+                        onClick={handleSave} disabled={saving} className="bg-primary hover:bg-primary/90 text-white px-3 sm:px-6 py-2 rounded-lg text-xs font-bold transition-all shadow-lg flex items-center gap-2 cursor-pointer">
                         <Save className="w-3.5 h-3.5" /> <span className="hidden sm:inline">{saving ? '...' : commonT('saveChanges')}</span>
                     </button>
-                    <button onClick={() => setPreviewMode(!previewMode)} className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs font-bold transition-all ${previewMode ? 'bg-amber-500 text-white' : 'hover:bg-slate-800'}`}>
-                        {previewMode ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />} <span className="hidden sm:inline">{previewMode ? editorT('exitPreview') : editorT('preview')}</span>
+                    <button onClick={() => {
+                        if (!previewMode && activeSnippetId) commitChanges(activeSnippetId);
+                        setPreviewMode(!previewMode);
+                    }} className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${previewMode ? 'bg-amber-500 text-white' : 'hover:bg-slate-800'}`}>
+                        {previewMode ? <EyeOff className="w-3.5 h-3.5 cursor-pointer" /> : <Eye className="w-3.5 h-3.5" />} <span className="hidden sm:inline">{previewMode ? editorT('exitPreview') : editorT('preview')}</span>
                     </button>
                     {!previewMode && (
                         <>
@@ -637,10 +655,10 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                                     setShowLeftPanel(!showLeftPanel);
                                     if (!showLeftPanel && window.innerWidth < 1024) setShowRightPanel(false);
                                 }}
-                                className={`p-2 rounded-lg text-xs font-bold transition-all hidden lg:flex ${showLeftPanel ? 'bg-indigo-500 text-white' : 'hover:bg-slate-800 text-slate-400'}`}
+                                className={`p-2 rounded-lg text-xs font-bold transition-all hidden lg:flex cursor-pointer ${showLeftPanel ? 'bg-primary text-white' : 'hover:bg-slate-800 text-slate-400'}`}
                                 title="Style panel"
                             >
-                                {locale === 'ar' ? <PanelRight className="w-3.5 h-3.5" /> : <PanelLeft className="w-3.5 h-3.5" />}
+                                {locale === 'ar' ? <PanelRight className="w-3.5 h-3.5 cursor-pointer" /> : <PanelLeft className="w-3.5 h-3.5" />}
                             </button>
                             <button
                                 id="editor-right-panel-toggle"
@@ -648,22 +666,24 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                                     setShowRightPanel(!showRightPanel);
                                     if (!showRightPanel && window.innerWidth < 1024) setShowLeftPanel(false);
                                 }}
-                                className={`p-2 rounded-lg text-xs font-bold transition-all lg:hidden ${showRightPanel ? 'bg-indigo-500 text-white' : 'hover:bg-slate-800 text-slate-400'}`}
+                                className={`p-2 rounded-lg text-xs font-bold transition-all lg:hidden cursor-pointer ${showRightPanel ? 'bg-primary text-white' : 'hover:bg-slate-800 text-slate-400'}`}
                                 title="Snippets panel"
                             >
-                                {locale === 'ar' ? <PanelLeft className="w-3.5 h-3.5" /> : <PanelRight className="w-3.5 h-3.5" />}
+                                {locale === 'ar' ? <PanelLeft className="w-3.5 h-3.5 cursor-pointer" /> : <PanelRight className="w-3.5 h-3.5" />}
                             </button>
                         </>
                     )}
                 </div>
                 <div className="flex items-center gap-3 sm:gap-6 shrink-0">
                     <div className="flex bg-[#0F172A] p-1 rounded-lg">
-                        <button onClick={() => switchLocale('ar')} className={`px-3 sm:px-4 py-1 rounded text-[10px] font-bold transition-all ${editorLocale === 'ar' ? 'bg-[#3B82F6] text-white shadow-lg' : 'text-slate-400'}`}>AR</button>
-                        <button onClick={() => switchLocale('en')} className={`px-3 sm:px-4 py-1 rounded text-[10px] font-bold transition-all ${editorLocale === 'en' ? 'bg-[#3B82F6] text-white shadow-lg' : 'text-slate-400'}`}>EN</button>
+                        <button onClick={() => switchLocale('ar')} className={`px-3 sm:px-4 py-1 rounded text-[10px] font-bold transition-all cursor-pointer ${editorLocale === 'ar' ? 'bg-primary text-white shadow-lg' : 'text-slate-400'}`}>AR</button>
+                        <button onClick={() => switchLocale('en')} className={`px-3 sm:px-4 py-1 rounded text-[10px] font-bold transition-all cursor-pointer ${editorLocale === 'en' ? 'bg-primary text-white shadow-lg' : 'text-slate-400'}`}>EN</button>
                     </div>
-                    <div className="flex items-center gap-3 border-l border-slate-700 pl-3 sm:pl-6">
+                    <div className="flex items-center gap-3 border-l border-slate-700 pl-3 sm:pl-6 cursor-pointer">
                         <span className="text-xs font-bold text-slate-300 hidden sm:block">{getLocalizedName(page?.title, locale)}</span>
-                        <button onClick={() => router.back()} className="p-2 hover:bg-slate-800 rounded-lg"><ArrowLeft className="w-4 h-4" /></button>
+                        <button onClick={() => router.back()} className="p-2 hover:bg-slate-800 rounded-lg cursor-pointer">
+                            {locale === 'ar' ? <ArrowLeft className="w-4 h-4" /> : <ArrowRight className="w-4 h-4" />}
+                        </button>
                     </div>
                 </div>
             </div>
@@ -686,7 +706,7 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                 >
                     <div className="p-4 border-b border-slate-100 flex items-center justify-between">
                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{editorT('styleDesigner')}</span>
-                        <Settings className="w-3.5 h-3.5 text-indigo-500" />
+                        <Settings className="w-3.5 h-3.5 text-primary" />
                     </div>
 
                     <div className="p-5 space-y-8">
@@ -694,7 +714,7 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                             <div className="text-[9px] text-slate-400 font-bold uppercase mb-2 text-center flex items-center justify-center gap-1">
                                 <MousePointer2 className="w-2.5 h-2.5" /> {editorT('activeElement')}
                             </div>
-                            <div className="text-center font-black text-indigo-600 text-xs py-1 px-3 bg-white border border-slate-200 rounded-lg shadow-sm uppercase">
+                            <div className="text-center font-black text-primary text-xs py-1 px-3 bg-white border border-slate-200 rounded-lg shadow-sm uppercase">
                                 {activeTagName || editorT('none')}
                             </div>
                         </div>
@@ -706,8 +726,8 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                                         <TypeIcon className="w-3 h-3" /> {editorT('typography')}
                                     </div>
                                     <div className="space-y-3">
-                                        <div className="flex justify-between items-center px-1"><span className="text-[10px] font-bold text-slate-500 uppercase">{editorT('size')}</span><span className="text-[11px] font-black text-indigo-600">{activeElementRef.current?.tagName === 'svg' ? activeElementRef.current.getAttribute('width') : activeStyles.fontSize}</span></div>
-                                        <input type="range" min="8" max="120" value={activeElementRef.current?.tagName === 'svg' ? parseInt(activeElementRef.current.getAttribute('width') || '24') : parseInt(activeStyles.fontSize) || 16} onChange={(e) => applyStyle('fontSize', `${e.target.value}px`)} className="w-full h-1.5 bg-indigo-100 rounded-lg appearance-none cursor-pointer accent-indigo-600" />
+                                        <div className="flex justify-between items-center px-1"><span className="text-[10px] font-bold text-slate-500 uppercase">{editorT('size')}</span><span className="text-[11px] font-black text-primary">{activeElementRef.current?.tagName === 'svg' ? activeElementRef.current.getAttribute('width') : activeStyles.fontSize}</span></div>
+                                        <input type="range" min="8" max="120" value={activeElementRef.current?.tagName === 'svg' ? parseInt(activeElementRef.current.getAttribute('width') || '24') : parseInt(activeStyles.fontSize) || 16} onChange={(e) => applyStyle('fontSize', `${e.target.value}px`)} className="w-full h-1.5 bg-indigo-100 rounded-lg appearance-none cursor-pointer accent-primary text-gray-400 outline-hidden" />
                                     </div>
                                 </div>
                             )}
@@ -715,14 +735,14 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                                 <SquareRoundCorner className="w-3 h-3" /> {editorT('squarerounded')}
                             </div>
                             <div className="space-y-3">
-                                <div className="flex justify-between items-center px-1"><span className="text-[10px] font-bold text-slate-500 uppercase">{editorT('squarerounded')}</span><span className="text-[11px] font-black text-indigo-600">{activeStyles.borderRadius}</span></div>
-                                <input type="range" min="0" max="24" value={parseInt(activeStyles.borderRadius) || 0} onChange={(e) => applyStyle('borderRadius', `${e.target.value}px`)} className="w-full h-1.5 bg-indigo-100 rounded-lg appearance-none cursor-pointer accent-indigo-600" />
+                                <div className="flex justify-between items-center px-1"><span className="text-[10px] font-bold text-slate-500 uppercase">{editorT('squarerounded')}</span><span className="text-[11px] font-black text-primary">{activeStyles.borderRadius}</span></div>
+                                <input type="range" min="0" max="24" value={parseInt(activeStyles.borderRadius) || 0} onChange={(e) => applyStyle('borderRadius', `${e.target.value}px`)} className="w-full h-1.5 bg-indigo-100 rounded-lg appearance-none cursor-pointer accent-primary text-gray-400 outline-hidden" />
                             </div>
                             {activeTagName === 'img' && (
                                 <div className="space-y-3 pt-4 border-t border-slate-100">
                                     <button
                                         onClick={() => imageInputRef.current?.click()}
-                                        className="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2 rounded-xl shadow-md transition cursor-pointer"
+                                        className="w-full bg-primary hover:bg-primary/95 text-white text-xs font-bold py-2 rounded-xl shadow-md transition cursor-pointer"
                                     >
                                         {editorT('replaceimg')}
                                     </button>
@@ -736,7 +756,7 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                                 </div>
                             )}
                             {(activeTagName === 'svg') && (
-                                <div className="space-y-3 pt-4 border-t border-slate-100">
+                                <div className="space-y-3 pt-4 border-t border-slate-100 text-gray-400 outline-hidden">
                                     <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                                         <VectorSquare className="w-3 h-3" /> SVG
                                     </div>
@@ -757,7 +777,7 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                                 </div>
                             )}
                             {(activeTagName === 'video') && (
-                                <div className="space-y-3 pt-4 border-t border-slate-100">
+                                <div className="space-y-3 pt-4 border-t border-slate-100 text-gray-400 outline-hidden">
                                     <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                                         <FilePlay className="w-3 h-3" /> Video
                                     </div>
@@ -770,15 +790,15 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                                     <div className='flex'>
                                         <button
                                             onClick={() => videoImgInputRef.current?.click()}
-                                            className="w-4/5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2 rounded-r-xl shadow-md transition cursor-pointer"
+                                            className={`w-4/5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2 ${editorLocale === 'ar' ? 'rounded-r-xl' : 'rounded-l-xl'} shadow-md transition cursor-pointer`}
                                         >
                                             {editorT('replaceimgvideo')}
                                         </button>
                                         <button
                                             onClick={() => { removevideoImg(); }}
-                                            className="flex justify-center items-center w-1/5 bg-red-400 hover:bg-red-700 text-white text-center rounded-l-xl shadow-md transition cursor-pointer"
+                                            className={`flex justify-center items-center w-1/5 bg-red-400 hover:bg-red-700 text-white text-center ${editorLocale === 'ar' ? 'rounded-l-xl' : 'rounded-r-xl'} shadow-md transition cursor-pointer`}
                                         >
-                                            <Trash2 className="h-4 text-white" />
+                                            <Trash2 className="h-4 text-white cursor-pointer" />
                                         </button>
                                     </div>
                                     <input
@@ -798,7 +818,7 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                                 </div>
                             )}
                             {activeTagName === 'a' && (
-                                <div className="space-y-4 pt-4 border-t border-slate-100">
+                                <div className="space-y-4 pt-4 border-t border-slate-100 text-gray-400 outline-hidden">
                                     <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                                         <LinkIcon className="w-3 h-3" /> {editorT('link')}
                                     </div>
@@ -809,7 +829,7 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                                             placeholder="https://example.com"
                                             value={activeElementRef.current?.getAttribute('href') || ''}
                                             onChange={(e) => updateLinkHref(e.target.value)}
-                                            className="w-full text-xs px-3 py-2 border border-slate-200 text-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                            className="w-full text-xs px-3 py-2 border border-slate-200 text-gray-400 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary"
                                         />
                                     </div>
 
@@ -825,10 +845,10 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                             )}
                             {(!['img', 'svg', 'video'].includes(activeTagName)) && (
                                 <div className="grid grid-cols-4 gap-1 p-1 bg-slate-100 rounded-xl">
-                                    <button onMouseDown={(e) => { e.preventDefault(); applyStyle('textAlign', 'left'); }} className={`p-2 rounded-lg flex justify-center transition-all ${activeStyles.textAlign.includes('left') ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-400'}`}><AlignLeft className="w-4 h-4" /></button>
-                                    <button onMouseDown={(e) => { e.preventDefault(); applyStyle('textAlign', 'center'); }} className={`p-2 rounded-lg flex justify-center transition-all ${activeStyles.textAlign.includes('center') ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-400'}`}><AlignCenter className="w-4 h-4" /></button>
-                                    <button onMouseDown={(e) => { e.preventDefault(); applyStyle('textAlign', 'right'); }} className={`p-2 rounded-lg flex justify-center transition-all ${activeStyles.textAlign.includes('right') ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-400'}`}><AlignRight className="w-4 h-4" /></button>
-                                    <button onMouseDown={(e) => { e.preventDefault(); applyStyle('textAlign', 'justify'); }} className={`p-2 rounded-lg flex justify-center transition-all ${activeStyles.textAlign.includes('justify') ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-400'}`}><Layout className="w-4 h-4" /></button>
+                                    <button onMouseDown={(e) => { e.preventDefault(); applyStyle('textAlign', 'left'); }} className={`p-2 rounded-lg flex justify-center transition-all cursor-pointer ${activeStyles.textAlign.includes('left') ? 'bg-white shadow-sm text-primary' : 'text-slate-400'}`}><AlignLeft className="w-4 h-4 cursor-pointer" /></button>
+                                    <button onMouseDown={(e) => { e.preventDefault(); applyStyle('textAlign', 'center'); }} className={`p-2 rounded-lg flex justify-center transition-all cursor-pointer ${activeStyles.textAlign.includes('center') ? 'bg-white shadow-sm text-primary' : 'text-slate-400'}`}><AlignCenter className="w-4 h-4 cursor-pointer" /></button>
+                                    <button onMouseDown={(e) => { e.preventDefault(); applyStyle('textAlign', 'right'); }} className={`p-2 rounded-lg flex justify-center transition-all cursor-pointer ${activeStyles.textAlign.includes('right') ? 'bg-white shadow-sm text-primary' : 'text-slate-400'}`}><AlignRight className="w-4 h-4 cursor-pointer" /></button>
+                                    <button onMouseDown={(e) => { e.preventDefault(); applyStyle('textAlign', 'justify'); }} className={`p-2 rounded-lg flex justify-center transition-all cursor-pointer ${activeStyles.textAlign.includes('justify') ? 'bg-white shadow-sm text-primary' : 'text-slate-400'}`}><Layout className="w-4 h-4 cursor-pointer" /></button>
                                 </div>
                             )}
                             {(!['img', 'video'].includes(activeTagName)) && (
@@ -836,7 +856,7 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                                     <span className="text-[10px] font-bold text-slate-500 uppercase px-1">{editorT('textColor')}</span>
                                     <div className="grid grid-cols-4 gap-2">
                                         {swatchColors.map(c => (
-                                            <button key={c} onMouseDown={(e) => { e.preventDefault(); applyStyle('foreColor', c); }} className="w-8 h-8 rounded-full border-2 border-white shadow-md hover:scale-110 transition-transform" style={{ backgroundColor: c }} />
+                                            <button key={c} onMouseDown={(e) => { e.preventDefault(); applyStyle('foreColor', c); }} className="w-8 h-8 rounded-full border-2 border-white shadow-md hover:scale-110 transition-transform cursor-pointer" style={{ backgroundColor: c }} />
                                         ))}
                                         {/* مدخل اللون الديناميكي مع تدرج */}
                                         <div className="relative w-8 h-8 rounded-full shadow-md overflow-hidden  border-2 border-white">
@@ -848,7 +868,7 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                                                 type="color"
                                                 value={activeStyles.color || '#ff0000'}
                                                 onChange={(e) => applyStyleDebounced('foreColor', e.target.value)}
-                                                className="w-full h-full opacity-0 cursor-pointer"
+                                                className="w-full h-full opacity-0 cursor-pointer text-gray-400 outline-hidden"
                                             />
                                         </div>
                                     </div>
@@ -863,9 +883,9 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                                     <span className="text-[10px] font-bold text-slate-500 uppercase px-1">{editorT('color')}</span>
                                     <div className="grid grid-cols-4 gap-2">
                                         {bgColors.map(c => (
-                                            <button key={c} onMouseDown={(e) => { e.preventDefault(); applyStyle('backgroundColor', c); }} className="w-8 h-8 rounded-full border-2 border-white shadow-md hover:scale-110 transition-transform" style={{ backgroundColor: c }} />
+                                            <button key={c} onMouseDown={(e) => { e.preventDefault(); applyStyle('backgroundColor', c); }} className="w-8 h-8 rounded-full border-2 border-white shadow-md hover:scale-110 transition-transform cursor-pointer" style={{ backgroundColor: c }} />
                                         ))}
-                                        <button onMouseDown={(e) => { e.preventDefault(); applyStyle('backgroundColor', 'transparent'); }} className="w-8 h-8 rounded-full bg-white border-2 border-slate-100 shadow-md flex items-center justify-center relative"><div className="absolute w-full h-[1px] bg-red-400 rotate-45" /></button>
+                                        <button onMouseDown={(e) => { e.preventDefault(); applyStyle('backgroundColor', 'transparent'); }} className="w-8 h-8 rounded-full bg-white border-2 border-slate-100 shadow-md flex items-center justify-center relative cursor-pointer"><div className="absolute w-full h-[1px] bg-red-400 rotate-45" /></button>
                                     </div>
                                 </div>
                             </div>
@@ -875,13 +895,15 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
 
                 <div className="flex-1 overflow-y-auto flex flex-col items-center p-2 lg:p-6 bg-[#E2E8F0] z-10 w-full">
                     <div className="flex gap-4 mb-4 bg-white p-1 rounded-xl shadow-sm border border-slate-200">
-                        <button className="p-2 text-indigo-600 bg-indigo-50 rounded-lg"><Monitor className="w-4 h-4" /></button>
-                        <button className="p-2 text-slate-400 rounded-lg"><Smartphone className="w-4 h-4" /></button>
+                        <button className="p-2 text-primary bg-primary/10 rounded-lg cursor-pointer"><Monitor className="w-4 h-4" /></button>
+                        <button className="p-2 text-slate-400 rounded-lg cursor-pointer"><Smartphone className="w-4 h-4" /></button>
                     </div>
 
                     <div
                         id="editor-canvas"
-                        ref={canvasRef} onDragOver={handleDragOver} onDrop={handleDrop} onClick={() => { if (activeSnippetId) commitChanges(activeSnippetId); setActiveSnippetId(null); activeElementRef.current = null; setActiveTagName(null); }}
+                        ref={canvasRef} onDragOver={handleDragOver} onDrop={handleDrop} onClick={() => {
+                            if (activeSnippetId) commitChanges(activeSnippetId);
+                        }}
                         className={`w-full max-w-7xl bg-white shadow-2xl rounded-2xl overflow-y-auto scroll-smooth transition-all duration-500 relative min-h-[600px] ${previewMode ? 'ring-0' : 'ring-1 ring-slate-300 [&_video]:pointer-events-none'}`}
                     >
                         <div className="flex flex-col min-h-full">
@@ -891,10 +913,10 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                                     <div key={item.id} className="group relative">
                                         {!previewMode && (
                                             <div className="absolute top-4 right-4 hidden group-hover:flex items-center gap-1.5 bg-[#1E293B] text-white px-2 py-1 rounded-xl z-50 shadow-2xl border border-white/10 scale-90 opacity-90 transition-all">
-                                                <button onClick={() => moveSnippet(index, 'up')} className="p-1.5 hover:bg-slate-700 rounded-lg"><Move className="w-3.5 h-3.5 rotate-180" /></button>
-                                                <button onClick={() => moveSnippet(index, 'down')} className="p-1.5 hover:bg-slate-700 rounded-lg"><Move className="w-3.5 h-3.5" /></button>
-                                                <button onClick={() => { const newList = [...droppedSnippets]; newList.splice(index + 1, 0, { ...item, id: crypto.randomUUID() }); setDroppedSnippets(newList); }} className="p-1.5 hover:bg-slate-700 rounded-lg"><Copy className="w-3.5 h-3.5" /></button>
-                                                <button onClick={() => setDeleteIndex(index)} className="p-1.5 hover:bg-red-900 rounded-lg"><Trash2 className="w-3.5 h-3.5" /></button>
+                                                <button onClick={() => moveSnippet(index, 'up')} className="p-1.5 hover:bg-slate-700 rounded-lg cursor-pointer"><Move className="w-3.5 h-3.5 rotate-180" /></button>
+                                                <button onClick={() => moveSnippet(index, 'down')} className="p-1.5 hover:bg-slate-700 rounded-lg cursor-pointer"><Move className="w-3.5 h-3.5" /></button>
+                                                <button onClick={() => { const newList = [...droppedSnippets]; newList.splice(index + 1, 0, { ...item, id: crypto.randomUUID() }); setDroppedSnippets(newList); }} className="p-1.5 hover:bg-slate-700 rounded-lg cursor-pointer"><Copy className="w-3.5 h-3.5" /></button>
+                                                <button onClick={() => setDeleteIndex(index)} className="p-1.5 hover:bg-red-900 rounded-lg cursor-pointer"><Trash2 className="w-3.5 h-3.5" /></button>
                                             </div>
                                         )}
                                         {isActive && !previewMode && activeElementRef.current && (
@@ -905,12 +927,26 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                                                 {/* Header & Tag Indicator */}
                                                 <div className="flex items-center justify-between border-b border-white/10 pb-2">
                                                     <div className="flex items-center gap-2">
-                                                        <div className="bg-indigo-500 p-1.5 rounded-lg">
+                                                        <div className="bg-primary p-1.5 rounded-lg">
                                                             <Settings className="w-3.5 h-3.5 text-white" />
                                                         </div>
                                                         <span className="text-[10px] font-black uppercase tracking-widest text-slate-300">{activeTagName}</span>
                                                     </div>
-                                                    <button onClick={() => { setActiveSnippetId(null); activeElementRef.current = null; }} className="p-1 hover:bg-white/10 rounded-full">
+                                                    <button
+                                                        onClick={() => {
+                                                            document.querySelectorAll('[id^="snippet-content-"] *').forEach(el => {
+                                                                const htmlEl = el as HTMLElement;
+                                                                htmlEl.style.removeProperty('outline');
+                                                                htmlEl.style.removeProperty('outline-offset');
+                                                                if (htmlEl.getAttribute('style') === '' || (htmlEl.getAttribute('style') && htmlEl.style.length === 0)) {
+                                                                    htmlEl.removeAttribute('style');
+                                                                }
+                                                                htmlEl.removeAttribute('contenteditable');
+                                                            });
+                                                            setActiveSnippetId(null); activeElementRef.current = null; setActiveTagName(null);
+                                                        }}
+                                                        className="p-1 hover:bg-white/10 rounded-full cursor-pointer"
+                                                    >
                                                         <Plus className="w-4 h-4 rotate-45 text-slate-400" />
                                                     </button>
                                                 </div>
@@ -921,17 +957,17 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                                                         <div className="flex flex-col gap-2 bg-white/5 p-2 rounded-2xl border border-white/5 flex-1 min-w-[140px]">
                                                             <div className="flex items-center justify-between gap-1 px-1 border-b border-white/10 pb-2">
                                                                 <div className="flex items-center gap-1">
-                                                                    <button onMouseDown={(e) => { e.preventDefault(); applyStyle('fontSize', (parseInt(activeStyles.fontSize) - 1) + 'px'); }} className="p-1.5 hover:bg-white/10 rounded-lg"><Minus className="w-3.5 h-3.5" /></button>
+                                                                    <button onMouseDown={(e) => { e.preventDefault(); applyStyle('fontSize', (parseInt(activeStyles.fontSize) - 1) + 'px'); }} className="p-1.5 hover:bg-white/10 rounded-lg cursor-pointer"><Minus className="w-3.5 h-3.5" /></button>
                                                                     <span className="text-[10px] font-black w-6 text-center">{activeStyles.fontSize.replace('px', '').replace('rem', '')}</span>
-                                                                    <button onMouseDown={(e) => { e.preventDefault(); applyStyle('fontSize', (parseInt(activeStyles.fontSize) + 1) + 'px'); }} className="p-1.5 hover:bg-white/10 rounded-lg"><PlusIcon className="w-3.5 h-3.5" /></button>
+                                                                    <button onMouseDown={(e) => { e.preventDefault(); applyStyle('fontSize', (parseInt(activeStyles.fontSize) + 1) + 'px'); }} className="p-1.5 hover:bg-white/10 rounded-lg cursor-pointer"><PlusIcon className="w-3.5 h-3.5" /></button>
                                                                 </div>
                                                                 <div className="text-[9px] font-bold text-slate-500 uppercase tracking-tighter">Size</div>
                                                             </div>
                                                             <div className="flex items-center justify-around gap-1 pt-1">
-                                                                <button onMouseDown={(e) => { e.preventDefault(); applyStyle('textAlign', 'left'); }} className={`p-2 rounded-lg transition-all ${activeStyles.textAlign.includes('left') ? 'bg-indigo-500 text-white' : 'hover:bg-white/10 text-slate-400'}`}><AlignLeft className="w-4 h-4" /></button>
-                                                                <button onMouseDown={(e) => { e.preventDefault(); applyStyle('textAlign', 'center'); }} className={`p-2 rounded-lg transition-all ${activeStyles.textAlign.includes('center') ? 'bg-indigo-500 text-white' : 'hover:bg-white/10 text-slate-400'}`}><AlignCenter className="w-4 h-4" /></button>
-                                                                <button onMouseDown={(e) => { e.preventDefault(); applyStyle('textAlign', 'right'); }} className={`p-2 rounded-lg transition-all ${activeStyles.textAlign.includes('right') ? 'bg-indigo-500 text-white' : 'hover:bg-white/10 text-slate-400'}`}><AlignRight className="w-4 h-4" /></button>
-                                                                <button onMouseDown={(e) => { e.preventDefault(); applyStyle('textAlign', 'justify'); }} className={`p-2 rounded-lg transition-all ${activeStyles.textAlign.includes('justify') ? 'bg-indigo-500 text-white' : 'hover:bg-white/10 text-slate-400'}`}><Layout className="w-4 h-4" /></button>
+                                                                <button onMouseDown={(e) => { e.preventDefault(); applyStyle('textAlign', 'left'); }} className={`p-2 rounded-lg transition-all ${activeStyles.textAlign.includes('left') ? 'bg-primary/90 text-white' : 'hover:bg-white/10 text-slate-400'}`}><AlignLeft className="w-4 h-4 cursor-pointer" /></button>
+                                                                <button onMouseDown={(e) => { e.preventDefault(); applyStyle('textAlign', 'center'); }} className={`p-2 rounded-lg transition-all ${activeStyles.textAlign.includes('center') ? 'bg-primary/90 text-white' : 'hover:bg-white/10 text-slate-400'}`}><AlignCenter className="w-4 h-4 cursor-pointer" /></button>
+                                                                <button onMouseDown={(e) => { e.preventDefault(); applyStyle('textAlign', 'right'); }} className={`p-2 rounded-lg transition-all ${activeStyles.textAlign.includes('right') ? 'bg-primary/90 text-white' : 'hover:bg-white/10 text-slate-400'}`}><AlignRight className="w-4 h-4 cursor-pointer" /></button>
+                                                                <button onMouseDown={(e) => { e.preventDefault(); applyStyle('textAlign', 'justify'); }} className={`p-2 rounded-lg transition-all ${activeStyles.textAlign.includes('justify') ? 'bg-primary/90 text-white' : 'hover:bg-white/10 text-slate-400'}`}><Layout className="w-4 h-4 cursor-pointer" /></button>
                                                             </div>
                                                         </div>
                                                     )}
@@ -941,7 +977,7 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                                                         {/* Border Radius Toggle/Step */}
                                                         <button
                                                             onMouseDown={(e) => { e.preventDefault(); applyStyle('borderRadius', (parseInt(activeStyles.borderRadius || '0') + 4) % 28 + 'px'); }}
-                                                            className="p-2 hover:bg-white/10 rounded-xl"
+                                                            className="p-2 hover:bg-white/10 rounded-xl cursor-pointer"
                                                             title="Border Radius"
                                                         >
                                                             <SquareRoundCorner className="w-4 h-4" />
@@ -956,7 +992,7 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                                                                             type="color"
                                                                             value={activeStyles.color}
                                                                             onChange={(e) => applyStyleDebounced('foreColor', e.target.value)}
-                                                                            className="absolute inset-0 opacity-0 cursor-pointer"
+                                                                            className="absolute inset-0 opacity-0 cursor-pointer text-gray-400 outline-hidden"
                                                                         />
                                                                     </div>
                                                                     <TypeIcon className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-slate-900 rounded-full p-0.5" />
@@ -970,7 +1006,7 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                                                                             type="color"
                                                                             value={activeStyles.backgroundColor === 'transparent' ? '#ffffff' : activeStyles.backgroundColor}
                                                                             onChange={(e) => applyStyleDebounced('backgroundColor', e.target.value)}
-                                                                            className="absolute inset-0 opacity-0 cursor-pointer"
+                                                                            className="absolute inset-0 opacity-0 cursor-pointer text-gray-400 outline-hidden"
                                                                         />
                                                                     </div>
                                                                     <PaintBucket className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-slate-900 rounded-full p-0.5" />
@@ -984,21 +1020,21 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                                                 {(['img', 'svg', 'video'].includes(activeTagName!)) && (
                                                     <div className="flex gap-2 bg-white/5 p-2 rounded-2xl border border-white/5 overflow-x-auto">
                                                         {activeTagName === 'img' && (
-                                                            <button onClick={() => imageInputRef.current?.click()} className="flex-1 bg-indigo-600 px-3 py-2 rounded-xl text-[10px] font-bold flex items-center justify-center gap-2 shrink-0">
+                                                            <button onClick={() => imageInputRef.current?.click()} className="flex-1 bg-primary px-3 py-2 rounded-xl text-[10px] font-bold flex items-center justify-center gap-2 shrink-0 cursor-pointer">
                                                                 <ImageIcon className="w-3.5 h-3.5" /> {editorT('replaceimg')}
                                                             </button>
                                                         )}
                                                         {activeTagName === 'svg' && (
-                                                            <button onClick={() => svgInputRef.current?.click()} className="flex-1 bg-emerald-600 px-3 py-2 rounded-xl text-[10px] font-bold flex items-center justify-center gap-2 shrink-0">
+                                                            <button onClick={() => svgInputRef.current?.click()} className="flex-1 bg-emerald-600 px-3 py-2 rounded-xl text-[10px] font-bold flex items-center justify-center gap-2 shrink-0 cursor-pointer">
                                                                 <VectorSquare className="w-3.5 h-3.5" /> {editorT('replacesvg')}
                                                             </button>
                                                         )}
                                                         {activeTagName === 'video' && (
                                                             <>
-                                                                <button onClick={() => videoInputRef.current?.click()} className="flex-1 bg-emerald-600 px-3 py-2 rounded-xl text-[10px] font-bold flex items-center justify-center gap-2 shrink-0">
+                                                                <button onClick={() => videoInputRef.current?.click()} className="flex-1 bg-emerald-600 px-3 py-2 rounded-xl text-[10px] font-bold flex items-center justify-center gap-2 shrink-0 cursor-pointer">
                                                                     <FilePlay className="w-3.5 h-3.5" /> Video
                                                                 </button>
-                                                                <button onClick={() => videoImgInputRef.current?.click()} className="flex-1 bg-slate-700 px-3 py-2 rounded-xl text-[10px] font-bold flex items-center justify-center gap-2 shrink-0">
+                                                                <button onClick={() => videoImgInputRef.current?.click()} className="flex-1 bg-slate-700 px-3 py-2 rounded-xl text-[10px] font-bold flex items-center justify-center gap-2 shrink-0 cursor-pointer">
                                                                     <ImageIcon className="w-3.5 h-3.5" /> Cover
                                                                 </button>
                                                             </>
@@ -1016,7 +1052,7 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                                                                 placeholder="https://..."
                                                                 value={activeElementRef.current?.getAttribute('href') || ''}
                                                                 onChange={(e) => updateLinkHref(e.target.value)}
-                                                                className="flex-1 bg-transparent border-none text-[10px] focus:ring-0 p-0 text-slate-300"
+                                                                className="flex-1 bg-transparent border-none text-[10px] focus:ring-0 p-0 text-slate-300 text-gray-400 outline-hidden"
                                                             />
                                                         </div>
                                                         <label className="flex items-center gap-2 text-[10px] text-slate-400 cursor-pointer pt-2 border-t border-white/5">
@@ -1024,7 +1060,7 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                                                                 type="checkbox"
                                                                 checked={activeElementRef.current?.getAttribute('target') === '_blank'}
                                                                 onChange={(e) => toggleLinkTarget(e.target.checked)}
-                                                                className="rounded border-white/20 bg-transparent text-indigo-600 w-3 h-3"
+                                                                className="rounded border-white/20 bg-transparent text-primary w-3 h-3"
                                                             />
                                                             {editorT('openInNewTab')}
                                                         </label>
@@ -1044,8 +1080,8 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                                 )
                             })}
                             {!previewMode && (
-                                <div onDragOver={(e) => handleDragOver(e, droppedSnippets.length)} className={`h-40 border-2 border-dashed border-slate-300 m-8 rounded-3xl flex flex-col items-center justify-center transition-all gap-3 ${dragOverIndex === droppedSnippets.length ? 'bg-indigo-50 border-indigo-400' : 'bg-white hover:bg-slate-50'}`}>
-                                    <Plus className={`w-10 h-10 ${dragOverIndex === droppedSnippets.length ? 'text-indigo-600' : 'text-slate-200'}`} />
+                                <div onDragOver={(e) => handleDragOver(e, droppedSnippets.length)} className={`h-40 border-2 border-dashed border-slate-300 m-8 rounded-3xl flex flex-col items-center justify-center transition-all gap-3 ${dragOverIndex === droppedSnippets.length ? 'bg-primary/10 border-primary' : 'bg-white hover:bg-slate-50'}`}>
+                                    <Plus className={`w-10 h-10 ${dragOverIndex === droppedSnippets.length ? 'text-primary' : 'text-slate-200'}`} />
                                     <span className="text-xs font-black text-slate-400 uppercase tracking-widest">{editorT('dropNewSection')}</span>
                                 </div>
                             )}
@@ -1075,10 +1111,9 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                                 draggable
                                 onDragStart={(e) => handleDragStart(e, s)}
                                 onClick={() => { if (window.innerWidth < 1024) handleSnippetClick(s); }}
-                                className="p-4 bg-white border border-slate-200 rounded-2xl cursor-pointer lg:cursor-grab hover:border-indigo-400 hover:shadow-lg active:scale-95 transition-all group overflow-hidden"
+                                className="p-4 bg-white border border-slate-200 rounded-2xl cursor-pointer lg:cursor-grab hover:border-primary/70 hover:shadow-lg active:scale-95 transition-all group overflow-hidden"
                             >
-                                <div className="text-xs font-black text-slate-800 uppercase group-hover:text-indigo-600">{locale === 'ar' && s.nameAr ? s.nameAr : s.name}</div>
-                                <div className="text-[9px] text-slate-400 mt-1 uppercase font-bold">{t(`categories.${s.category}`)}</div>
+                                <div className="text-xs font-black text-slate-800 uppercase group-hover:text-primary">{locale === 'ar' && s.nameAr ? s.nameAr : s.name}</div>
                             </div>
                         ))}
                     </div>

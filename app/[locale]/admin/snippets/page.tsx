@@ -70,16 +70,41 @@ export default function SnippetsManagement() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name, nameAr, category, htmlContent: finalContent }),
             });
-            if (res.ok) { closeModal(); fetchSnippets(); toast.success(commonT('saved')); }
-        } catch (error) { toast.error(commonT('error')); }
+            if (res.ok) {
+                closeModal();
+                fetchSnippets();
+                toast.success(commonT('saved'));
+            } else {
+                const err = await res.json();
+                try {
+                    toast.error(commonT(err.message) || err.message || commonT('error'));
+                } catch (e) {
+                    toast.error(err.message || commonT('error'));
+                }
+            }
+        } catch (error) {
+            toast.error(commonT('error'));
+        }
     };
 
     const confirmDelete = async () => {
         if (!deleteId) return;
         try {
             const res = await fetch(`/api/snippets/${deleteId}`, { method: 'DELETE' });
-            if (res.ok) { fetchSnippets(); toast.success(commonT('deleted')); }
-        } catch (error) { toast.error(commonT('error')); }
+            if (res.ok) {
+                fetchSnippets();
+                toast.success(commonT('deleted'));
+            } else {
+                const err = await res.json();
+                try {
+                    toast.error(commonT(err.message) || err.message || commonT('error'));
+                } catch (e) {
+                    toast.error(err.message || commonT('error'));
+                }
+            }
+        } catch (error) {
+            toast.error(commonT('error'));
+        }
         finally { setDeleteId(null); }
     };
 
@@ -141,7 +166,7 @@ export default function SnippetsManagement() {
                 {(userRole === 'ADMIN' || userRole === 'EDITOR') && (
                     <button
                         id="new-snippet-btn"
-                        onClick={() => { setIsEditing(false); setShowModal(true); setViewMode('visual'); }} className="flex items-center gap-2 bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-indigo-700 shadow-sm transition-all">
+                        onClick={() => { setIsEditing(false); setShowModal(true); setViewMode('visual'); }} className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-primary/95 shadow-sm transition-all cursor-pointer">
                         <Plus className="w-5 h-5" /> {t('newSnippet')}
                     </button>
                 )}
@@ -154,7 +179,7 @@ export default function SnippetsManagement() {
                             <div key={s.id} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden group hover:shadow-md transition-all">
                                 <div className="aspect-video bg-slate-50 flex items-center justify-center p-6 border-b border-slate-100 relative">
                                     <div className="scale-50 origin-center opacity-40 pointer-events-none w-full h-full overflow-hidden" dangerouslySetInnerHTML={{ __html: sanitizeHtml(s.htmlContent) }} />
-                                    <span className="absolute top-3 right-3 px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-white text-indigo-600 shadow-sm border border-indigo-100">{t(`categories.${s.category}`)}</span>
+                                    <span className="absolute top-3 right-3 px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-white text-primary shadow-sm border border-indigo-100">{t(`categories.${s.category}`)}</span>
                                 </div>
                                 <div className="p-4 flex justify-between items-center bg-white">
                                     <span className="font-bold text-slate-800">{locale === 'ar' && s.nameAr ? s.nameAr : s.name}</span>
@@ -163,13 +188,13 @@ export default function SnippetsManagement() {
                                             <button
                                                 id={index === 0 ? 'edit-snippet-btn-0' : undefined}
                                                 onClick={() => openEditModal(s)}
-                                                className="p-2 text-slate-400 hover:text-indigo-600 transition-colors"
+                                                className="p-2 text-slate-400 hover:text-primary transition-colors cursor-pointer"
                                             >
                                                 <Edit2 className="w-4 h-4" />
                                             </button>
                                         )}
                                         {userRole === 'ADMIN' && (
-                                            <button onClick={() => setDeleteId(s.id)} className="p-2 text-slate-400 hover:text-red-500 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                                            <button onClick={() => setDeleteId(s.id)} className="p-2 text-slate-400 hover:text-red-500 transition-colors cursor-pointer"><Trash2 className="w-4 h-4" /></button>
                                         )}
                                     </div>
                                 </div>
@@ -185,10 +210,10 @@ export default function SnippetsManagement() {
                             <h2 className="text-base sm:text-xl font-black text-slate-900 uppercase tracking-tight truncate shrink min-w-0 pr-2">{isEditing ? t('editSnippet') : t('createSnippet')}</h2>
                             <div className="flex items-center gap-2 sm:gap-4 shrink-0">
                                 <div className="flex bg-slate-100 p-1 rounded-full scale-90 sm:scale-100 origin-right">
-                                    <button onClick={() => setViewMode('visual')} className={`px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-bold transition-all ${viewMode === 'visual' ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-500'}`}>{t('visual')}</button>
-                                    <button onClick={() => setViewMode('code')} className={`px-3 sm:px-4 py-1.5 rounded-full text-[10px] sm:text-xs font-bold transition-all ${viewMode === 'code' ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-500'}`}>{t('code')}</button>
+                                    <button onClick={() => setViewMode('visual')} className={`px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-bold transition-all cursor-pointer ${viewMode === 'visual' ? 'bg-white shadow-sm text-primary' : 'text-slate-500'}`}>{t('visual')}</button>
+                                    <button onClick={() => setViewMode('code')} className={`px-3 sm:px-4 py-1.5 rounded-full text-[10px] sm:text-xs font-bold transition-all cursor-pointer ${viewMode === 'code' ? 'bg-white shadow-sm text-primary' : 'text-slate-500'}`}>{t('code')}</button>
                                 </div>
-                                <button onClick={closeModal} className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center hover:bg-slate-100 rounded-full transition-colors"><X className="w-4 h-4 sm:w-5 sm:h-5 text-slate-400" /></button>
+                                <button onClick={closeModal} className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center hover:bg-slate-100 rounded-full transition-colors cursor-pointer"><X className="w-4 h-4 sm:w-5 sm:h-5 text-slate-400" /></button>
                             </div>
                         </div>
 
@@ -198,13 +223,13 @@ export default function SnippetsManagement() {
                                     <div className="flex-1 space-y-2">
                                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">{t('generalDetails')}</label>
                                         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-1 gap-3">
-                                            <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder={`${t('snippetName')} (EN)`} className="w-full px-4 py-2 bg-white border border-slate-200 text-slate-900 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all placeholder:text-slate-300" />
-                                            <input type="text" value={nameAr} onChange={e => setNameAr(e.target.value)} placeholder={`${t('snippetName')} (AR)`} className="w-full px-4 py-2 bg-white border border-slate-200 text-slate-900 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all text-end placeholder:text-slate-300" dir="rtl" />
+                                            <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder={`${t('snippetName')} (EN)`} className="w-full px-4 py-2 bg-white border border-slate-200 text-slate-900 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-slate-300 text-gray-400 outline-hidden" />
+                                            <input type="text" value={nameAr} onChange={e => setNameAr(e.target.value)} placeholder={`${t('snippetName')} (AR)`} className="w-full px-4 py-2 bg-white border border-slate-200 text-slate-900 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all text-end placeholder:text-slate-300 text-gray-400 outline-hidden" dir="rtl" />
                                         </div>
                                     </div>
                                     <div className="w-full sm:w-48 xl:w-full shrink-0">
                                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">{t('category')}</label>
-                                        <select value={category} onChange={e => setCategory(e.target.value)} className="w-full px-4 py-2 bg-white border border-slate-200 text-slate-900 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all">
+                                        <select value={category} onChange={e => setCategory(e.target.value)} className="w-full px-4 py-2 bg-white border border-slate-200 text-slate-900 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all text-gray-400 outline-hidden">
                                             {['Intro', 'Content', 'Features', 'Contact', 'Footer', 'Header', 'CTA', 'Stats'].map(c => <option key={c} value={c}>{t(`categories.${c}`)}</option>)}
                                         </select>
                                     </div>
@@ -216,7 +241,7 @@ export default function SnippetsManagement() {
 
                             <div className="flex-1 bg-slate-100 p-4 sm:p-8 overflow-auto relative">
                                 {viewMode === 'code' ? (
-                                    <textarea value={htmlContent} onChange={e => setHtmlContent(e.target.value)} className="w-full h-full font-mono text-[13px] sm:text-sm p-4 sm:p-8 bg-slate-900 text-indigo-100 rounded-2xl sm:rounded-3xl outline-none min-h-[300px]" />
+                                    <textarea value={htmlContent} onChange={e => setHtmlContent(e.target.value)} className="w-full h-full font-mono text-[13px] sm:text-sm p-4 sm:p-8 bg-slate-900 text-indigo-100 rounded-2xl sm:rounded-3xl outline-none min-h-[300px] text-gray-400 outline-hidden" />
                                 ) : (
                                     <div className="max-w-4xl mx-auto min-h-full py-10 sm:py-20 relative">
                                         {activeElement && previewRef.current?.contains(activeElement) && (
@@ -228,19 +253,19 @@ export default function SnippetsManagement() {
                                                     clone.style.outline = '';
                                                     activeElement.after(clone);
                                                     setHtmlContent(previewRef.current?.innerHTML || '');
-                                                }} className="p-1.5 hover:bg-slate-800 rounded-full"><Copy className="w-3.5 h-3.5" /></button>
+                                                }} className="p-1.5 hover:bg-slate-800 rounded-full cursor-pointer"><Copy className="w-3.5 h-3.5" /></button>
                                                 <button onMouseDown={e => {
                                                     e.preventDefault();
                                                     activeElement.remove();
                                                     setActiveElement(null);
                                                     setHtmlContent(previewRef.current?.innerHTML || '');
-                                                }} className="p-1.5 hover:bg-red-900 rounded-full"><Trash2 className="w-3.5 h-3.5" /></button>
+                                                }} className="p-1.5 hover:bg-red-900 rounded-full cursor-pointer"><Trash2 className="w-3.5 h-3.5" /></button>
                                                 {activeElement.tagName === 'IMG' && (
                                                     <button onMouseDown={e => {
                                                         e.preventDefault();
                                                         const src = prompt(t('urlHint'), (activeElement as HTMLImageElement).src);
                                                         if (src) { (activeElement as HTMLImageElement).src = src; setHtmlContent(previewRef.current?.innerHTML || ''); }
-                                                    }} className="p-1.5 hover:bg-slate-800 rounded-full"><ImageIcon className="w-3.5 h-3.5" /></button>
+                                                    }} className="p-1.5 hover:bg-slate-800 rounded-full cursor-pointer"><ImageIcon className="w-3.5 h-3.5" /></button>
                                                 )}
                                             </div>
                                         )}
@@ -251,8 +276,8 @@ export default function SnippetsManagement() {
                         </div>
 
                         <div className="p-4 sm:p-6 border-t border-slate-100 flex flex-col sm:flex-row justify-end gap-3 bg-white pb-6 sm:pb-6 shrink-0">
-                            <button onClick={closeModal} className="order-2 sm:order-1 px-6 py-2 text-slate-500 font-bold text-sm sm:text-base">{commonT('cancel')}</button>
-                            <button onClick={handleSubmit} className="order-1 sm:order-2 px-10 py-2.5 bg-indigo-600 text-white font-black rounded-full shadow-xl hover:bg-indigo-700 transition-all text-sm sm:text-base">{commonT('saveChanges')}</button>
+                            <button onClick={closeModal} className="order-2 sm:order-1 px-6 py-2 text-slate-500 font-bold text-sm sm:text-base cursor-pointer">{commonT('cancel')}</button>
+                            <button onClick={handleSubmit} className="order-1 sm:order-2 px-10 py-2.5 bg-primary text-white font-black rounded-full shadow-xl hover:bg-primary/90 cursor-pointer transition-all text-sm sm:text-base">{commonT('saveChanges')}</button>
                         </div>
                     </div>
                 </div>
