@@ -20,7 +20,7 @@ export async function GET(request: NextRequest, { params }: Props) {
     try {
         const currentUser = await getServerUser();
         if (!currentUser || (currentUser.role !== Role.ADMIN && currentUser.role !== Role.EDITOR)) {
-            return NextResponse.json({ message: 'Unauthorized' }, { status: 403 });
+            return NextResponse.json({ message: 'unauthorized' }, { status: 403 });
         }
         const { id } = await params;
         const user = await prisma.user.findUnique({
@@ -36,7 +36,7 @@ export async function GET(request: NextRequest, { params }: Props) {
 
         return NextResponse.json(user, { status: 200 });
     } catch (error) {
-        return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({ message: 'internalServerError' }, { status: 500 });
     }
 }
 
@@ -57,7 +57,7 @@ export async function PUT(request: NextRequest, { params }: Props) {
         const validation = updateUserSchema.safeParse(body);
 
         if (!validation.success) {
-            return NextResponse.json({ message: validation.error.message }, { status: 400 });
+            return NextResponse.json({ message: validation.error.issues[0].message }, { status: 400 });
         }
 
         const user = await prisma.user.findUnique({ where: { id: parseInt(id) } });
@@ -121,7 +121,7 @@ export async function DELETE(request: NextRequest, { params }: Props) {
             userId: currentUser.id
         });
 
-        return NextResponse.json({ message: 'User deleted successfully' }, { status: 200 });
+        return NextResponse.json({ message: 'deleted' }, { status: 200 });
     } catch (error) {
         return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
     }

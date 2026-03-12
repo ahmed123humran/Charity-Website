@@ -40,19 +40,19 @@ export const updateFooterSchema = z.object({
 });
 
 export const createUserSchema = z.object({
-    email: z.string().email().optional(),
+    email: z.string().email({ message: 'invalidEmail' }).optional(),
     phone: z.string().optional(),
     name: z.string().optional(),
-    password: z.string().min(6).optional(),
+    password: z.string().min(6, { message: 'passwordTooShort' }).optional(),
     role: z.enum(['ADMIN', 'EDITOR', 'VIEWER']).optional(),
 }).refine(data => data.email || data.phone, {
     message: "Either email or phone is required"
 });
 
 export const updateUserSchema = z.object({
-    email: z.string().email().optional(),
+    email: z.string().email({ message: 'invalidEmail' }).optional(),
     name: z.string().optional(),
-    password: z.string().min(6).optional(),
+    password: z.string().min(6, { message: 'passwordTooShort' }).optional(),
     role: z.enum(['ADMIN', 'EDITOR', 'VIEWER']).optional(),
 });
 

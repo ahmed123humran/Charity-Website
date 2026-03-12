@@ -33,7 +33,7 @@ export async function GET(request: NextRequest, { params }: Props) {
 
         return NextResponse.json(menu, { status: 200 });
     } catch (error) {
-        return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({ message: 'internalServerError' }, { status: 500 });
     }
 }
 
@@ -87,7 +87,7 @@ export async function PUT(request: NextRequest, { params }: Props) {
 
         return NextResponse.json(updatedMenu, { status: 200 });
     } catch (error) {
-        return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({ message: 'internalServerError' }, { status: 500 });
     }
 }
 
@@ -121,7 +121,7 @@ export async function DELETE(request: NextRequest, { params }: Props) {
             userId: user.id
         });
 
-        return NextResponse.json({ message: 'Menu deleted successfully' }, { status: 200 });
+        return NextResponse.json({ message: 'deleted' }, { status: 200 });
     } catch (error) {
         return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
     }

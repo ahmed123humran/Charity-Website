@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json(websites, { status: 200 });
     }
     catch (error) {
-        return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({ message: 'internalServerError' }, { status: 500 });
     }
 }
 
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     try {
         const isAuthorized = await checkRole(['ADMIN', 'EDITOR']);
         if (!isAuthorized) {
-            return NextResponse.json({ message: 'Unauthorized: Insufficient permissions' }, { status: 403 });
+            return NextResponse.json({ message: 'unauthorized' }, { status: 403 });
         }
         const body = await request.json();
         const validation = createWebsiteSchema.safeParse(body);
@@ -68,6 +68,6 @@ export async function POST(request: NextRequest) {
     }
     catch (error) {
         console.error("Error creating website:", error);
-        return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({ message: 'internalServerError' }, { status: 500 });
     }
 }

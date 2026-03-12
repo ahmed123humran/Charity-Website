@@ -27,12 +27,12 @@ export async function GET(request: NextRequest, { params }: Props) {
         });
 
         if (!page) {
-            return NextResponse.json({ message: 'Page not found' }, { status: 404 });
+            return NextResponse.json({ message: 'notFound' }, { status: 404 });
         }
 
         return NextResponse.json(page, { status: 200 });
     } catch (error) {
-        return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({ message: 'internalServerError' }, { status: 500 });
     }
 }
 
@@ -46,7 +46,7 @@ export async function PUT(request: NextRequest, { params }: Props) {
     try {
         const user = await getServerUser();
         if (!user || (user.role !== Role.ADMIN && user.role !== Role.EDITOR)) {
-            return NextResponse.json({ message: 'Unauthorized: Only Admin and Editor can update pages' }, { status: 403 });
+            return NextResponse.json({ message: 'unauthorized' }, { status: 403 });
         }
 
         const { id } = await params;
@@ -59,7 +59,7 @@ export async function PUT(request: NextRequest, { params }: Props) {
 
         const page = await prisma.page.findUnique({ where: { id } });
         if (!page) {
-            return NextResponse.json({ message: 'Page not found' }, { status: 404 });
+            return NextResponse.json({ message: 'notFound' }, { status: 404 });
         }
 
         const updatedPage = await prisma.page.update({
@@ -87,7 +87,7 @@ export async function PUT(request: NextRequest, { params }: Props) {
         return NextResponse.json(updatedPage, { status: 200 });
     } catch (error) {
         console.error(error);
-        return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({ message: 'internalServerError' }, { status: 500 });
     }
 }
 
@@ -101,13 +101,13 @@ export async function DELETE(request: NextRequest, { params }: Props) {
     try {
         const user = await getServerUser();
         if (!user || user.role !== Role.ADMIN) {
-            return NextResponse.json({ message: 'Unauthorized: Only Admin can delete pages' }, { status: 403 });
+            return NextResponse.json({ message: 'unauthorized' }, { status: 403 });
         }
 
         const { id } = await params;
         const page = await prisma.page.findUnique({ where: { id } });
         if (!page) {
-            return NextResponse.json({ message: 'Page not found' }, { status: 404 });
+            return NextResponse.json({ message: 'notFound' }, { status: 404 });
         }
 
         await prisma.page.delete({ where: { id } });
@@ -121,8 +121,8 @@ export async function DELETE(request: NextRequest, { params }: Props) {
             userId: user.id
         });
 
-        return NextResponse.json({ message: 'Page deleted successfully' }, { status: 200 });
+        return NextResponse.json({ message: 'deleted' }, { status: 200 });
     } catch (error) {
-        return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({ message: 'internalServerError' }, { status: 500 });
     }
 }

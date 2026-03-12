@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json(menus, { status: 200 });
     }
     catch (error) {
-        return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({ message: 'internalServerError' }, { status: 500 });
     }
 }
 
@@ -69,6 +69,6 @@ export async function POST(request: NextRequest) {
         return NextResponse.json(newMenu, { status: 201 });
     }
     catch (error) {
-        return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({ message: 'internalServerError' }, { status: 500 });
     }
 }

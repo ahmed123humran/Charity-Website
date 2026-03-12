@@ -4,12 +4,12 @@ import { useState, useEffect, useRef, memo } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from '@/navigation';
 import {
-    Save, ArrowLeft, Plus, Move, Trash2, Layout, Type, LinkIcon,
+    Save, ArrowLeft, ArrowRight, Plus, Move, Trash2, Layout, Type, LinkIcon,
     Image as ImageIcon, Copy, MousePointer2, X, FilePlay,
     Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight, Palette,
     Type as TypeIcon, Minus, Plus as PlusIcon, PaintBucket, Settings,
     Eye, EyeOff, Monitor, Laptop, Smartphone, SquareRoundCorner, VectorSquare,
-    PanelLeft
+    PanelLeft, PanelRight
 } from 'lucide-react';
 import { getLocalizedName } from '@/app/utils/locale';
 import toast from 'react-hot-toast';
@@ -59,16 +59,19 @@ const StableSnippet = memo(({
             id={`snippet-content-${item.id}`}
             dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.htmlContent) }}
             onClick={(e) => onContentClick(e, item.id)}
-            className={`transition-all duration-300 min-h-[50px] ${!previewMode ? 'hover:outline-2 hover:outline-dashed hover:outline-indigo-300 cursor-text' : ''} ${!previewMode && isActive ? 'outline-2 outline outline-indigo-500 shadow-xl z-10' : ''}`}
+            className={`transition-all duration-300 min-h-[50px] ${!previewMode ? 'hover:outline-2 hover:outline-dashed hover:outline-primary/30 cursor-text' : ''} ${!previewMode && isActive ? 'outline-2 outline outline-indigo-500 shadow-xl z-10' : ''}`}
         />
     );
 }, (prev, next) => {
-    // CRITICAL: If the snippet is actively being edited, we NEVER re-render it from state
+    // ALWAYS re-render if preview mode changes to ensure outlines disappear/appear correctly
+    if (prev.previewMode !== next.previewMode) return false;
+
+    // CRITICAL: If the footer is actively being edited, we NEVER re-render it from state
     // This allows the user to type freely without React overwriting the DOM nodes
     if (next.isBeingEdited) return true;
+
     return prev.item.htmlContent === next.item.htmlContent &&
-        prev.isActive === next.isActive &&
-        prev.previewMode === next.previewMode;
+        prev.isActive === next.isActive;
 });
 
 export default function VisualEditor({ params }: { params: Promise<{ id: string }> }) {
@@ -176,6 +179,15 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
         }
 
         setEditorLocale(newLocale);
+        document.querySelectorAll('[id^="snippet-content-"] *').forEach(el => {
+            const htmlEl = el as HTMLElement;
+            htmlEl.style.removeProperty('outline');
+            htmlEl.style.removeProperty('outline-offset');
+            if (htmlEl.getAttribute('style') === '' || (htmlEl.getAttribute('style') && htmlEl.style.length === 0)) {
+                htmlEl.removeAttribute('style');
+            }
+            htmlEl.removeAttribute('contenteditable');
+        });
         setActiveSnippetId(null);
         activeElementRef.current = null;
         setActiveTagName(null);
@@ -217,13 +229,18 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
     const commitChanges = (id: string) => {
         const wrapper = document.getElementById(`snippet-content-${id}`);
         if (wrapper) {
+            // Clean a CLONE so the live DOM keeps its visual outline for the user
             const clone = wrapper.cloneNode(true) as HTMLElement;
             clone.querySelectorAll('*').forEach(el => {
                 const htmlEl = el as HTMLElement;
-                htmlEl.style.outline = '';
-                htmlEl.style.outlineOffset = '';
-                el.removeAttribute('contenteditable');
+                htmlEl.style.removeProperty('outline');
+                htmlEl.style.removeProperty('outline-offset');
+                if (htmlEl.getAttribute('style') === '' || (htmlEl.getAttribute('style') && htmlEl.style.length === 0)) {
+                    htmlEl.removeAttribute('style');
+                }
+                htmlEl.removeAttribute('contenteditable');
             });
+
             setDroppedSnippets(prev => prev.map(s => s.id === id ? { ...s, htmlContent: clone.innerHTML } : s));
         }
     };
@@ -272,11 +289,20 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
 
         e.stopPropagation();
 
-        // If clicking a new element, commit old one
-        if (activeElementRef.current && activeElementRef.current !== target && activeSnippetId) {
-            activeElementRef.current.style.outline = '';
-            activeElementRef.current.style.outlineOffset = '';
-            commitChanges(activeSnippetId);
+        // Surgical Cleanup: Only remove old outlines if we are switching selection
+        if (activeElementRef.current && activeElementRef.current !== target) {
+            const oldEl = activeElementRef.current;
+            oldEl.style.removeProperty('outline');
+            oldEl.style.removeProperty('outline-offset');
+            if (oldEl.getAttribute('style') === '' || (oldEl.getAttribute('style') && oldEl.style.length === 0)) {
+                oldEl.removeAttribute('style');
+            }
+            oldEl.removeAttribute('contenteditable');
+
+            // If switching snippets, commit old one
+            if (activeSnippetId && activeSnippetId !== snippetId) {
+                commitChanges(activeSnippetId);
+            }
         }
 
         activeElementRef.current = target;
@@ -285,22 +311,13 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
 
         if (target.tagName !== 'IMG' && !target.classList.contains('no-edit')) {
             if (target.tagName === 'SVG') {
-                // Mark SVG as editable
                 target.style.outline = '2px solid #3b82f6';
                 target.style.outlineOffset = '2px';
             } else {
                 target.contentEditable = 'true';
                 target.style.outline = '2px solid #3b82f6';
                 target.style.outlineOffset = '2px';
-
-                // We only commit on blur or when clicking away to stay efficient
-                const onBlur = () => {
-                    target.contentEditable = 'false';
-                    target.style.outline = '';
-                    commitChanges(snippetId);
-                    target.removeEventListener('blur', onBlur);
-                };
-                target.addEventListener('blur', onBlur);
+                target.focus();
             }
         } else {
             target.style.outline = '2px solid #3b82f6';
@@ -566,26 +583,31 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                 <div className="flex items-center gap-2 sm:gap-6 shrink-0">
                     <button
                         id="save-button"
-                        onClick={handleSave} disabled={saving} className="bg-[#3B82F6] hover:bg-blue-600 text-white px-3 sm:px-6 py-2 rounded-lg text-xs font-bold transition-all shadow-lg flex items-center gap-2">
+                        onClick={handleSave} disabled={saving} className="bg-primary hover:bg-primary/90 text-white px-3 sm:px-6 py-2 rounded-lg text-xs font-bold transition-all shadow-lg flex items-center gap-2 cursor-pointer">
                         <Save className="w-3.5 h-3.5" /> <span className="hidden sm:inline">{saving ? '...' : commonT('saveChanges')}</span>
                     </button>
-                    <button onClick={() => setPreviewMode(!previewMode)} className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs font-bold transition-all ${previewMode ? 'bg-amber-500 text-white' : 'hover:bg-slate-800'}`}>
-                        {previewMode ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />} <span className="hidden sm:inline">{previewMode ? editorT('exitPreview') : editorT('preview')}</span>
+                    <button onClick={() => {
+                        if (!previewMode && activeSnippetId) commitChanges(activeSnippetId);
+                        setPreviewMode(!previewMode);
+                    }} className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${previewMode ? 'bg-amber-500 text-white' : 'hover:bg-slate-800'}`}>
+                        {previewMode ? <EyeOff className="w-3.5 h-3.5 cursor-pointer" /> : <Eye className="w-3.5 h-3.5" />} <span className="hidden sm:inline">{previewMode ? editorT('exitPreview') : editorT('preview')}</span>
                     </button>
                     {!previewMode && (
-                        <button onClick={() => setShowLeftPanel(!showLeftPanel)} className={`p-2 rounded-lg text-xs font-bold transition-all lg:hidden ${showLeftPanel ? 'bg-indigo-500 text-white' : 'hover:bg-slate-800 text-slate-400'}`} title="Style panel">
-                            <PanelLeft className="w-3.5 h-3.5" />
+                        <button onClick={() => setShowLeftPanel(!showLeftPanel)} className={`p-2 rounded-lg text-xs font-bold transition-all lg:hidden cursor-pointer ${showLeftPanel ? 'bg-primary text-white' : 'hover:bg-slate-800 text-slate-400'}`} title="Style panel">
+                            {locale === 'ar' ? <PanelRight className="w-3.5 h-3.5 cursor-pointer" /> : <PanelLeft className="w-3.5 h-3.5" />}
                         </button>
                     )}
                 </div>
                 <div className="flex items-center gap-3 sm:gap-6 shrink-0">
                     <div className="flex bg-[#0F172A] p-1 rounded-lg">
-                        <button onClick={() => switchLocale('ar')} className={`px-3 sm:px-4 py-1 rounded text-[10px] font-bold transition-all ${editorLocale === 'ar' ? 'bg-[#3B82F6] text-white shadow-lg' : 'text-slate-400'}`}>AR</button>
-                        <button onClick={() => switchLocale('en')} className={`px-3 sm:px-4 py-1 rounded text-[10px] font-bold transition-all ${editorLocale === 'en' ? 'bg-[#3B82F6] text-white shadow-lg' : 'text-slate-400'}`}>EN</button>
+                        <button onClick={() => switchLocale('ar')} className={`px-3 sm:px-4 py-1 rounded text-[10px] font-bold transition-all cursor-pointer ${editorLocale === 'ar' ? 'bg-primary text-white shadow-lg' : 'text-slate-400'}`}>AR</button>
+                        <button onClick={() => switchLocale('en')} className={`px-3 sm:px-4 py-1 rounded text-[10px] font-bold transition-all cursor-pointer ${editorLocale === 'en' ? 'bg-primary text-white shadow-lg' : 'text-slate-400'}`}>EN</button>
                     </div>
-                    <div className="flex items-center gap-3 border-l border-slate-700 pl-3 sm:pl-6">
+                    <div className="flex items-center gap-3 border-l border-slate-700 pl-3 sm:pl-6 cursor-pointer">
                         <span className="text-xs font-bold text-slate-300 hidden sm:block">{getLocalizedName(footer?.title, locale)}</span>
-                        <button onClick={() => router.back()} className="p-2 hover:bg-slate-800 rounded-lg"><ArrowLeft className="w-4 h-4" /></button>
+                        <button onClick={() => router.back()} className="p-2 hover:bg-slate-800 rounded-lg cursor-pointer">
+                            {locale === 'ar' ? <ArrowLeft className="w-4 h-4" /> : <ArrowRight className="w-4 h-4" />}
+                        </button>
                     </div>
                 </div>
             </div>
@@ -597,10 +619,18 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                 )}
                 <div
                     id="editor-sidebar"
-                    className={`bg-white border-r border-slate-200 overflow-y-auto flex flex-col transition-all duration-300 absolute lg:relative h-full z-40 w-72 ${previewMode ? '-translate-x-full lg:hidden' : showLeftPanel ? 'translate-x-0 lg:ml-0' : '-translate-x-full lg:translate-x-0 lg:ml-0 hidden lg:flex'}`}>
+                    className={`bg-white border-slate-200 overflow-y-auto flex flex-col transition-all duration-300 absolute lg:relative h-[calc(100vh-3.5rem)] z-[60] w-72 lg:w-72 start-0 border-r lg:border-r 
+                            ${previewMode
+                            ? 'ltr:-translate-x-full rtl:translate-x-full lg:ltr:-ml-72 lg:rtl:-mr-72'
+                            : showLeftPanel
+                                ? 'translate-x-0 lg:ml-0 lg:mr-0'
+                                : 'ltr:-translate-x-full rtl:translate-x-full lg:translate-x-0 lg:ltr:-ml-72 lg:rtl:-mr-72 hidden lg:flex'
+                        }
+                            max-lg:w-full sm:max-lg:w-80 max-lg:shadow-2xl`}
+                >
                     <div className="p-4 border-b border-slate-100 flex items-center justify-between">
                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{editorT('styleDesigner')}</span>
-                        <Settings className="w-3.5 h-3.5 text-indigo-500" />
+                        <Settings className="w-3.5 h-3.5 text-primary" />
                     </div>
 
                     <div className="p-5 space-y-8">
@@ -608,7 +638,7 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                             <div className="text-[9px] text-slate-400 font-bold uppercase mb-2 text-center flex items-center justify-center gap-1">
                                 <MousePointer2 className="w-2.5 h-2.5" /> {editorT('activeElement')}
                             </div>
-                            <div className="text-center font-black text-indigo-600 text-xs py-1 px-3 bg-white border border-slate-200 rounded-lg shadow-sm uppercase">
+                            <div className="text-center font-black text-primary text-xs py-1 px-3 bg-white border border-slate-200 rounded-lg shadow-sm uppercase">
                                 {activeTagName || editorT('none')}
                             </div>
                         </div>
@@ -620,8 +650,8 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                                         <TypeIcon className="w-3 h-3" /> {editorT('typography')}
                                     </div>
                                     <div className="space-y-3">
-                                        <div className="flex justify-between items-center px-1"><span className="text-[10px] font-bold text-slate-500 uppercase">{editorT('size')}</span><span className="text-[11px] font-black text-indigo-600">{activeElementRef.current?.tagName === 'svg' ? activeElementRef.current.getAttribute('width') : activeStyles.fontSize}</span></div>
-                                        <input type="range" min="8" max="120" value={activeElementRef.current?.tagName === 'svg' ? parseInt(activeElementRef.current.getAttribute('width') || '24') : parseInt(activeStyles.fontSize) || 16} onChange={(e) => applyStyle('fontSize', `${e.target.value}px`)} className="w-full h-1.5 bg-indigo-100 rounded-lg appearance-none cursor-pointer accent-indigo-600" />
+                                        <div className="flex justify-between items-center px-1"><span className="text-[10px] font-bold text-slate-500 uppercase">{editorT('size')}</span><span className="text-[11px] font-black text-primary">{activeElementRef.current?.tagName === 'svg' ? activeElementRef.current.getAttribute('width') : activeStyles.fontSize}</span></div>
+                                        <input type="range" min="8" max="120" value={activeElementRef.current?.tagName === 'svg' ? parseInt(activeElementRef.current.getAttribute('width') || '24') : parseInt(activeStyles.fontSize) || 16} onChange={(e) => applyStyle('fontSize', `${e.target.value}px`)} className="w-full h-1.5 bg-indigo-100 rounded-lg appearance-none cursor-pointer accent-primary text-gray-400 outline-hidden" />
                                     </div>
                                 </div>
                             )}
@@ -629,14 +659,14 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                                 <SquareRoundCorner className="w-3 h-3" /> {editorT('squarerounded')}
                             </div>
                             <div className="space-y-3">
-                                <div className="flex justify-between items-center px-1"><span className="text-[10px] font-bold text-slate-500 uppercase">{editorT('squarerounded')}</span><span className="text-[11px] font-black text-indigo-600">{activeStyles.borderRadius}</span></div>
-                                <input type="range" min="0" max="24" value={parseInt(activeStyles.borderRadius) || 0} onChange={(e) => applyStyle('borderRadius', `${e.target.value}px`)} className="w-full h-1.5 bg-indigo-100 rounded-lg appearance-none cursor-pointer accent-indigo-600" />
+                                <div className="flex justify-between items-center px-1"><span className="text-[10px] font-bold text-slate-500 uppercase">{editorT('squarerounded')}</span><span className="text-[11px] font-black text-primary">{activeStyles.borderRadius}</span></div>
+                                <input type="range" min="0" max="24" value={parseInt(activeStyles.borderRadius) || 0} onChange={(e) => applyStyle('borderRadius', `${e.target.value}px`)} className="w-full h-1.5 bg-indigo-100 rounded-lg appearance-none cursor-pointer accent-primary text-gray-400 outline-hidden" />
                             </div>
                             {activeTagName === 'img' && (
                                 <div className="space-y-3 pt-4 border-t border-slate-100">
                                     <button
                                         onClick={() => imageInputRef.current?.click()}
-                                        className="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2 rounded-xl shadow-md transition cursor-pointer"
+                                        className="w-full bg-primary hover:bg-primary/95 text-white text-xs font-bold py-2 rounded-xl shadow-md transition cursor-pointer"
                                     >
                                         {editorT('replaceimg')}
                                     </button>
@@ -650,7 +680,7 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                                 </div>
                             )}
                             {(activeTagName === 'svg') && (
-                                <div className="space-y-3 pt-4 border-t border-slate-100">
+                                <div className="space-y-3 pt-4 border-t border-slate-100 text-gray-400 outline-hidden">
                                     <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                                         <VectorSquare className="w-3 h-3" /> SVG
                                     </div>
@@ -671,7 +701,7 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                                 </div>
                             )}
                             {(activeTagName === 'video') && (
-                                <div className="space-y-3 pt-4 border-t border-slate-100">
+                                <div className="space-y-3 pt-4 border-t border-slate-100 text-gray-400 outline-hidden">
                                     <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                                         <FilePlay className="w-3 h-3" /> Video
                                     </div>
@@ -684,15 +714,15 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                                     <div className='flex'>
                                         <button
                                             onClick={() => videoImgInputRef.current?.click()}
-                                            className="w-4/5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2 rounded-r-xl shadow-md transition cursor-pointer"
+                                            className={`w-4/5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2 ${editorLocale === 'ar' ? 'rounded-r-xl' : 'rounded-l-xl'} shadow-md transition cursor-pointer`}
                                         >
                                             {editorT('replaceimgvideo')}
                                         </button>
                                         <button
                                             onClick={() => { removevideoImg(); }}
-                                            className="flex justify-center items-center w-1/5 bg-red-400 hover:bg-red-700 text-white text-center rounded-l-xl shadow-md transition cursor-pointer"
+                                            className={`flex justify-center items-center w-1/5 bg-red-400 hover:bg-red-700 text-white text-center ${editorLocale === 'ar' ? 'rounded-l-xl' : 'rounded-r-xl'} shadow-md transition cursor-pointer`}
                                         >
-                                            <Trash2 className="h-4 text-white" />
+                                            <Trash2 className="h-4 text-white cursor-pointer" />
                                         </button>
                                     </div>
                                     <input
@@ -712,7 +742,7 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                                 </div>
                             )}
                             {activeTagName === 'a' && (
-                                <div className="space-y-4 pt-4 border-t border-slate-100">
+                                <div className="space-y-4 pt-4 border-t border-slate-100 text-gray-400 outline-hidden">
                                     <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                                         <LinkIcon className="w-3 h-3" /> {editorT('link')}
                                     </div>
@@ -723,7 +753,7 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                                             placeholder="https://example.com"
                                             value={activeElementRef.current?.getAttribute('href') || ''}
                                             onChange={(e) => updateLinkHref(e.target.value)}
-                                            className="w-full text-xs px-3 py-2 border text-gray-400 border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                            className="w-full text-xs px-3 py-2 border text-gray-400 border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary"
                                         />
                                     </div>
 
@@ -739,10 +769,10 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                             )}
                             {(!['img', 'svg', 'video'].includes(activeTagName)) && (
                                 <div className="grid grid-cols-4 gap-1 p-1 bg-slate-100 rounded-xl">
-                                    <button onMouseDown={(e) => { e.preventDefault(); applyStyle('textAlign', 'left'); }} className={`p-2 rounded-lg flex justify-center transition-all ${activeStyles.textAlign.includes('left') ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-400'}`}><AlignLeft className="w-4 h-4" /></button>
-                                    <button onMouseDown={(e) => { e.preventDefault(); applyStyle('textAlign', 'center'); }} className={`p-2 rounded-lg flex justify-center transition-all ${activeStyles.textAlign.includes('center') ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-400'}`}><AlignCenter className="w-4 h-4" /></button>
-                                    <button onMouseDown={(e) => { e.preventDefault(); applyStyle('textAlign', 'right'); }} className={`p-2 rounded-lg flex justify-center transition-all ${activeStyles.textAlign.includes('right') ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-400'}`}><AlignRight className="w-4 h-4" /></button>
-                                    <button onMouseDown={(e) => { e.preventDefault(); applyStyle('textAlign', 'justify'); }} className={`p-2 rounded-lg flex justify-center transition-all ${activeStyles.textAlign.includes('justify') ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-400'}`}><Layout className="w-4 h-4" /></button>
+                                    <button onMouseDown={(e) => { e.preventDefault(); applyStyle('textAlign', 'left'); }} className={`p-2 rounded-lg flex justify-center transition-all ${activeStyles.textAlign.includes('left') ? 'bg-white shadow-sm text-primary' : 'text-slate-400'}`}><AlignLeft className="w-4 h-4 cursor-pointer" /></button>
+                                    <button onMouseDown={(e) => { e.preventDefault(); applyStyle('textAlign', 'center'); }} className={`p-2 rounded-lg flex justify-center transition-all ${activeStyles.textAlign.includes('center') ? 'bg-white shadow-sm text-primary' : 'text-slate-400'}`}><AlignCenter className="w-4 h-4 cursor-pointer" /></button>
+                                    <button onMouseDown={(e) => { e.preventDefault(); applyStyle('textAlign', 'right'); }} className={`p-2 rounded-lg flex justify-center transition-all ${activeStyles.textAlign.includes('right') ? 'bg-white shadow-sm text-primary' : 'text-slate-400'}`}><AlignRight className="w-4 h-4 cursor-pointer" /></button>
+                                    <button onMouseDown={(e) => { e.preventDefault(); applyStyle('textAlign', 'justify'); }} className={`p-2 rounded-lg flex justify-center transition-all ${activeStyles.textAlign.includes('justify') ? 'bg-white shadow-sm text-primary' : 'text-slate-400'}`}><Layout className="w-4 h-4 cursor-pointer" /></button>
                                 </div>
                             )}
                             {(!['img', 'video'].includes(activeTagName)) && (
@@ -750,7 +780,7 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                                     <span className="text-[10px] font-bold text-slate-500 uppercase px-1">{editorT('textColor')}</span>
                                     <div className="grid grid-cols-4 gap-2">
                                         {swatchColors.map(c => (
-                                            <button key={c} onMouseDown={(e) => { e.preventDefault(); applyStyle('foreColor', c); }} className="w-8 h-8 rounded-full border-2 border-white shadow-md hover:scale-110 transition-transform" style={{ backgroundColor: c }} />
+                                            <button key={c} onMouseDown={(e) => { e.preventDefault(); applyStyle('foreColor', c); }} className="w-8 h-8 rounded-full border-2 border-white shadow-md hover:scale-110 transition-transform cursor-pointer" style={{ backgroundColor: c }} />
                                         ))}
                                         {/* مدخل اللون الديناميكي مع تدرج */}
                                         <div className="relative w-8 h-8 rounded-full shadow-md overflow-hidden  border-2 border-white">
@@ -762,7 +792,7 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                                                 type="color"
                                                 value={activeStyles.color || '#ff0000'}
                                                 onChange={(e) => applyStyleDebounced('foreColor', e.target.value)}
-                                                className="w-full h-full opacity-0 cursor-pointer"
+                                                className="w-full h-full opacity-0 cursor-pointer text-gray-400 outline-hidden"
                                             />
                                         </div>
                                     </div>
@@ -777,9 +807,9 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                                     <span className="text-[10px] font-bold text-slate-500 uppercase px-1">{editorT('color')}</span>
                                     <div className="grid grid-cols-4 gap-2">
                                         {bgColors.map(c => (
-                                            <button key={c} onMouseDown={(e) => { e.preventDefault(); applyStyle('backgroundColor', c); }} className="w-8 h-8 rounded-full border-2 border-white shadow-md hover:scale-110 transition-transform" style={{ backgroundColor: c }} />
+                                            <button key={c} onMouseDown={(e) => { e.preventDefault(); applyStyle('backgroundColor', c); }} className="w-8 h-8 rounded-full border-2 border-white shadow-md hover:scale-110 transition-transform cursor-pointer" style={{ backgroundColor: c }} />
                                         ))}
-                                        <button onMouseDown={(e) => { e.preventDefault(); applyStyle('backgroundColor', 'transparent'); }} className="w-8 h-8 rounded-full bg-white border-2 border-slate-100 shadow-md flex items-center justify-center relative"><div className="absolute w-full h-[1px] bg-red-400 rotate-45" /></button>
+                                        <button onMouseDown={(e) => { e.preventDefault(); applyStyle('backgroundColor', 'transparent'); }} className="w-8 h-8 rounded-full bg-white border-2 border-slate-100 shadow-md flex items-center justify-center relative cursor-pointer"><div className="absolute w-full h-[1px] bg-red-400 rotate-45" /></button>
                                     </div>
                                 </div>
                             </div>
@@ -789,13 +819,15 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
 
                 <div className="flex-1 overflow-hidden flex flex-col items-center p-4 sm:p-8 bg-[#E2E8F0]">
                     <div className="flex gap-4 mb-4 bg-white p-1 rounded-xl shadow-sm border border-slate-200">
-                        <button className="p-2 text-indigo-600 bg-indigo-50 rounded-lg"><Monitor className="w-4 h-4" /></button>
-                        <button className="p-2 text-slate-400 rounded-lg"><Smartphone className="w-4 h-4" /></button>
+                        <button className="p-2 text-primary bg-primary/10 rounded-lg cursor-pointer"><Monitor className="w-4 h-4" /></button>
+                        <button className="p-2 text-slate-400 rounded-lg cursor-pointer"><Smartphone className="w-4 h-4" /></button>
                     </div>
 
                     <div
                         id="editor-canvas"
-                        ref={canvasRef} onDragOver={handleDragOver} onDrop={handleDrop} onClick={() => { if (activeSnippetId) commitChanges(activeSnippetId); setActiveSnippetId(null); activeElementRef.current = null; setActiveTagName(null); }}
+                        ref={canvasRef} onDragOver={handleDragOver} onDrop={handleDrop} onClick={() => {
+                            if (activeSnippetId) commitChanges(activeSnippetId);
+                        }}
                         className={`w-full bg-white shadow-2xl rounded-2xl overflow-y-auto scroll-smooth transition-all duration-500 relative min-h-[600px] ${previewMode ? 'ring-0' : 'ring-1 ring-slate-300'}`}
                     >
                         <div className="flex flex-col min-h-full">
@@ -803,10 +835,10 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                                 <div key={item.id} className="group relative">
                                     {!previewMode && (
                                         <div className="absolute top-4 right-4 hidden group-hover:flex items-center gap-1.5 bg-[#1E293B] text-white px-2 py-1 rounded-xl z-50 shadow-2xl border border-white/10 scale-90 opacity-90 transition-all">
-                                            <button onClick={() => moveSnippet(index, 'up')} className="p-1.5 hover:bg-slate-700 rounded-lg"><Move className="w-3.5 h-3.5 rotate-180" /></button>
-                                            <button onClick={() => moveSnippet(index, 'down')} className="p-1.5 hover:bg-slate-700 rounded-lg"><Move className="w-3.5 h-3.5" /></button>
-                                            <button onClick={() => { const newList = [...droppedSnippets]; newList.splice(index + 1, 0, { ...item, id: crypto.randomUUID() }); setDroppedSnippets(newList); }} className="p-1.5 hover:bg-slate-700 rounded-lg"><Copy className="w-3.5 h-3.5" /></button>
-                                            <button onClick={() => setDeleteIndex(index)} className="p-1.5 hover:bg-red-900 rounded-lg"><Trash2 className="w-3.5 h-3.5" /></button>
+                                            <button onClick={() => moveSnippet(index, 'up')} className="p-1.5 hover:bg-slate-700 rounded-lg cursor-pointer"><Move className="w-3.5 h-3.5 rotate-180" /></button>
+                                            <button onClick={() => moveSnippet(index, 'down')} className="p-1.5 hover:bg-slate-700 rounded-lg cursor-pointer"><Move className="w-3.5 h-3.5" /></button>
+                                            <button onClick={() => { const newList = [...droppedSnippets]; newList.splice(index + 1, 0, { ...item, id: crypto.randomUUID() }); setDroppedSnippets(newList); }} className="p-1.5 hover:bg-slate-700 rounded-lg cursor-pointer"><Copy className="w-3.5 h-3.5" /></button>
+                                            <button onClick={() => setDeleteIndex(index)} className="p-1.5 hover:bg-red-900 rounded-lg cursor-pointer"><Trash2 className="w-3.5 h-3.5" /></button>
                                         </div>
                                     )}
                                     <StableSnippet

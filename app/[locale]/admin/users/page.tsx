@@ -72,7 +72,11 @@ export default function UsersManagement() {
                 toast.success(isEditing ? commonT('updated') : commonT('created'));
             } else {
                 const err = await res.json();
-                toast.error(err.message || commonT('error'));
+                try {
+                    toast.error(commonT(err.message) || err.message || commonT('error'));
+                } catch (e) {
+                    toast.error(err.message || commonT('error'));
+                }
             }
         } catch (error) {
             console.error(`Failed to ${isEditing ? 'update' : 'create'} user:`, error);
@@ -146,7 +150,7 @@ export default function UsersManagement() {
                             setIsEditing(false);
                             setShowModal(true);
                         }}
-                        className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-primary-dark transition-colors shadow-sm"
+                        className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-primary-dark transition-colors shadow-sm cursor-pointer"
                     >
                         <Plus className="w-5 h-5" />
                         {t('newUser')}
@@ -195,14 +199,14 @@ export default function UsersManagement() {
                                                 <>
                                                     <button
                                                         onClick={() => openEditModal(user)}
-                                                        className="p-2 text-slate-400 hover:text-primary transition-colors"
+                                                        className="p-2 text-slate-400 hover:text-primary transition-colors cursor-pointer"
                                                         title={commonT('edit')}
                                                     >
                                                         <Edit2 className="w-4 h-4" />
                                                     </button>
                                                     <button
                                                         onClick={() => handleDeleteClick(user.id)}
-                                                        className="p-2 text-slate-400 hover:text-red-500 transition-colors"
+                                                        className="p-2 text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
                                                         title={commonT('delete')}
                                                     >
                                                         <Trash2 className="w-4 h-4" />
@@ -237,7 +241,7 @@ export default function UsersManagement() {
                             <h2 className="text-xl font-bold text-slate-900">
                                 {isEditing ? t('editUser') : t('newUser')}
                             </h2>
-                            <button onClick={closeModal} className="text-slate-400 hover:text-slate-600">&times;</button>
+                            <button onClick={closeModal} className="text-slate-400 hover:text-slate-600 cursor-pointer text-2xl">&times;</button>
                         </div>
                         <form onSubmit={handleSubmit} className="p-6 space-y-4">
                             <div>
@@ -299,13 +303,13 @@ export default function UsersManagement() {
                                 <button
                                     type="button"
                                     onClick={closeModal}
-                                    className="flex-1 px-4 py-2 border border-slate-200 text-slate-600 rounded-lg font-medium hover:bg-slate-50 transition-colors"
+                                    className="flex-1 px-4 py-2 border border-slate-200 text-slate-600 rounded-lg font-medium hover:bg-slate-50 transition-colors cursor-pointer"
                                 >
                                     {commonT('cancel')}
                                 </button>
                                 <button
                                     type="submit"
-                                    className="flex-1 px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary-dark transition-colors shadow-lg shadow-primary/20"
+                                    className="flex-1 px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary-dark transition-colors shadow-lg shadow-primary/20 cursor-pointer"
                                 >
                                     {isEditing ? commonT('saveChanges') : t('createAccount')}
                                 </button>

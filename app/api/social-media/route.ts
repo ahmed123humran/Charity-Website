@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json(socialMedias, { status: 200 });
     }
     catch (error) {
-        return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({ message: 'internalServerError' }, { status: 500 });
     }
 }
 
@@ -65,6 +65,6 @@ export async function POST(request: NextRequest) {
     }
     catch (error) {
         console.error("Error creating social media:", error);
-        return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({ message: 'internalServerError' }, { status: 500 });
     }
 }

@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json(snippets, { status: 200 });
     }
     catch (error) {
-        return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({ message: 'internalServerError' }, { status: 500 });
     }
 }
 
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     try {
         const user = await getServerUser();
         if (!user || (user.role !== Role.ADMIN && user.role !== Role.EDITOR)) {
-            return NextResponse.json({ message: 'Unauthorized: Only Admin and Editor can create snippets' }, { status: 403 });
+            return NextResponse.json({ message: 'unauthorized: Only Admin and Editor can create snippets' }, { status: 403 });
         }
 
         const body = await request.json();
@@ -56,6 +56,6 @@ export async function POST(request: NextRequest) {
         return NextResponse.json(newSnippet, { status: 201 });
     }
     catch (error) {
-        return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({ message: 'internalServerError' }, { status: 500 });
     }
 }

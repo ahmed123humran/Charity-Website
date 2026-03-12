@@ -72,7 +72,7 @@ export default async function AdminDashboard() {
                 <div className="bg-white rounded-[2.5rem] p-10 shadow-sm border border-slate-100 hover:shadow-md transition-shadow relative overflow-hidden group">
                     <div className="flex items-center justify-between mb-8">
                         <h2 className="text-2xl font-black text-slate-900">{t('recentWebsites')}</h2>
-                        <button className="text-xs font-bold text-primary uppercase tracking-widest hover:underline">{t('viewAll')}</button>
+                        <button className="text-xs font-bold text-primary uppercase tracking-widest hover:underline cursor-pointer">{t('viewAll')}</button>
                     </div>
                     <div className="flex flex-col items-center justify-center py-12 text-center space-y-4">
                         <div className="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center text-slate-300">
@@ -86,7 +86,7 @@ export default async function AdminDashboard() {
                 <div className="bg-white rounded-[2.5rem] p-10 shadow-sm border border-slate-100 hover:shadow-md transition-shadow relative overflow-hidden group">
                     <div className="flex items-center justify-between mb-8">
                         <h2 className="text-2xl font-black text-slate-900">{t('recentPages')}</h2>
-                        <button className="text-xs font-bold text-primary uppercase tracking-widest hover:underline">{t('viewAll')}</button>
+                        <button className="text-xs font-bold text-primary uppercase tracking-widest hover:underline cursor-pointer">{t('viewAll')}</button>
                     </div>
                     <div className="flex flex-col items-center justify-center py-12 text-center space-y-4">
                         <div className="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center text-slate-300">

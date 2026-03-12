@@ -37,7 +37,13 @@ export default function LoginForm({ showRegister }: { showRegister: boolean }) {
                 router.push(`/${locale}/admin`);
             } else {
                 const data = await res.json();
-                setError(data.message || commonT('error'));
+                // Try to translate the message from API, fallback to generic error
+                const messageKey = data.message;
+                try {
+                    setError(t(messageKey) || commonT(messageKey) || data.message || commonT('error'));
+                } catch (e) {
+                    setError(data.message || commonT('error'));
+                }
             }
         } catch (err) {
             setError(commonT('error'));

@@ -21,7 +21,9 @@
         "fillAllFields": "يرجى ملء جميع الحقول المطلوبة.",
         "passwordsDontMatch": "كلمات المرور غير متطابقة.",
         "setupComplete": "تم الإعداد بنجاح!",
-        "setupError": "حدث خطأ ما. يرجى المحاولة مرة أخرى."
+        "setupError": "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
+        "userExists": "المستخدم بهذا البريد الإلكتروني أو الهاتف موجود بالفعل",
+        "internalServerError": "خطأ داخلي في الخادم"
     },
     "Common": {
         "title": "رقمي",
@@ -54,7 +56,20 @@
         "svgerror": "الملف يجب أن يكون SVG",
         "videoerror": "الملف يجب أن يكون mp4, webm",
         "back": "رجوع",
-        "notice": "تنبيه"
+        "notice": "تنبيه",
+        "uploadSuccess": "تم الرفع بنجاح!",
+        "uploadError": "خطأ في الرفع",
+        "statusUpdateError": "فشل في تحديث الحالة",
+        "invalidCredentials": "البريد الإلكتروني أو كلمة المرور غير صالحة",
+        "unauthorized": "غير مصرح لك بالوصول",
+        "internalServerError": "خطأ داخلي في الخادم",
+        "passwordRequired": "كلمة المرور مطلوبة",
+        "passwordTooShort": "يجب أن تكون كلمة المرور ٦ أحرف على الأقل",
+        "invalidEmail": "البريد الإلكتروني غير صحيح",
+        "userExists": "المستخدم بهذا البريد الإلكتروني أو الهاتف موجود بالفعل",
+        "adminOnly": "غير مصرح: فقط مسؤولو النظام يمكنهم القيام بهذا الإجراء",
+        "notFound": "العنصر غير موجود",
+        "loggedOutSuccess": "تم تسجيل الخروج بنجاح"
     },
     "HomePage": {
         "heroTitle": "تمكين الجمعيات من أجل",
@@ -95,7 +110,11 @@
         "passwordLabel": "كلمة المرور",
         "btn": "تسجيل الدخول",
         "noAccountYet": "ليس لديك حساب مسؤول بعد؟",
-        "signingIn": "جاري تسجيل الدخول..."
+        "signingIn": "جاري تسجيل الدخول...",
+        "loggedInSuccess": "تم تسجيل الدخول بنجاح",
+        "invalidCredentials": "البريد الإلكتروني أو كلمة المرور غير صالحة",
+        "unauthorized": "غير مصرح لك بالوصول",
+        "internalServerError": "خطأ داخلي في الخادم"
     },
     "Admin": {
         "dashboard": "لوحة التحكم",
@@ -265,7 +284,10 @@
         "replacevideo": "استبدال الفيديو",
         "link": "الرابط",
         "openInNewTab": "فتح في تبويب جديد",
-        "replaceimgvideo": "استبدال صورة بداية الفيديو"
+        "replaceimgvideo": "استبدال صورة بداية الفيديو",
+        "desktop": "سطح المكتب",
+        "mobile": "جوال",
+        "tablet": "جهاز لوحي"
     },
     "Tours": {
         "next": "التالي",

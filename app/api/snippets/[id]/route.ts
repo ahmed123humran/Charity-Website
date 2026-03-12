@@ -28,7 +28,7 @@ export async function GET(request: NextRequest, { params }: Props) {
 
         return NextResponse.json(snippet, { status: 200 });
     } catch (error) {
-        return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({ message: 'internalServerError' }, { status: 500 });
     }
 }
 
@@ -75,7 +75,7 @@ export async function PUT(request: NextRequest, { params }: Props) {
 
         return NextResponse.json(updatedSnippet, { status: 200 });
     } catch (error) {
-        return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({ message: 'internalServerError' }, { status: 500 });
     }
 }
 
@@ -109,7 +109,7 @@ export async function DELETE(request: NextRequest, { params }: Props) {
             userId: user.id
         });
 
-        return NextResponse.json({ message: 'Snippet deleted successfully' }, { status: 200 });
+        return NextResponse.json({ message: 'deleted' }, { status: 200 });
     } catch (error) {
         return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
     }

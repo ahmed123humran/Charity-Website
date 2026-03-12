@@ -27,12 +27,12 @@ export async function GET(request: NextRequest, { params }: Props) {
         });
 
         if (!website) {
-            return NextResponse.json({ message: 'Website not found' }, { status: 404 });
+            return NextResponse.json({ message: 'notFound' }, { status: 404 });
         }
 
         return NextResponse.json(website, { status: 200 });
     } catch (error) {
-        return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({ message: 'internalServerError' }, { status: 500 });
     }
 }
 
@@ -46,7 +46,7 @@ export async function PUT(request: NextRequest, { params }: Props) {
     try {
         const user = await getServerUser();
         if (!user || (user.role !== Role.ADMIN && user.role !== Role.EDITOR)) {
-            return NextResponse.json({ message: 'Unauthorized: Only Admin and Editor can update websites' }, { status: 403 });
+            return NextResponse.json({ message: 'unauthorized' }, { status: 403 });
         }
 
         const { id } = await params;
@@ -59,7 +59,7 @@ export async function PUT(request: NextRequest, { params }: Props) {
 
         const website = await prisma.website.findUnique({ where: { id } });
         if (!website) {
-            return NextResponse.json({ message: 'Website not found' }, { status: 404 });
+            return NextResponse.json({ message: 'notFound' }, { status: 404 });
         }
 
         const websiteData = validation.data;
@@ -83,7 +83,7 @@ export async function PUT(request: NextRequest, { params }: Props) {
 
         return NextResponse.json(updatedWebsite, { status: 200 });
     } catch (error) {
-        return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({ message: 'internalServerError' }, { status: 500 });
     }
 }
 
@@ -97,13 +97,13 @@ export async function DELETE(request: NextRequest, { params }: Props) {
     try {
         const user = await getServerUser();
         if (!user || user.role !== Role.ADMIN) {
-            return NextResponse.json({ message: 'Unauthorized: Only Admin can delete websites' }, { status: 403 });
+            return NextResponse.json({ message: 'unauthorized' }, { status: 403 });
         }
 
         const { id } = await params;
         const website = await prisma.website.findUnique({ where: { id } });
         if (!website) {
-            return NextResponse.json({ message: 'Website not found' }, { status: 404 });
+            return NextResponse.json({ message: 'notFound' }, { status: 404 });
         }
 
         await prisma.website.delete({ where: { id } });
@@ -117,8 +117,8 @@ export async function DELETE(request: NextRequest, { params }: Props) {
             userId: user.id
         });
 
-        return NextResponse.json({ message: 'Website deleted successfully' }, { status: 200 });
+        return NextResponse.json({ message: 'deleted' }, { status: 200 });
     } catch (error) {
-        return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({ message: 'internalServerError' }, { status: 500 });
     }
 }

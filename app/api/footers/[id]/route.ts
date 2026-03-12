@@ -27,12 +27,12 @@ export async function GET(request: NextRequest, { params }: Props) {
         });
 
         if (!footer) {
-            return NextResponse.json({ message: 'Footer not found' }, { status: 404 });
+            return NextResponse.json({ message: 'footerNotFound' }, { status: 404 });
         }
 
         return NextResponse.json(footer, { status: 200 });
     } catch (error) {
-        return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({ message: 'internalServerError' }, { status: 500 });
     }
 }
 
@@ -46,7 +46,7 @@ export async function PUT(request: NextRequest, { params }: Props) {
     try {
         const user = await getServerUser();
         if (!user || (user.role !== Role.ADMIN && user.role !== Role.EDITOR)) {
-            return NextResponse.json({ message: 'Unauthorized: Only Admin and Editor can update footers' }, { status: 403 });
+            return NextResponse.json({ message: 'unauthorized' }, { status: 403 });
         }
 
         const { id } = await params;
@@ -59,7 +59,7 @@ export async function PUT(request: NextRequest, { params }: Props) {
 
         const footer = await prisma.footer.findUnique({ where: { id } });
         if (!footer) {
-            return NextResponse.json({ message: 'Footer not found' }, { status: 404 });
+            return NextResponse.json({ message: 'footerNotFound' }, { status: 404 });
         }
 
         const updatedFooter = await prisma.footer.update({
@@ -86,7 +86,7 @@ export async function PUT(request: NextRequest, { params }: Props) {
         return NextResponse.json(updatedFooter, { status: 200 });
     } catch (error) {
         console.error(error);
-        return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({ message: 'internalServerError' }, { status: 500 });
     }
 }
 
@@ -100,13 +100,13 @@ export async function DELETE(request: NextRequest, { params }: Props) {
     try {
         const user = await getServerUser();
         if (!user || user.role !== Role.ADMIN) {
-            return NextResponse.json({ message: 'Unauthorized: Only Admin can delete footers' }, { status: 403 });
+            return NextResponse.json({ message: 'unauthorized' }, { status: 403 });
         }
 
         const { id } = await params;
         const footer = await prisma.footer.findUnique({ where: { id } });
         if (!footer) {
-            return NextResponse.json({ message: 'Footer not found' }, { status: 404 });
+            return NextResponse.json({ message: 'footerNotFound' }, { status: 404 });
         }
 
         await prisma.footer.delete({ where: { id } });
@@ -120,8 +120,8 @@ export async function DELETE(request: NextRequest, { params }: Props) {
             userId: user.id
         });
 
-        return NextResponse.json({ message: 'Footer deleted successfully' }, { status: 200 });
+        return NextResponse.json({ message: 'deleted' }, { status: 200 });
     } catch (error) {
-        return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({ message: 'internalServerError' }, { status: 500 });
     }
 }
