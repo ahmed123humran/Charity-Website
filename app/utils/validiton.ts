@@ -110,6 +110,10 @@ export const createSnippetSchema = z.object({
     category: z.string().min(1),
     htmlContent: z.string().min(1),
     thumbnail: z.string().optional(),
+    type: z.enum(['STATIC', 'DYNAMIC_SWIPER']).optional(),
+    apiEndpoint: z.string().optional().or(z.literal("")),
+    swiperConfig: z.any().optional(),
+    fieldMapping: z.any().optional(),
 });
 
 export const updateSnippetSchema = z.object({
@@ -118,4 +122,8 @@ export const updateSnippetSchema = z.object({
     category: z.string().min(1).optional(),
     htmlContent: z.string().min(1).optional(),
     thumbnail: z.string().optional(),
+    type: z.enum(['STATIC', 'DYNAMIC_SWIPER']).optional(),
+    apiEndpoint: z.string().optional().or(z.literal("")),
+    swiperConfig: z.any().optional(),
+    fieldMapping: z.any().optional(),
 });

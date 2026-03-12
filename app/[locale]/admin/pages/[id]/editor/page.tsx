@@ -16,6 +16,7 @@ import ConfirmDialog from '@/app/components/ConfirmDialog';
 import toast from 'react-hot-toast';
 import EditorTour from '@/app/components/EditorTour';
 import { sanitizeHtml } from '@/app/utils/sanitize';
+import DynamicSwiper from '@/app/components/DynamicSwiper';
 
 interface Snippet {
     id: string;
@@ -24,6 +25,10 @@ interface Snippet {
     category: string;
     htmlContent: string;
     thumbnail?: string;
+    type?: string;
+    apiEndpoint?: string | null;
+    swiperConfig?: any | null;
+    fieldMapping?: any | null;
 }
 
 interface Page {
@@ -38,6 +43,10 @@ interface DroppedSnippet {
     snippetId: string;
     htmlContent: string;
     name: string;
+    type?: string;
+    apiEndpoint?: string | null;
+    swiperConfig?: any | null;
+    fieldMapping?: any | null;
 }
 
 // Memoized Snippet Component to prevent unnecessary re-renders that kill focus
@@ -54,6 +63,28 @@ const StableSnippet = memo(({
     onContentClick: (e: React.MouseEvent, id: string) => void,
     isBeingEdited: boolean
 }) => {
+    if (item.type === 'DYNAMIC_SWIPER') {
+        return (
+            <div
+                id={`snippet-content-${item.id}`}
+                onClick={(e) => onContentClick(e, item.id)}
+                className={`transition-all duration-300 min-h-[50px] relative ${!previewMode && isActive ? 'outline-2 outline outline-indigo-500 shadow-xl z-10' : ''}`}
+            >
+                <div className="pointer-events-none opacity-80">
+                    <DynamicSwiper snippet={item as any} />
+                </div>
+                {!previewMode && (
+                    <div className="absolute inset-0 bg-primary/5 flex items-center justify-center cursor-pointer hover:bg-primary/10 transition-colors z-20">
+                        <div className="bg-white px-4 py-2 rounded-full shadow-lg border border-primary/20 flex items-center gap-2">
+                            <Monitor className="w-4 h-4 text-primary" />
+                            <span className="text-xs font-bold text-primary">Dynamic Swiper Preview</span>
+                        </div>
+                    </div>
+                )}
+            </div>
+        );
+    }
+
     return (
         <div
             id={`snippet-content-${item.id}`}
@@ -227,7 +258,11 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
             id: crypto.randomUUID(),
             snippetId: snippet.id,
             htmlContent: snippet.htmlContent,
-            name: snippet.name
+            name: snippet.name,
+            type: snippet.type,
+            apiEndpoint: snippet.apiEndpoint,
+            swiperConfig: snippet.swiperConfig,
+            fieldMapping: snippet.fieldMapping
         };
         const dropIndex = index !== undefined ? index : (dragOverIndex !== null ? dragOverIndex : droppedSnippets.length);
         setDroppedSnippets(prev => {
@@ -250,6 +285,9 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
     };
 
     const commitChanges = (id: string) => {
+        const snippet = droppedSnippets.find(s => s.id === id);
+        if (snippet?.type === 'DYNAMIC_SWIPER') return;
+
         const wrapper = document.getElementById(`snippet-content-${id}`);
         if (wrapper) {
             // Clean a CLONE so the live DOM keeps its visual outline for the user

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Plus, Search, PlusSquare, Edit2, Trash2, Tag, Layers, Code, LayoutTemplate, ImageIcon, Copy, MousePointer2, Type, Move } from 'lucide-react';
+import { Plus, Search, PlusSquare, Edit2, Trash2, Tag, Layers, Code, LayoutTemplate, ImageIcon, Copy, MousePointer2, Type, Move, Globe, Settings, Database, RefreshCw, CheckCircle2 } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import ConfirmDialog from '@/app/components/ConfirmDialog';
 import toast from 'react-hot-toast';
@@ -16,6 +16,10 @@ interface Snippet {
     category: string;
     htmlContent: string;
     thumbnail: string | null;
+    type: 'STATIC' | 'DYNAMIC_SWIPER';
+    apiEndpoint: string | null;
+    swiperConfig: any | null;
+    fieldMapping: any | null;
 }
 
 export default function SnippetsManagement() {
@@ -34,8 +38,26 @@ export default function SnippetsManagement() {
     const [nameAr, setNameAr] = useState('');
     const [category, setCategory] = useState('Intro');
     const [htmlContent, setHtmlContent] = useState('');
+    const [type, setType] = useState<'STATIC' | 'DYNAMIC_SWIPER'>('STATIC');
+    const [apiEndpoint, setApiEndpoint] = useState('');
+    const [swiperConfig, setSwiperConfig] = useState({
+        speed: 500,
+        slidesPerViewDesktop: 3,
+        slidesPerViewTablet: 2,
+        slidesPerViewMobile: 1,
+        loop: true,
+        autoplay: false,
+        spaceBetween: 20,
+        paginationType: 'bullets',
+        showNavigation: true,
+        showPagination: true,
+    });
+    const [fieldMapping, setFieldMapping] = useState<{ placeholder: string, apiField: string }[]>([]);
+    const [activeTab, setActiveTab] = useState<'design' | 'swiper' | 'api'>('design');
     const [viewMode, setViewMode] = useState<'visual' | 'code'>('visual');
     const [activeElement, setActiveElement] = useState<HTMLElement | null>(null);
+    const [sampleData, setSampleData] = useState<any>(null);
+    const [isFetchingSample, setIsFetchingSample] = useState(false);
     const previewRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => { fetchSnippets(); }, []);
@@ -68,7 +90,16 @@ export default function SnippetsManagement() {
             const res = await fetch(apiUrl, {
                 method,
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, nameAr, category, htmlContent: finalContent }),
+                body: JSON.stringify({
+                    name,
+                    nameAr,
+                    category,
+                    htmlContent: finalContent,
+                    type,
+                    apiEndpoint: type === 'DYNAMIC_SWIPER' ? apiEndpoint : null,
+                    swiperConfig: type === 'DYNAMIC_SWIPER' ? swiperConfig : null,
+                    fieldMapping: type === 'DYNAMIC_SWIPER' ? fieldMapping : null,
+                }),
             });
             if (res.ok) {
                 closeModal();
@@ -113,9 +144,25 @@ export default function SnippetsManagement() {
         setNameAr(snippet.nameAr || '');
         setCategory(snippet.category);
         setHtmlContent(snippet.htmlContent);
+        setType(snippet.type || 'STATIC');
+        setApiEndpoint(snippet.apiEndpoint || '');
+        setSwiperConfig(snippet.swiperConfig || {
+            speed: 500,
+            slidesPerViewDesktop: 3,
+            slidesPerViewTablet: 2,
+            slidesPerViewMobile: 1,
+            loop: true,
+            autoplay: false,
+            spaceBetween: 20,
+            paginationType: 'bullets',
+            showNavigation: true,
+            showPagination: true,
+        });
+        setFieldMapping(Array.isArray(snippet.fieldMapping) ? snippet.fieldMapping : []);
         setCurrentId(snippet.id);
         setIsEditing(true);
         setViewMode('visual');
+        setActiveTab('design');
         setShowModal(true);
     };
 
@@ -126,8 +173,13 @@ export default function SnippetsManagement() {
         setNameAr('');
         setCategory('Intro');
         setHtmlContent('');
+        setType('STATIC');
+        setApiEndpoint('');
+        setFieldMapping([]);
+        setActiveTab('design');
         setCurrentId(null);
         setActiveElement(null);
+        setSampleData(null);
     };
 
     const handlePreviewClick = (e: React.MouseEvent) => {
@@ -217,6 +269,29 @@ export default function SnippetsManagement() {
                             </div>
                         </div>
 
+                        {type === 'DYNAMIC_SWIPER' && (
+                            <div className="bg-slate-50 border-b border-slate-100 flex px-6 sm:px-10 overflow-x-auto no-scrollbar">
+                                <button
+                                    onClick={() => setActiveTab('design')}
+                                    className={`py-4 px-6 text-sm font-bold flex items-center gap-2 border-b-2 transition-all cursor-pointer whitespace-nowrap ${activeTab === 'design' ? 'border-primary text-primary bg-white shadow-[0_-4px_0_inset_white]' : 'border-transparent text-slate-400 hover:text-slate-600'}`}
+                                >
+                                    <Layers className="w-4 h-4" /> {t('design')}
+                                </button>
+                                <button
+                                    onClick={() => setActiveTab('swiper')}
+                                    className={`py-4 px-6 text-sm font-bold flex items-center gap-2 border-b-2 transition-all cursor-pointer whitespace-nowrap ${activeTab === 'swiper' ? 'border-primary text-primary bg-white shadow-[0_-4px_0_inset_white]' : 'border-transparent text-slate-400 hover:text-slate-600'}`}
+                                >
+                                    <Settings className="w-4 h-4" /> {t('settings')}
+                                </button>
+                                <button
+                                    onClick={() => setActiveTab('api')}
+                                    className={`py-4 px-6 text-sm font-bold flex items-center gap-2 border-b-2 transition-all cursor-pointer whitespace-nowrap ${activeTab === 'api' ? 'border-primary text-primary bg-white shadow-[0_-4px_0_inset_white]' : 'border-transparent text-slate-400 hover:text-slate-600'}`}
+                                >
+                                    <Database className="w-4 h-4" /> {t('apiConfig')}
+                                </button>
+                            </div>
+                        )}
+
                         <div className="flex-1 overflow-hidden flex flex-col xl:flex-row">
                             <div className="w-full xl:w-72 bg-slate-50 border-b xl:border-b-0 xl:border-r border-slate-100 p-4 sm:p-6 overflow-y-auto shrink-0 z-10 transition-all">
                                 <div className="flex flex-col md:flex-row xl:flex-col gap-4">
@@ -233,43 +308,208 @@ export default function SnippetsManagement() {
                                             {['Intro', 'Content', 'Features', 'Contact', 'Footer', 'Header', 'CTA', 'Stats'].map(c => <option key={c} value={c}>{t(`categories.${c}`)}</option>)}
                                         </select>
                                     </div>
+                                    <div className="w-full sm:w-48 xl:w-full shrink-0">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">{t('snippetType')}</label>
+                                        <select value={type} onChange={e => setType(e.target.value as any)} className="w-full px-4 py-2 bg-white border border-slate-200 text-slate-900 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all text-gray-400 outline-hidden">
+                                            <option value="STATIC">{t('static')}</option>
+                                            <option value="DYNAMIC_SWIPER">{t('dynamicSwiper')}</option>
+                                        </select>
+                                    </div>
                                 </div>
+                                {type === 'DYNAMIC_SWIPER' && (
+                                    <div className="mt-8 space-y-4">
+                                        <div className="p-4 bg-indigo-50 border border-indigo-100 rounded-2xl">
+                                            <p className="text-[11px] text-indigo-700 font-medium leading-relaxed">
+                                                {locale === 'ar' ? 'سوف تظهر البيانات بشكل متكرر داخل البطاقة. استخدم {{field}} لوضع البيانات.' : 'Data will repeat within the card. Use {{field}} to place data.'}
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
                                 <div className="text-[10px] text-slate-400 p-4 border-2 border-dashed border-slate-200 rounded-2xl leading-relaxed italic mt-6 hidden sm:block">
                                     {t('quickTip')}
                                 </div>
                             </div>
 
                             <div className="flex-1 bg-slate-100 p-4 sm:p-8 overflow-auto relative">
-                                {viewMode === 'code' ? (
-                                    <textarea value={htmlContent} onChange={e => setHtmlContent(e.target.value)} className="w-full h-full font-mono text-[13px] sm:text-sm p-4 sm:p-8 bg-slate-900 text-indigo-100 rounded-2xl sm:rounded-3xl outline-none min-h-[300px] text-gray-400 outline-hidden" />
-                                ) : (
-                                    <div className="max-w-4xl mx-auto min-h-full py-10 sm:py-20 relative">
-                                        {activeElement && previewRef.current?.contains(activeElement) && (
-                                            <div className="fixed z-50 flex gap-1 bg-slate-900 text-white p-1 rounded-full shadow-2xl"
-                                                style={{ top: `${activeElement.getBoundingClientRect().top - 40}px`, left: `${activeElement.getBoundingClientRect().left + activeElement.getBoundingClientRect().width / 2}px`, transform: 'translateX(-50%)' }}>
-                                                <button onMouseDown={e => {
-                                                    e.preventDefault();
-                                                    const clone = activeElement.cloneNode(true) as HTMLElement;
-                                                    clone.style.outline = '';
-                                                    activeElement.after(clone);
-                                                    setHtmlContent(previewRef.current?.innerHTML || '');
-                                                }} className="p-1.5 hover:bg-slate-800 rounded-full cursor-pointer"><Copy className="w-3.5 h-3.5" /></button>
-                                                <button onMouseDown={e => {
-                                                    e.preventDefault();
-                                                    activeElement.remove();
-                                                    setActiveElement(null);
-                                                    setHtmlContent(previewRef.current?.innerHTML || '');
-                                                }} className="p-1.5 hover:bg-red-900 rounded-full cursor-pointer"><Trash2 className="w-3.5 h-3.5" /></button>
-                                                {activeElement.tagName === 'IMG' && (
+                                {activeTab === 'design' ? (
+                                    viewMode === 'code' ? (
+                                        <textarea value={htmlContent} onChange={e => setHtmlContent(e.target.value)} className="w-full h-full font-mono text-[13px] sm:text-sm p-4 sm:p-8 bg-slate-900 text-indigo-100 rounded-2xl sm:rounded-3xl outline-none min-h-[300px] text-gray-400 outline-hidden" />
+                                    ) : (
+                                        <div className="max-w-4xl mx-auto min-h-full py-10 sm:py-20 relative">
+                                            {activeElement && previewRef.current?.contains(activeElement) && (
+                                                <div className="fixed z-50 flex gap-1 bg-slate-900 text-white p-1 rounded-full shadow-2xl"
+                                                    style={{ top: `${activeElement.getBoundingClientRect().top - 40}px`, left: `${activeElement.getBoundingClientRect().left + activeElement.getBoundingClientRect().width / 2}px`, transform: 'translateX(-50%)' }}>
                                                     <button onMouseDown={e => {
                                                         e.preventDefault();
-                                                        const src = prompt(t('urlHint'), (activeElement as HTMLImageElement).src);
-                                                        if (src) { (activeElement as HTMLImageElement).src = src; setHtmlContent(previewRef.current?.innerHTML || ''); }
-                                                    }} className="p-1.5 hover:bg-slate-800 rounded-full cursor-pointer"><ImageIcon className="w-3.5 h-3.5" /></button>
-                                                )}
+                                                        const clone = activeElement.cloneNode(true) as HTMLElement;
+                                                        clone.style.outline = '';
+                                                        activeElement.after(clone);
+                                                        setHtmlContent(previewRef.current?.innerHTML || '');
+                                                    }} className="p-1.5 hover:bg-slate-800 rounded-full cursor-pointer"><Copy className="w-3.5 h-3.5" /></button>
+                                                    <button onMouseDown={e => {
+                                                        e.preventDefault();
+                                                        activeElement.remove();
+                                                        setActiveElement(null);
+                                                        setHtmlContent(previewRef.current?.innerHTML || '');
+                                                    }} className="p-1.5 hover:bg-red-900 rounded-full cursor-pointer"><Trash2 className="w-3.5 h-3.5" /></button>
+                                                    {activeElement.tagName === 'IMG' && (
+                                                        <button onMouseDown={e => {
+                                                            e.preventDefault();
+                                                            const src = prompt(t('urlHint'), (activeElement as HTMLImageElement).src);
+                                                            if (src) { (activeElement as HTMLImageElement).src = src; setHtmlContent(previewRef.current?.innerHTML || ''); }
+                                                        }} className="p-1.5 hover:bg-slate-800 rounded-full cursor-pointer"><ImageIcon className="w-3.5 h-3.5" /></button>
+                                                    )}
+                                                </div>
+                                            )}
+                                            <div ref={previewRef} onClick={handlePreviewClick} dangerouslySetInnerHTML={{ __html: sanitizeHtml(htmlContent) }} className="bg-white shadow-2xl min-h-[400px]" />
+                                        </div>
+                                    )
+                                ) : activeTab === 'swiper' ? (
+                                    <div className="max-w-2xl mx-auto py-10">
+                                        <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100 space-y-6">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                <div className="space-y-2">
+                                                    <label className="text-xs font-bold text-slate-700">{t('swiperSpeed')}</label>
+                                                    <input type="number" value={swiperConfig.speed} onChange={e => setSwiperConfig({ ...swiperConfig, speed: parseInt(e.target.value) })} className="w-full px-4 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-primary/20 text-gray-400 outline-hidden" />
+                                                </div>
+                                                <div className="flex gap-4">
+                                                    <label className="flex items-center gap-2 cursor-pointer group">
+                                                        <div className={`w-10 h-6 rounded-full relative transition-all ${swiperConfig.loop ? 'bg-primary' : 'bg-slate-200'}`}>
+                                                            <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${swiperConfig.loop ? 'right-1' : 'left-1'}`} />
+                                                        </div>
+                                                        <input type="checkbox" className="hidden" checked={swiperConfig.loop} onChange={e => setSwiperConfig({ ...swiperConfig, loop: e.target.checked })} />
+                                                        <span className="text-sm font-bold text-slate-600 group-hover:text-primary transition-colors">{t('loop')}</span>
+                                                    </label>
+                                                    <label className="flex items-center gap-2 cursor-pointer group">
+                                                        <div className={`w-10 h-6 rounded-full relative transition-all ${swiperConfig.autoplay ? 'bg-primary' : 'bg-slate-200'}`}>
+                                                            <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${swiperConfig.autoplay ? 'right-1' : 'left-1'}`} />
+                                                        </div>
+                                                        <input type="checkbox" className="hidden" checked={swiperConfig.autoplay} onChange={e => setSwiperConfig({ ...swiperConfig, autoplay: e.target.checked })} />
+                                                        <span className="text-sm font-bold text-slate-600 group-hover:text-primary transition-colors">{t('autoplay')}</span>
+                                                    </label>
+                                                </div>
                                             </div>
-                                        )}
-                                        <div ref={previewRef} onClick={handlePreviewClick} dangerouslySetInnerHTML={{ __html: sanitizeHtml(htmlContent) }} className="bg-white shadow-2xl min-h-[400px]" />
+
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                <div className="space-y-2">
+                                                    <label className="text-xs font-bold text-slate-700">{t('spaceBetween')}</label>
+                                                    <input type="number" value={swiperConfig.spaceBetween} onChange={e => setSwiperConfig({ ...swiperConfig, spaceBetween: parseInt(e.target.value) })} className="w-full px-4 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-primary/20 text-gray-400 outline-hidden" />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="text-xs font-bold text-slate-700">{t('paginationType')}</label>
+                                                    <select value={swiperConfig.paginationType} onChange={e => setSwiperConfig({ ...swiperConfig, paginationType: e.target.value })} className="w-full px-4 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-primary/20 text-gray-400 outline-hidden">
+                                                        <option value="bullets">{t('paginationTypes.bullets')}</option>
+                                                        <option value="fraction">{t('paginationTypes.fraction')}</option>
+                                                        <option value="progressbar">{t('paginationTypes.progressbar')}</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex gap-6 pt-2">
+                                                <label className="flex items-center gap-2 cursor-pointer group">
+                                                    <div className={`w-10 h-6 rounded-full relative transition-all ${swiperConfig.showNavigation ? 'bg-primary' : 'bg-slate-200'}`}>
+                                                        <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${swiperConfig.showNavigation ? 'right-1' : 'left-1'}`} />
+                                                    </div>
+                                                    <input type="checkbox" className="hidden" checked={swiperConfig.showNavigation} onChange={e => setSwiperConfig({ ...swiperConfig, showNavigation: e.target.checked })} />
+                                                    <span className="text-sm font-bold text-slate-600 group-hover:text-primary transition-colors">{t('showNavigation')}</span>
+                                                </label>
+                                                <label className="flex items-center gap-2 cursor-pointer group">
+                                                    <div className={`w-10 h-6 rounded-full relative transition-all ${swiperConfig.showPagination ? 'bg-primary' : 'bg-slate-200'}`}>
+                                                        <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${swiperConfig.showPagination ? 'right-1' : 'left-1'}`} />
+                                                    </div>
+                                                    <input type="checkbox" className="hidden" checked={swiperConfig.showPagination} onChange={e => setSwiperConfig({ ...swiperConfig, showPagination: e.target.checked })} />
+                                                    <span className="text-sm font-bold text-slate-600 group-hover:text-primary transition-colors">{t('showPagination')}</span>
+                                                </label>
+                                            </div>
+                                            <div className="space-y-4">
+                                                <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">{t('slidesPerView')}</h3>
+                                                <div className="grid grid-cols-3 gap-4">
+                                                    <div className="space-y-2">
+                                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('desktop')}</label>
+                                                        <input type="number" value={swiperConfig.slidesPerViewDesktop} onChange={e => setSwiperConfig({ ...swiperConfig, slidesPerViewDesktop: parseInt(e.target.value) })} className="w-full px-4 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-primary/20 text-gray-400 outline-hidden" />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('tablet')}</label>
+                                                        <input type="number" value={swiperConfig.slidesPerViewTablet} onChange={e => setSwiperConfig({ ...swiperConfig, slidesPerViewTablet: parseInt(e.target.value) })} className="w-full px-4 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-primary/20 text-gray-400 outline-hidden" />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('mobile')}</label>
+                                                        <input type="number" value={swiperConfig.slidesPerViewMobile} onChange={e => setSwiperConfig({ ...swiperConfig, slidesPerViewMobile: parseInt(e.target.value) })} className="w-full px-4 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-primary/20 text-gray-400 outline-hidden" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="max-w-4xl mx-auto py-10 space-y-8">
+                                        <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100 space-y-6">
+                                            <div className="space-y-2">
+                                                <label className="text-xs font-bold text-slate-700">{t('endpointUrl')}</label>
+                                                <div className="flex gap-2">
+                                                    <input type="text" value={apiEndpoint} onChange={e => setApiEndpoint(e.target.value)} placeholder="https://api.example.com/items" className="flex-1 px-4 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-primary/20 text-gray-400 outline-hidden" />
+                                                    <button
+                                                        onClick={async () => {
+                                                            if (!apiEndpoint) return toast.error(commonT('error'));
+                                                            setIsFetchingSample(true);
+                                                            try {
+                                                                const res = await fetch(apiEndpoint);
+                                                                const data = await res.json();
+                                                                const sample = Array.isArray(data) ? data[0] : (data.results ? data.results[0] : (data.items ? data.items[0] : data));
+                                                                setSampleData(sample);
+                                                                toast.success(commonT('saved'));
+                                                            } catch (e) { toast.error(commonT('error')); }
+                                                            finally { setIsFetchingSample(false); }
+                                                        }}
+                                                        disabled={isFetchingSample}
+                                                        className="px-6 bg-slate-900 text-white font-bold rounded-xl flex items-center gap-2 hover:bg-slate-800 transition-colors disabled:opacity-50 cursor-pointer"
+                                                    >
+                                                        {isFetchingSample ? <RefreshCw className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />} {t('fetchSample')}
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            {sampleData && (
+                                                <div className="space-y-4 pt-4 border-t border-slate-100">
+                                                    <div className="flex justify-between items-center">
+                                                        <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">{t('mapping')}</h3>
+                                                        <button onClick={() => setFieldMapping([...fieldMapping, { placeholder: '', apiField: '' }])} className="text-primary font-bold text-sm flex items-center gap-1 hover:underline cursor-pointer"><Plus className="w-4 h-4" /> Add Field</button>
+                                                    </div>
+                                                    <div className="grid grid-cols-1 gap-3">
+                                                        {fieldMapping.map((m, i) => (
+                                                            <div key={i} className="flex gap-4 items-end bg-slate-50 p-4 rounded-2xl border border-slate-100 animate-in fade-in slide-in-from-top-1">
+                                                                <div className="flex-1 space-y-1">
+                                                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('placeholder')} (e.g. title)</label>
+                                                                    <input type="text" value={m.placeholder} onChange={e => {
+                                                                        const newMapping = [...fieldMapping];
+                                                                        newMapping[i].placeholder = e.target.value;
+                                                                        setFieldMapping(newMapping);
+                                                                    }} className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-sm text-gray-400 outline-hidden" />
+                                                                </div>
+                                                                <div className="flex-1 space-y-1">
+                                                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('apiField')}</label>
+                                                                    <select value={m.apiField} onChange={e => {
+                                                                        const newMapping = [...fieldMapping];
+                                                                        newMapping[i].apiField = e.target.value;
+                                                                        setFieldMapping(newMapping);
+                                                                    }} className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-sm text-gray-400 outline-hidden">
+                                                                        <option value="">Select Field</option>
+                                                                        {Object.keys(sampleData).map(k => <option key={k} value={k}>{k}</option>)}
+                                                                    </select>
+                                                                </div>
+                                                                <button onClick={() => setFieldMapping(fieldMapping.filter((_, idx) => idx !== i))} className="p-2 text-red-400 hover:text-red-600 cursor-pointer"><Trash2 className="w-4 h-4" /></button>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                    <div className="mt-4 p-4 bg-slate-900 rounded-2xl overflow-hidden">
+                                                        <div className="flex items-center gap-2 mb-2">
+                                                            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Sample Data Structure</span>
+                                                        </div>
+                                                        <pre className="text-[11px] text-indigo-200 font-mono overflow-auto max-h-40">{JSON.stringify(sampleData, null, 2)}</pre>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 )}
                             </div>

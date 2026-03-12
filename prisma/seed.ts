@@ -6,6 +6,7 @@ const prisma = new PrismaClient();
 async function main() {
 
   await prisma.snippet.deleteMany({}); // Clear existing snippets
+  await prisma.page.deleteMany({});    // Clear existing pages to ensure fresh seed
 
   const snippets = [
     {
@@ -895,6 +896,45 @@ async function main() {
   </div>
 </section>
       `
+    },
+    {
+      name: 'Dynamic Posts Swiper',
+      nameAr: 'سويبر المقالات الديناميكي',
+      category: 'Dynamic',
+      type: 'DYNAMIC_SWIPER',
+      apiEndpoint: 'https://jsonplaceholder.typicode.com/posts',
+      fieldMapping: [
+        { placeholder: 'title', apiField: 'title' },
+        { placeholder: 'body', apiField: 'body' },
+        { placeholder: 'id', apiField: 'id' }
+      ],
+      swiperConfig: {
+        speed: 600,
+        slidesPerViewDesktop: 3,
+        slidesPerViewTablet: 2,
+        slidesPerViewMobile: 1,
+        loop: true,
+        autoplay: true,
+        spaceBetween: 30,
+        paginationType: 'bullets',
+        showNavigation: true,
+        showPagination: true
+      },
+      htmlContent: `
+        <div class="p-6 bg-white dark:bg-slate-800 rounded-3xl shadow-lg border border-slate-100 dark:border-slate-700 h-full flex flex-col group hover:border-primary/50 transition-colors">
+          <div class="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center mb-6 text-primary font-bold">
+            #{{id}}
+          </div>
+          <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-4 line-clamp-1 group-hover:text-primary transition-colors text-start break-words whitespace-normal">{{title}}</h3>
+          <p class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed line-clamp-3 mb-8 text-start">{{body}}</p>
+          <div class="mt-auto">
+            <a href="#" class="inline-flex items-center gap-2 text-primary text-sm font-bold hover:gap-3 transition-all">
+              Read More
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+            </a>
+          </div>
+        </div>
+      `
     }
   ];
 
@@ -933,21 +973,30 @@ async function main() {
     const features = findSnip('Features Grid');
     const stats = findSnip('Stats Row');
     const cta = findSnip('Call to Action');
+    const dynamic = findSnip('Dynamic Posts Swiper');
     const footer = findSnip('Footer');
 
     // Construct content array (simulating dropped snippets)
-    const contentItems = [hero, stats, features, cta].filter(Boolean).map(s => ({
+    const contentItems = [hero, dynamic, stats, features, cta].filter(Boolean).map(s => ({
       id: crypto.randomUUID(), // unique instance ID
       snippetId: s!.id,
       htmlContent: s!.htmlContent,
-      name: s!.name
+      name: s!.name,
+      type: (s as any).type,
+      apiEndpoint: (s as any).apiEndpoint,
+      swiperConfig: (s as any).swiperConfig,
+      fieldMapping: (s as any).fieldMapping
     }));
 
     const footerItems = [footer].filter(Boolean).map(s => ({
       id: crypto.randomUUID(), // unique instance ID
       snippetId: s!.id,
       htmlContent: s!.htmlContent,
-      name: s!.name
+      name: s!.name,
+      type: (s as any).type,
+      apiEndpoint: (s as any).apiEndpoint,
+      swiperConfig: (s as any).swiperConfig,
+      fieldMapping: (s as any).fieldMapping
     }));
 
     await prisma.page.create({

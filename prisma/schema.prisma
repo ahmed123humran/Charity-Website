@@ -102,12 +102,21 @@ model Menu {
 }
 
 model Snippet {
-  id          String  @id @default(cuid())
+  id          String      @id @default(cuid())
   name        String
   category    String
   htmlContent String
   thumbnail   String?
   nameAr      String?
+  type        SnippetType @default(STATIC)
+  apiEndpoint String?
+  swiperConfig Json?
+  fieldMapping Json?
+}
+
+enum SnippetType {
+  STATIC
+  DYNAMIC_SWIPER
 }
 
 enum Role {
