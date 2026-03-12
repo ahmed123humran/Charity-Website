@@ -24,7 +24,7 @@ services:
     build: .
     container_name: website-builder
     environment:
-      DATABASE_URL: "postgresql://odoo:123@db:5432/charity_db?schema=public"
+      DATABASE_URL: "postgres://49689f5bd1bb99c7adaaf751488678b5a782e333026321443a22a36211397286:sk_RNoanOSKh1oY4ApF_-IkG@db.prisma.io:5432/postgres?sslmode=require"
       NODE_ENV: production
     ports:
       - "3001:3000"
