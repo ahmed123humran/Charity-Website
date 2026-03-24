@@ -5,6 +5,7 @@ import { store } from '@/app/store';
 import { useEffect } from 'react';
 import { fetchCurrentWebsite } from '@/app/store/slices/websiteSlice';
 import { fetchCurrentUser } from '@/app/store/slices/userSlice';
+import WebsiteStyles from './WebsiteStyles';
 
 function StoreInitializer() {
     useEffect(() => {
@@ -30,6 +31,7 @@ export default function ReduxProvider({
 }) {
     return (
         <Provider store={store}>
+            <WebsiteStyles />
             <StoreInitializer />
             {children}
         </Provider>

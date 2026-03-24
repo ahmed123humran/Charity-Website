@@ -17,6 +17,7 @@ interface Website {
     themeColor: string;
     language: string;
     logo: string | null;
+    fontFamily: string;
     createdAt: string;
 }
 
@@ -39,6 +40,7 @@ export default function WebsitesPage() {
     const [domain, setDomain] = useState('');
     const [themeColor, setThemeColor] = useState('#4f46e5');
     const [logo, setLogo] = useState('');
+    const [fontFamily, setFontFamily] = useState('Inter');
 
     useEffect(() => {
         fetchWebsites();
@@ -92,6 +94,7 @@ export default function WebsitesPage() {
                     domain,
                     themeColor,
                     logo,
+                    fontFamily,
                 }),
             });
             if (res.ok) {
@@ -139,6 +142,7 @@ export default function WebsitesPage() {
         setDomain(site.domain || '');
         setThemeColor(site.themeColor);
         setLogo(site.logo || '');
+        setFontFamily(site.fontFamily || 'Inter');
         setCurrentId(site.id);
         setIsEditing(true);
         setShowModal(true);
@@ -152,6 +156,7 @@ export default function WebsitesPage() {
         setDomain('');
         setThemeColor('#4f46e5');
         setLogo('');
+        setFontFamily('Inter');
         setCurrentId(null);
     };
 
@@ -341,6 +346,22 @@ export default function WebsitesPage() {
                                         style={{ backgroundColor: themeColor }}
                                     />
                                 </div>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">Font Family</label>
+                                <select
+                                    value={fontFamily}
+                                    onChange={(e) => setFontFamily(e.target.value)}
+                                    className="w-full px-4 py-2 border border-slate-200 text-gray-900 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20"
+                                >
+                                    <option value="Inter">Inter (Default)</option>
+                                    <option value="Cairo">Cairo (Arabic Optimized)</option>
+                                    <option value="Tajawal">Tajawal (Arabic Optimized)</option>
+                                    <option value="Almarai">Almarai</option>
+                                    <option value="Roboto">Roboto</option>
+                                    <option value="Open Sans">Open Sans</option>
+                                    <option value="system-ui">System UI</option>
+                                </select>
                             </div>
 
                             <div className="pt-2">

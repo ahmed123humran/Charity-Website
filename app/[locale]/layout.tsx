@@ -14,15 +14,14 @@ import { getLocalizedName } from '@/app/utils/locale';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+import { Cairo, Tajawal, Almarai, Inter, Roboto, Open_Sans } from "next/font/google";
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const cairo = Cairo({ subsets: ["latin", "arabic"], variable: "--font-cairo" });
+const tajawal = Tajawal({ weight: ["400", "500", "700"], subsets: ["latin", "arabic"], variable: "--font-tajawal" });
+const almarai = Almarai({ weight: ["300", "400", "700", "800"], subsets: ["arabic"], variable: "--font-almarai" });
+const roboto = Roboto({ weight: ["400", "500", "700"], subsets: ["latin"], variable: "--font-roboto" });
+const openSans = Open_Sans({ subsets: ["latin"], variable: "--font-open-sans" });
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -71,8 +70,8 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
       images: [siteLogo],
     },
     icons: {
-      icon: siteLogo,
-      apple: siteLogo,
+      icon: website?.logo ? website.logo : "/favicon.ico",
+      apple: website?.logo ? website.logo : "/favicon.ico",
     },
   };
 }
@@ -95,11 +94,24 @@ export default async function RootLayout({
     orderBy: { updatedAt: 'desc' }
   });
   const themeColor = website?.themeColor || "#4f46e5";
+  const fontFamilyValue = website?.fontFamily || "Inter";
+
+  // Mapping font names to CSS variables
+  const fontMap: Record<string, string> = {
+    "Inter": inter.style.fontFamily,
+    "Cairo": cairo.style.fontFamily,
+    "Tajawal": tajawal.style.fontFamily,
+    "Almarai": almarai.style.fontFamily,
+    "Roboto": roboto.style.fontFamily,
+    "Open Sans": openSans.style.fontFamily,
+  };
+
+  const selectedFont = fontMap[fontFamilyValue] || inter.style.fontFamily;
 
   return (
     <html lang={locale} dir={locale === 'ar' ? 'rtl' : 'ltr'}>
       <body
-        className="antialiased"
+        className={`${inter.variable} ${cairo.variable} ${tajawal.variable} ${almarai.variable} ${roboto.variable} ${openSans.variable} antialiased`}
         style={{
           '--primary-color': themeColor,
           '--primary-glow': `color-mix(in srgb, ${themeColor}, transparent 80%)`,
@@ -107,6 +119,7 @@ export default async function RootLayout({
           '--primary-dark': `color-mix(in srgb, ${themeColor}, black 20%)`,
           '--primary-accent': `color-mix(in srgb, ${themeColor}, #a855f7 30%)`,
           '--primary-surface': `color-mix(in srgb, ${themeColor}, transparent 95%)`,
+          '--font-family': selectedFont,
         } as React.CSSProperties}
       >
         <ReduxProvider>

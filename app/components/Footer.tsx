@@ -1,26 +1,40 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { Link } from '@/navigation';
 import { Mail, Phone, MapPin, Facebook, Twitter, Instagram } from 'lucide-react';
+import { useAppSelector } from '@/app/store/hooks';
+import { getLocalizedName } from '@/app/utils/locale';
 
 export default function Footer() {
     const t = useTranslations('Footer');
     const commonT = useTranslations('Common');
+    const locale = useLocale();
+    const { name, logo, themeColor } = useAppSelector((state) => state.website);
+
+    const websiteName = name ? getLocalizedName(name, locale) : commonT('title');
 
     return (
         <footer className="bg-slate-950 text-slate-300 py-20 border-t border-white/5 rtl:text-right">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
                     <div className="space-y-6">
-                        <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-                                <div className="w-4 h-4 rounded-xs rotate-45" style={{ backgroundColor: 'var(--primary-color)' }} />
-                            </div>
-                            <span className="text-xl font-bold text-white tracking-widest lowercase">
-                                {commonT('title')}
+                        <Link href="/" className="flex items-center gap-3 group">
+                            {logo ? (
+                                <img
+                                    src={logo}
+                                    alt={websiteName}
+                                    className="w-10 h-10 rounded-lg object-contain bg-white p-1 shadow-sm transition-transform group-hover:scale-105"
+                                />
+                            ) : (
+                                <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-white transition-transform group-hover:scale-105">
+                                    <div className="w-4 h-4 rounded-xs rotate-45" style={{ backgroundColor: themeColor || 'var(--primary-color)' }} />
+                                </div>
+                            )}
+                            <span className="text-xl font-bold text-white tracking-widest">
+                                {websiteName}
                             </span>
-                        </div>
+                        </Link>
                         <p className="text-slate-400 text-sm leading-relaxed">
                             {t('desc')}
                         </p>

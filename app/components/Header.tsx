@@ -24,14 +24,22 @@ export default async function Header() {
         <header className="top-0 left-0 right-0 z-50 bg-white/70 backdrop-blur-md border-b border-slate-200">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between items-center h-20">
-                    <div className="flex items-center gap-2">
-                        <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-primary">
-                            <div className="w-5 h-5 bg-white rounded-xs rotate-45" />
-                        </div>
+                    <Link href="/" className="flex items-center gap-2 group">
+                        {website?.logo ? (
+                            <img
+                                src={website.logo}
+                                alt={websiteName}
+                                className="w-12 h-12 rounded-xl object-contain bg-white p-1 shadow-sm transition-transform group-hover:scale-105"
+                            />
+                        ) : (
+                            <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-primary transition-transform group-hover:scale-105">
+                                <div className="w-5 h-5 bg-white rounded-xs rotate-45" />
+                            </div>
+                        )}
                         <span className="text-2xl font-bold bg-linear-to-r from-primary to-primary-dark bg-clip-text text-transparent">
                             {websiteName}
                         </span>
-                    </div>
+                    </Link>
 
                     <nav className="hidden md:flex items-center gap-8">
                         {menus.length > 0 ? (

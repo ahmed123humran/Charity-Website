@@ -72,6 +72,7 @@ export const createWebsiteSchema = z.object({
     name: localizedString,
     domain: z.string().optional(),
     themeColor: z.string().optional(),
+    fontFamily: z.string().optional(),
     language: z.string().optional(),
     logo: z.string().optional(),
 });
@@ -80,6 +81,7 @@ export const updateWebsiteSchema = z.object({
     name: localizedString.optional(),
     domain: z.string().optional(),
     themeColor: z.string().optional(),
+    fontFamily: z.string().optional(),
     language: z.string().optional(),
     logo: z.string().optional(),
 });

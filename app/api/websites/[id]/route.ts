@@ -83,6 +83,7 @@ export async function PUT(request: NextRequest, { params }: Props) {
 
         return NextResponse.json(updatedWebsite, { status: 200 });
     } catch (error) {
+        console.error('Error updating website:', error);
         return NextResponse.json({ message: 'internalServerError' }, { status: 500 });
     }
 }
