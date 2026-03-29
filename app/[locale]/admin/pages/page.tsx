@@ -207,7 +207,7 @@ export default function PagesManagement() {
                         <input
                             type="text"
                             placeholder={t('searchPages')}
-                            className="w-full pl-10 pr-4 py-2 border border-slate-200 text-gray-400 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-primary/20 rtl:pl-4 rtl:pr-10 text-start"
+                            className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-primary/20 rtl:pl-4 rtl:pr-10 text-start"
                         />
                     </div>
                 </div>
@@ -346,7 +346,7 @@ export default function PagesManagement() {
                                         value={websiteId}
                                         onChange={(e) => setWebsiteId(e.target.value)}
                                         required
-                                        className="w-full px-4 py-2 border border-slate-200 text-gray-400 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 text-start"
+                                        className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 text-start"
                                     >
                                         {websites.map(site => (
                                             <option key={site.id} value={site.id}>{getLocalizedName(site.name, locale)}</option>
@@ -362,7 +362,7 @@ export default function PagesManagement() {
                                             value={titleEn}
                                             onChange={(e) => setTitleEn(e.target.value)}
                                             required
-                                            className="w-full px-4 py-2 border border-slate-200 text-gray-400 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 ltr"
+                                            className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 ltr"
                                             placeholder="e.g. About Us"
                                         />
                                     </div>
@@ -373,7 +373,7 @@ export default function PagesManagement() {
                                             value={titleAr}
                                             onChange={(e) => setTitleAr(e.target.value)}
                                             required
-                                            className="w-full px-4 py-2 border border-slate-200 text-gray-400 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 rtl"
+                                            className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 rtl"
                                             placeholder="مثال: من نحن"
                                         />
                                     </div>
@@ -394,7 +394,7 @@ export default function PagesManagement() {
                                             value={url}
                                             onChange={(e) => setUrl(e.target.value)}
                                             required
-                                            className="flex-1 w-full px-4 py-2 border border-slate-200 text-gray-400 rounded-e-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 shadow-xs text-start"
+                                            className="flex-1 w-full px-4 py-2 border border-slate-200 rounded-e-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 shadow-xs text-start"
                                             placeholder="about-us"
                                         />
                                     </div>

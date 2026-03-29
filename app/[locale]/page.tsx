@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { Metadata } from "next";
 import { getLocalizedName, getContentSnippet } from "@/app/utils/locale";
 import { sanitizeHtml } from "@/app/utils/sanitize";
+import DynamicSwiper from "@/app/components/DynamicSwiper";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -72,7 +73,11 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           contentToRender = (
             <div className="flex flex-col">
               {localizedContent.map((item: any) => (
-                <div key={item.id} dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.htmlContent) }} />
+                (item.type === 'DYNAMIC') ? (
+                  <DynamicSwiper key={item.id} snippet={item} />
+                ) : (
+                  <div key={item.id} dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.htmlContent) }} />
+                )
               ))}
             </div>
           );
@@ -84,7 +89,11 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         contentToRender = (
           <div className="flex flex-col">
             {parsed.map((item: any) => (
-              <div key={item.id} dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.htmlContent) }} />
+              (item.type === 'DYNAMIC') ? (
+                <DynamicSwiper key={item.id} snippet={item} />
+              ) : (
+                <div key={item.id} dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.htmlContent) }} />
+              )
             ))}
           </div>
         );

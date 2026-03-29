@@ -112,7 +112,7 @@ export default function SearchReplaceTool() {
                                 type="text"
                                 value={searchText}
                                 onChange={(e) => setSearchText(e.target.value)}
-                                className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-primary transition-all outline-none text-slate-800 placeholder:text-slate-400 text-start text-gray-400 outline-hidden"
+                                className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-primary transition-all outline-none text-slate-800 placeholder:text-slate-400 text-start outline-hidden"
                                 placeholder={t('findPlaceholder')}
                             />
                         </div>
@@ -126,7 +126,7 @@ export default function SearchReplaceTool() {
                                 type="text"
                                 value={replaceText}
                                 onChange={(e) => setReplaceText(e.target.value)}
-                                className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-primary transition-all outline-none text-slate-800 placeholder:text-slate-400 text-start text-gray-400 outline-hidden"
+                                className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-primary transition-all outline-none text-slate-800 placeholder:text-slate-400 text-start outline-hidden"
                                 placeholder={t('replacePlaceholder')}
                             />
                         </div>

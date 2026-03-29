@@ -6,6 +6,7 @@ const prisma = new PrismaClient();
 async function main() {
 
   await prisma.snippet.deleteMany({}); // Clear existing snippets
+  await prisma.page.deleteMany({});    // Clear existing pages to ensure fresh seed
 
   const snippets = [
     {
@@ -895,12 +896,51 @@ async function main() {
   </div>
 </section>
       `
+    },
+    {
+      name: 'Dynamic Posts Swiper',
+      nameAr: 'سويبر المقالات الديناميكي',
+      category: 'Dynamic',
+      type: 'DYNAMIC',
+      apiEndpoint: 'https://jsonplaceholder.typicode.com/posts',
+      fieldMapping: [
+        { placeholder: 'title', apiField: 'title' },
+        { placeholder: 'body', apiField: 'body' },
+        { placeholder: 'id', apiField: 'id' }
+      ],
+      swiperConfig: {
+        speed: 600,
+        slidesPerViewDesktop: 3,
+        slidesPerViewTablet: 2,
+        slidesPerViewMobile: 1,
+        loop: true,
+        autoplay: true,
+        spaceBetween: 30,
+        paginationType: 'bullets',
+        showNavigation: true,
+        showPagination: true
+      },
+      htmlContent: `
+        <div class="p-6 bg-white dark:bg-slate-800 rounded-3xl shadow-lg border border-slate-100 dark:border-slate-700 h-full flex flex-col group hover:border-primary/50 transition-colors">
+          <div class="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center mb-6 text-primary font-bold">
+            #{{id}}
+          </div>
+          <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-4 line-clamp-1 group-hover:text-primary transition-colors text-start break-words whitespace-normal">{{title}}</h3>
+          <p class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed line-clamp-3 mb-8 text-start">{{body}}</p>
+          <div class="mt-auto">
+            <a href="#" class="inline-flex items-center gap-2 text-primary text-sm font-bold hover:gap-3 transition-all">
+              Read More
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+            </a>
+          </div>
+        </div>
+      `
     }
   ];
 
   for (const snippet of snippets) {
     await prisma.snippet.create({
-      data: snippet,
+      data: snippet as any,
     });
   }
 
@@ -933,21 +973,30 @@ async function main() {
     const features = findSnip('Features Grid');
     const stats = findSnip('Stats Row');
     const cta = findSnip('Call to Action');
+    const dynamic = findSnip('Dynamic Posts Swiper');
     const footer = findSnip('Footer');
 
     // Construct content array (simulating dropped snippets)
-    const contentItems = [hero, stats, features, cta].filter(Boolean).map(s => ({
+    const contentItems = [hero, dynamic, stats, features, cta].filter(Boolean).map(s => ({
       id: crypto.randomUUID(), // unique instance ID
       snippetId: s!.id,
       htmlContent: s!.htmlContent,
-      name: s!.name
+      name: s!.name,
+      type: (s as any).type,
+      apiEndpoint: (s as any).apiEndpoint,
+      swiperConfig: (s as any).swiperConfig,
+      fieldMapping: (s as any).fieldMapping
     }));
 
     const footerItems = [footer].filter(Boolean).map(s => ({
       id: crypto.randomUUID(), // unique instance ID
       snippetId: s!.id,
       htmlContent: s!.htmlContent,
-      name: s!.name
+      name: s!.name,
+      type: (s as any).type,
+      apiEndpoint: (s as any).apiEndpoint,
+      swiperConfig: (s as any).swiperConfig,
+      fieldMapping: (s as any).fieldMapping
     }));
 
     await prisma.page.create({
@@ -994,6 +1043,103 @@ async function main() {
   } else {
     console.log(`Admin user already exists: ${adminEmail}`);
   }
+
+  // --- Create Slider Category and Content ---
+  let sliderCategory = await prisma.contentCategory.findFirst({
+    where: { name: 'Slider' }
+  });
+  if (!sliderCategory) {
+    sliderCategory = await prisma.contentCategory.create({
+      data: { name: 'Slider', nameAr: 'سلايدر' }
+    });
+  }
+
+  // Clear existing sliders to allow clean reseeding
+  await prisma.dynamicContent.deleteMany({
+    where: { categoryId: sliderCategory.id }
+  });
+
+  const sliderContents = [
+    {
+      title: 'Support Education for All',
+      titleAr: 'دعم التعليم للجميع',
+      description: 'Join hands to build a better future through accessible education. Together we can achieve the impossible.',
+      descriptionAr: 'انضم إلينا لبناء مستقبل أفضل من خلال التعليم الميسر للجميع. معاً يمكننا تحقيق المستحيل.',
+      image: '/gallery/img_1.svg',
+      categoryId: sliderCategory.id,
+    },
+    {
+      title: 'Clean Water Initiative',
+      titleAr: 'مبادرة المياه النظيفة',
+      description: 'Providing safe and clean drinking water to remote communities. Water is the essence of life.',
+      descriptionAr: 'توفير مياه الشرب الآمنة والنظيفة للمجتمعات النائية. الماء هو أساس الحياة والتنمية.',
+      image: '/gallery/img_3.svg',
+      categoryId: sliderCategory.id,
+    },
+    {
+      title: 'Medical Healthcare',
+      titleAr: 'الرعاية الصحية الطبية',
+      description: 'Delivering essential medical supplies to where they are needed most to save precious lives.',
+      descriptionAr: 'تقديم الإمدادات الطبية الأساسية إلى الأماكن الأكثر حاجة إليها لإنقاذ أرواح بريئة.',
+      image: '/gallery/img_6.svg',
+      categoryId: sliderCategory.id,
+    }
+  ];
+
+  for (const content of sliderContents) {
+    await prisma.dynamicContent.create({ data: content });
+  }
+
+  // Create the Slider Snippet
+  const sliderSnippetName = 'Main Image Slider';
+  await prisma.snippet.deleteMany({ where: { name: sliderSnippetName } });
+
+  await prisma.snippet.create({
+    data: {
+      name: sliderSnippetName,
+      nameAr: 'سلايدر الصور الرئيسي',
+      category: 'Dynamic',
+      type: 'DYNAMIC',
+      categoryId: sliderCategory.id,
+      swiperConfig: {
+        speed: 1000,
+        slidesPerViewDesktop: 1,
+        slidesPerViewTablet: 1,
+        slidesPerViewMobile: 1,
+        loop: true,
+        autoplay: true,
+        spaceBetween: 0,
+        paginationType: 'bullets',
+        showNavigation: true,
+        showPagination: true
+      },
+      htmlContent: `
+      <div class="relative w-full h-[500px] sm:h-[600px] lg:h-[700px] overflow-hidden group">
+        <img src="{{image}}" alt="{{title}}" class="absolute z-0 inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-[10000ms] ease-out select-none" />
+        <div class="absolute inset-0 z-10 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent flex flex-col justify-end p-8 sm:p-16 lg:p-24 pb-20">
+          <div class="max-w-4xl">
+            <span class="inline-block px-4 py-1.5 mb-6 text-xs sm:text-sm font-bold text-white uppercase tracking-widest bg-primary/90 backdrop-blur-md rounded-full shadow-lg border border-white/20">
+              المبادرات
+            </span>
+            <h2 class="text-3xl sm:text-5xl lg:text-7xl font-black text-white leading-tight mb-6 drop-shadow-2xl placeholder-white" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">
+              {{title}}
+            </h2>
+            <p class="text-slate-200 text-lg sm:text-xl lg:text-2xl max-w-2xl leading-relaxed mb-10 drop-shadow-md">
+              {{description}}
+            </p>
+            <div class="flex flex-wrap items-center gap-4">
+              <a href="#" class="inline-flex items-center justify-center gap-3 bg-primary text-white px-8 md:px-10 py-4 md:py-4 rounded-full font-bold text-sm md:text-base hover:bg-white hover:text-primary transition-all duration-300 shadow-xl shadow-primary/30 hover:shadow-white/20 select-none group/btn">
+                اكتشف المزيد
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5 rtl:rotate-180 group-hover/btn:translate-x-1 rtl:group-hover/btn:-translate-x-1 transition-transform"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+      `
+    } as any
+  });
+
 }
 
 main()

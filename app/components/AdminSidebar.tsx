@@ -43,6 +43,7 @@ export default function AdminSidebar() {
         { label: t('pages'), href: '/admin/pages', icon: FileText },
         { label: t('footers'), href: '/admin/footers', icon: PanelBottom },
         { label: t('menus'), href: '/admin/menus', icon: MenuIcon },
+        { label: t('dynamicContent'), href: '/admin/content', icon: Sparkles },
         { label: t('snippets'), href: '/admin/snippets', icon: PlusSquare },
         { label: t('searchReplace'), href: '/admin/tools/search-replace', icon: RefreshCw },
         ...(userRole === 'ADMIN' ? [
