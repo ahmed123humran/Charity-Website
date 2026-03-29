@@ -14,6 +14,7 @@ import {
 import { getLocalizedName } from '@/app/utils/locale';
 import toast from 'react-hot-toast';
 import EditorTour from '@/app/components/EditorTour';
+import ColorInput from '@/app/components/ColorInput';
 import { sanitizeHtml } from '@/app/utils/sanitize';
 
 import ConfirmDialog from '@/app/components/ConfirmDialog';
@@ -245,8 +246,24 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
         }
     };
 
+    const rgbToHex = (color: string) => {
+        if (!color || color === 'transparent') return '#ffffff';
+        if (color.startsWith('#')) {
+            return color.length > 7 ? color.substring(0, 7) : color;
+        }
+        const rgb = color.match(/\d+/g);
+        if (!rgb || rgb.length < 3) return '#ffffff';
+        const hex = (x: string) => {
+            const h = parseInt(x).toString(16);
+            return h.length === 1 ? '0' + h : h;
+        };
+        return '#' + hex(rgb[0]) + hex(rgb[1]) + hex(rgb[2]);
+    };
+
     const updateActiveStyles = (el: HTMLElement) => {
         const computed = window.getComputedStyle(el);
+        const tag = el.tagName.toLowerCase();
+
         let styles: typeof activeStyles = {
             fontSize: '16px',
             color: '#000000',
@@ -255,27 +272,27 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
             borderRadius: '0px'
         };
 
-        if (el.tagName === 'SVG') {
-            // For SVG, fontSize can be interpreted as width/height
-            styles.color = (el.getAttribute('fill') || computed.color) as string;
+        if (tag === 'svg') {
+            styles.color = rgbToHex(el.getAttribute('fill') || computed.color);
             styles.fontSize = el.getAttribute('width') || computed.width;
-            styles.backgroundColor = el.getAttribute('background') || 'transparent';
+            styles.backgroundColor = rgbToHex(el.getAttribute('background') || 'transparent');
             styles.textAlign = 'center';
             styles.borderRadius = computed.borderRadius || '0px';
-        } else if (activeTagName === 'img') {
+        } else if (tag === 'img' || tag === 'video') {
             styles.borderRadius = computed.borderRadius || '0px';
+            styles.backgroundColor = rgbToHex(computed.backgroundColor);
         } else {
             styles = {
                 fontSize: computed.fontSize,
-                color: computed.color,
-                backgroundColor: computed.backgroundColor,
+                color: rgbToHex(computed.color),
+                backgroundColor: rgbToHex(computed.backgroundColor),
                 textAlign: computed.textAlign,
                 borderRadius: computed.borderRadius
             };
         }
 
         setActiveStyles(styles);
-        setActiveTagName(el.tagName.toLowerCase());
+        setActiveTagName(tag);
     };
 
     const handleContentClick = (e: React.MouseEvent, snippetId: string) => {
@@ -573,7 +590,7 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
 
     const bgColors = [
         '#EF4444', '#1E293B', '#F59E0B', '#0EA5E9',
-        '#8B5CF6', '#10B981', '#3182CE', '#000000'
+        '#8B5CF6', '#10B981', '#3182CE', '#000000', 'transparent'
     ];
 
     return (
@@ -778,23 +795,12 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                             {(!['img', 'video'].includes(activeTagName)) && (
                                 <div className="space-y-3">
                                     <span className="text-[10px] font-bold text-slate-500 uppercase px-1">{editorT('textColor')}</span>
-                                    <div className="grid grid-cols-4 gap-2">
-                                        {swatchColors.map(c => (
-                                            <button key={c} onMouseDown={(e) => { e.preventDefault(); applyStyle('foreColor', c); }} className="w-8 h-8 rounded-full border-2 border-white shadow-md hover:scale-110 transition-transform cursor-pointer" style={{ backgroundColor: c }} />
-                                        ))}
-                                        {/* مدخل اللون الديناميكي مع تدرج */}
-                                        <div className="relative w-8 h-8 rounded-full shadow-md overflow-hidden  border-2 border-white">
-                                            {/* التدرج كخلفية */}
-                                            <div className="absolute inset-0 rounded-full"
-                                                style={{ background: 'linear-gradient(to right, red, orange, yellow, green, cyan, blue, violet)' }} />
-                                            {/* input شفاف فوق التدرج */}
-                                            <input
-                                                type="color"
-                                                value={activeStyles.color || '#ff0000'}
-                                                onChange={(e) => applyStyleDebounced('foreColor', e.target.value)}
-                                                className="w-full h-full opacity-0 cursor-pointer text-gray-400 outline-hidden"
-                                            />
-                                        </div>
+                                    <div className="space-y-3">
+                                        <ColorInput
+                                            value={activeStyles.color}
+                                            onChange={(val) => applyStyleDebounced('foreColor', val)}
+                                            presets={swatchColors}
+                                        />
                                     </div>
                                 </div>
                             )}
@@ -805,11 +811,12 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                                 <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2"><PaintBucket className="w-3 h-3" /> {editorT('background')}</div>
                                 <div className="space-y-3">
                                     <span className="text-[10px] font-bold text-slate-500 uppercase px-1">{editorT('color')}</span>
-                                    <div className="grid grid-cols-4 gap-2">
-                                        {bgColors.map(c => (
-                                            <button key={c} onMouseDown={(e) => { e.preventDefault(); applyStyle('backgroundColor', c); }} className="w-8 h-8 rounded-full border-2 border-white shadow-md hover:scale-110 transition-transform cursor-pointer" style={{ backgroundColor: c }} />
-                                        ))}
-                                        <button onMouseDown={(e) => { e.preventDefault(); applyStyle('backgroundColor', 'transparent'); }} className="w-8 h-8 rounded-full bg-white border-2 border-slate-100 shadow-md flex items-center justify-center relative cursor-pointer"><div className="absolute w-full h-[1px] bg-red-400 rotate-45" /></button>
+                                    <div className="space-y-3">
+                                        <ColorInput
+                                            value={activeStyles.backgroundColor === 'transparent' ? '#ffffff' : activeStyles.backgroundColor}
+                                            onChange={(val) => applyStyleDebounced('backgroundColor', val)}
+                                            presets={bgColors}
+                                        />
                                     </div>
                                 </div>
                             </div>

@@ -115,10 +115,18 @@ body {
 
 /* Form Styling */
 .input-premium {
-  @apply w-full px-4 py-3 rounded-xl border border-slate-200 bg-white/50 focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all duration-300;
+  @apply w-full px-4 py-3 rounded-xl border border-slate-200 bg-white/50 text-slate-900 focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all duration-300;
 }
 
 .btn-premium {
   @apply relative overflow-hidden flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-primary text-white font-semibold transition-all duration-300 hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 active:translate-y-0;
 }
 
+
+input, select, textarea {
+  @apply text-slate-900;
+}
+
+.dark input, .dark select, .dark textarea {
+  @apply text-slate-100;
+}

@@ -73,7 +73,7 @@ export default function LoginForm({ showRegister }: { showRegister: boolean }) {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required
-                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-hidden focus:ring-2 focus:ring-primary transition-all"
+                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl !text-white placeholder-white/30 focus:outline-hidden focus:ring-2 focus:ring-primary transition-all"
                         placeholder={t('emailPlaceholder') || "admin@example.com"}
                     />
                 </div>
@@ -84,7 +84,7 @@ export default function LoginForm({ showRegister }: { showRegister: boolean }) {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
-                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-hidden focus:ring-2 focus:ring-primary transition-all"
+                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl !text-white placeholder-white/30 focus:outline-hidden focus:ring-2 focus:ring-primary transition-all"
                         placeholder="••••••••"
                     />
                 </div>

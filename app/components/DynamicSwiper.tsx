@@ -9,6 +9,7 @@ import { sanitizeHtml } from '@/app/utils/sanitize';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
+import { useLocale } from 'next-intl';
 
 interface Props {
     snippet: {
@@ -17,10 +18,12 @@ interface Props {
         apiEndpoint?: string | null;
         swiperConfig?: any | null;
         fieldMapping?: any | null;
+        type?: 'STATIC' | 'DYNAMIC';
+        categoryId?: string | null;
     };
 }
 
-export default function DynamicSwiper({ snippet }: Props) {
+export default function DynamicSwiper({ snippet, singleRecordOnly = false }: { snippet: any, singleRecordOnly?: boolean }) {
     const [data, setData] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -29,18 +32,28 @@ export default function DynamicSwiper({ snippet }: Props) {
         apiEndpoint,
         htmlContent,
         swiperConfig,
-        fieldMapping
+        fieldMapping,
+        type,
+        categoryId
     } = snippet;
 
+    const locale = useLocale();
+
+    const isInternal = type === 'DYNAMIC' && !apiEndpoint && categoryId;
+
     useEffect(() => {
-        if (!apiEndpoint) {
+        const effectiveEndpoint = isInternal
+            ? `/api/dynamic-content?categoryId=${categoryId}`
+            : apiEndpoint;
+
+        if (!effectiveEndpoint) {
             setLoading(false);
             return;
         }
 
         const fetchData = async () => {
             try {
-                const res = await fetch(apiEndpoint);
+                const res = await fetch(effectiveEndpoint);
                 if (!res.ok) throw new Error('Failed to fetch data');
                 const json = await res.json();
 
@@ -57,7 +70,7 @@ export default function DynamicSwiper({ snippet }: Props) {
         };
 
         fetchData();
-    }, [apiEndpoint]);
+    }, [apiEndpoint, type, categoryId]);
 
     if (loading) return <div className="py-10 text-center text-slate-400">Loading dynamic content...</div>;
     if (error) return <div className="py-10 text-center text-red-400">Error: {error}</div>;
@@ -65,7 +78,17 @@ export default function DynamicSwiper({ snippet }: Props) {
 
     const renderSlide = (item: any) => {
         let content = htmlContent;
-        if (fieldMapping && Array.isArray(fieldMapping)) {
+        if (isInternal) {
+            const title = (locale === 'ar' && item.titleAr) ? item.titleAr : item.title;
+            const description = (locale === 'ar' && item.descriptionAr) ? item.descriptionAr : item.description;
+            const image = item.image || '';
+            const publishDate = item.publishDate ? new Date(item.publishDate).toLocaleDateString(locale === 'ar' ? 'ar-EG' : 'en-US', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+
+            content = content.split('{{title}}').join(String(title || ''));
+            content = content.split('{{description}}').join(String(description || ''));
+            content = content.split('{{image}}').join(String(image || ''));
+            content = content.split('{{publishDate}}').join(String(publishDate || ''));
+        } else if (fieldMapping && Array.isArray(fieldMapping)) {
             fieldMapping.forEach(mapping => {
                 const placeholder = `{{${mapping.placeholder}}}`;
                 const value = item[mapping.apiField] || '';
@@ -82,6 +105,14 @@ export default function DynamicSwiper({ snippet }: Props) {
         tablet: config.slidesPerViewTablet || 2,
         mobile: config.slidesPerViewMobile || 1,
     };
+
+    if (singleRecordOnly) {
+        return (
+            <div className="w-full h-full p-4">
+                {renderSlide(data[0])}
+            </div>
+        );
+    }
 
     return (
         <section className="py-20">

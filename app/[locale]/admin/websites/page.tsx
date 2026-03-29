@@ -9,6 +9,7 @@ import ConfirmDialog from '@/app/components/ConfirmDialog';
 import toast from 'react-hot-toast';
 import { useAppSelector } from '@/app/store/hooks';
 import WebsiteTour from '@/app/components/WebsiteTour';
+import ColorInput from '@/app/components/ColorInput';
 
 interface Website {
     id: string;
@@ -190,7 +191,7 @@ export default function WebsitesPage() {
                         <input
                             type="text"
                             placeholder={t('searchWebsites')}
-                            className="w-full pl-10 pr-4 py-2 border border-slate-200 text-gray-400 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-primary/20 rtl:pl-4 rtl:pr-10 text-start"
+                            className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-primary/20 rtl:pl-4 rtl:pr-10 text-start"
                         />
                     </div>
                 </div>
@@ -299,7 +300,7 @@ export default function WebsitesPage() {
                                         value={nameEn}
                                         onChange={(e) => setNameEn(e.target.value)}
                                         required
-                                        className="w-full px-4 py-2 border border-slate-200 text-gray-400 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 ltr"
+                                        className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 ltr"
                                         placeholder="e.g. Health Charity"
                                     />
                                 </div>
@@ -310,7 +311,7 @@ export default function WebsitesPage() {
                                         value={nameAr}
                                         onChange={(e) => setNameAr(e.target.value)}
                                         required
-                                        className="w-full px-4 py-2 border border-slate-200 text-gray-400 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 rtl"
+                                        className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 rtl"
                                         placeholder="مثال: جمعية صحية"
                                     />
                                 </div>
@@ -321,32 +322,15 @@ export default function WebsitesPage() {
                                     type="text"
                                     value={domain}
                                     onChange={(e) => setDomain(e.target.value)}
-                                    className="w-full px-4 py-2 border border-slate-200 text-gray-400 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 text-start"
+                                    className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary/20 text-start"
                                     placeholder="e.g. health.example.com"
                                 />
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">{t('themeColor')}</label>
-                                <div className="flex items-center gap-3">
-                                    <input
-                                        type="color"
-                                        value={themeColor}
-                                        onChange={(e) => setThemeColor(e.target.value)}
-                                        className="w-12 h-10 p-1 rounded-lg border border-slate-200 cursor-pointer bg-white text-gray-400 outline-hidden"
-                                    />
-                                    <input
-                                        type="text"
-                                        value={themeColor}
-                                        onChange={(e) => setThemeColor(e.target.value)}
-                                        className="flex-1 px-4 py-2 border border-slate-200 text-gray-400 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-primary/20 font-mono"
-                                        placeholder="#4f46e5"
-                                    />
-                                    <div
-                                        className="w-10 h-10 rounded-lg border border-slate-200 shadow-inner"
-                                        style={{ backgroundColor: themeColor }}
-                                    />
-                                </div>
-                            </div>
+                            <ColorInput
+                                label={t('themeColor')}
+                                value={themeColor}
+                                onChange={setThemeColor}
+                            />
                             <div>
                                 <label className="block text-sm font-medium text-slate-700 mb-1">Font Family</label>
                                 <select
@@ -381,7 +365,7 @@ export default function WebsitesPage() {
                                                     type="text"
                                                     value={logo}
                                                     onChange={(e) => setLogo(e.target.value)}
-                                                    className="w-full px-4 py-2 bg-white border border-slate-200 text-gray-400 rounded-lg text-xs focus:outline-hidden focus:ring-2 focus:ring-primary/20 transition-all font-mono"
+                                                    className="w-full px-4 py-2 bg-white border border-slate-200 rounded-lg text-xs focus:outline-hidden focus:ring-2 focus:ring-primary/20 transition-all font-mono"
                                                     placeholder="Logo URL (or upload)"
                                                 />
                                             </div>
@@ -391,7 +375,7 @@ export default function WebsitesPage() {
                                                     type="file"
                                                     accept="image/*"
                                                     onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0])}
-                                                    className="absolute inset-0 opacity-0 cursor-pointer text-gray-400 outline-hidden"
+                                                    className="absolute inset-0 opacity-0 cursor-pointer outline-hidden"
                                                 />
                                             </div>
                                         </div>

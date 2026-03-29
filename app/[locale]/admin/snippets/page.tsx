@@ -8,6 +8,7 @@ import toast from 'react-hot-toast';
 import { useAppSelector } from '@/app/store/hooks';
 import SnippetsTour from '@/app/components/SnippetsTour';
 import { sanitizeHtml } from '@/app/utils/sanitize';
+import DynamicSwiper from '@/app/components/DynamicSwiper';
 
 interface Snippet {
     id: string;
@@ -16,10 +17,11 @@ interface Snippet {
     category: string;
     htmlContent: string;
     thumbnail: string | null;
-    type: 'STATIC' | 'DYNAMIC_SWIPER';
+    type: 'STATIC' | 'DYNAMIC';
     apiEndpoint: string | null;
     swiperConfig: any | null;
     fieldMapping: any | null;
+    categoryId: string | null;
 }
 
 export default function SnippetsManagement() {
@@ -38,8 +40,11 @@ export default function SnippetsManagement() {
     const [nameAr, setNameAr] = useState('');
     const [category, setCategory] = useState('Intro');
     const [htmlContent, setHtmlContent] = useState('');
-    const [type, setType] = useState<'STATIC' | 'DYNAMIC_SWIPER'>('STATIC');
+    const [type, setType] = useState<'STATIC' | 'DYNAMIC'>('STATIC');
+    const [isExternalApi, setIsExternalApi] = useState(false);
     const [apiEndpoint, setApiEndpoint] = useState('');
+    const [categoryId, setCategoryId] = useState('');
+    const [categories, setCategories] = useState<any[]>([]);
     const [swiperConfig, setSwiperConfig] = useState({
         speed: 500,
         slidesPerViewDesktop: 3,
@@ -60,7 +65,18 @@ export default function SnippetsManagement() {
     const [isFetchingSample, setIsFetchingSample] = useState(false);
     const previewRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => { fetchSnippets(); }, []);
+    useEffect(() => {
+        fetchSnippets();
+        fetchCategories();
+    }, []);
+
+    const fetchCategories = async () => {
+        try {
+            const res = await fetch('/api/content-categories');
+            const data = await res.json();
+            setCategories(Array.isArray(data) ? data : []);
+        } catch (error) { }
+    };
 
     const fetchSnippets = async () => {
         try {
@@ -95,10 +111,11 @@ export default function SnippetsManagement() {
                     nameAr,
                     category,
                     htmlContent: finalContent,
-                    type,
-                    apiEndpoint: type === 'DYNAMIC_SWIPER' ? apiEndpoint : null,
-                    swiperConfig: type === 'DYNAMIC_SWIPER' ? swiperConfig : null,
-                    fieldMapping: type === 'DYNAMIC_SWIPER' ? fieldMapping : null,
+                    type: type === 'DYNAMIC' ? 'DYNAMIC' : 'STATIC',
+                    apiEndpoint: (type === 'DYNAMIC' && isExternalApi) ? apiEndpoint : null,
+                    categoryId: (type === 'DYNAMIC' && !isExternalApi) ? categoryId : null,
+                    swiperConfig: type === 'DYNAMIC' ? swiperConfig : null,
+                    fieldMapping: type === 'DYNAMIC' ? fieldMapping : null,
                 }),
             });
             if (res.ok) {
@@ -108,7 +125,13 @@ export default function SnippetsManagement() {
             } else {
                 const err = await res.json();
                 try {
-                    toast.error(commonT(err.message) || err.message || commonT('error'));
+                    if (Array.isArray(err)) {
+                        err.forEach((e: any) => {
+                            toast.error(t(e.message) || e.message);
+                        });
+                    } else {
+                        toast.error(t(err.message) || err.message || commonT('error'));
+                    }
                 } catch (e) {
                     toast.error(err.message || commonT('error'));
                 }
@@ -144,7 +167,16 @@ export default function SnippetsManagement() {
         setNameAr(snippet.nameAr || '');
         setCategory(snippet.category);
         setHtmlContent(snippet.htmlContent);
-        setType(snippet.type || 'STATIC');
+
+        const snippetType = snippet.type || 'STATIC';
+        if (snippetType === 'DYNAMIC') {
+            setType('DYNAMIC');
+            setIsExternalApi(!!snippet.apiEndpoint);
+        } else {
+            setType('STATIC');
+            setIsExternalApi(false);
+        }
+
         setApiEndpoint(snippet.apiEndpoint || '');
         setSwiperConfig(snippet.swiperConfig || {
             speed: 500,
@@ -158,6 +190,7 @@ export default function SnippetsManagement() {
             showNavigation: true,
             showPagination: true,
         });
+        setCategoryId(snippet.categoryId || '');
         setFieldMapping(Array.isArray(snippet.fieldMapping) ? snippet.fieldMapping : []);
         setCurrentId(snippet.id);
         setIsEditing(true);
@@ -174,7 +207,9 @@ export default function SnippetsManagement() {
         setCategory('Intro');
         setHtmlContent('');
         setType('STATIC');
+        setIsExternalApi(false);
         setApiEndpoint('');
+        setCategoryId('');
         setFieldMapping([]);
         setActiveTab('design');
         setCurrentId(null);
@@ -230,7 +265,13 @@ export default function SnippetsManagement() {
                         snippets.map((s, index) => (
                             <div key={s.id} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden group hover:shadow-md transition-all">
                                 <div className="aspect-video bg-slate-50 flex items-center justify-center p-6 border-b border-slate-100 relative">
-                                    <div className="scale-50 origin-center opacity-40 pointer-events-none w-full h-full overflow-hidden" dangerouslySetInnerHTML={{ __html: sanitizeHtml(s.htmlContent) }} />
+                                    {s.type === 'DYNAMIC' ? (
+                                        <div className="scale-75 origin-center pointer-events-none w-full h-full overflow-hidden flex items-center justify-center">
+                                            <DynamicSwiper snippet={s} singleRecordOnly={true} />
+                                        </div>
+                                    ) : (
+                                        <div className="scale-50 origin-center opacity-40 pointer-events-none w-full h-full overflow-hidden" dangerouslySetInnerHTML={{ __html: sanitizeHtml(s.htmlContent) }} />
+                                    )}
                                     <span className="absolute top-3 right-3 px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-white text-primary shadow-sm border border-indigo-100">{t(`categories.${s.category}`)}</span>
                                 </div>
                                 <div className="p-4 flex justify-between items-center bg-white">
@@ -269,7 +310,7 @@ export default function SnippetsManagement() {
                             </div>
                         </div>
 
-                        {type === 'DYNAMIC_SWIPER' && (
+                        {type === 'DYNAMIC' && (
                             <div className="bg-slate-50 border-b border-slate-100 flex px-6 sm:px-10 overflow-x-auto no-scrollbar">
                                 <button
                                     onClick={() => setActiveTab('design')}
@@ -298,29 +339,54 @@ export default function SnippetsManagement() {
                                     <div className="flex-1 space-y-2">
                                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">{t('generalDetails')}</label>
                                         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-1 gap-3">
-                                            <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder={`${t('snippetName')} (EN)`} className="w-full px-4 py-2 bg-white border border-slate-200 text-slate-900 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-slate-300 text-gray-400 outline-hidden" />
+                                            <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder={`${t('snippetName')} (EN)`} className="w-full px-4 py-2 bg-white border border-slate-200 text-slate-900 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-slate-300 outline-hidden" />
                                             <input type="text" value={nameAr} onChange={e => setNameAr(e.target.value)} placeholder={`${t('snippetName')} (AR)`} className="w-full px-4 py-2 bg-white border border-slate-200 text-slate-900 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all text-end placeholder:text-slate-300 text-gray-400 outline-hidden" dir="rtl" />
                                         </div>
                                     </div>
                                     <div className="w-full sm:w-48 xl:w-full shrink-0">
                                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">{t('category')}</label>
-                                        <select value={category} onChange={e => setCategory(e.target.value)} className="w-full px-4 py-2 bg-white border border-slate-200 text-slate-900 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all text-gray-400 outline-hidden">
+                                        <select value={category} onChange={e => setCategory(e.target.value)} className="w-full px-4 py-2 bg-white border border-slate-200 text-slate-900 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all outline-hidden">
                                             {['Intro', 'Content', 'Features', 'Contact', 'Footer', 'Header', 'CTA', 'Stats'].map(c => <option key={c} value={c}>{t(`categories.${c}`)}</option>)}
                                         </select>
                                     </div>
                                     <div className="w-full sm:w-48 xl:w-full shrink-0">
                                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">{t('snippetType')}</label>
-                                        <select value={type} onChange={e => setType(e.target.value as any)} className="w-full px-4 py-2 bg-white border border-slate-200 text-slate-900 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all text-gray-400 outline-hidden">
+                                        <select value={type} onChange={e => setType(e.target.value as any)} className="w-full px-4 py-2 bg-white border border-slate-200 text-slate-900 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all outline-hidden">
                                             <option value="STATIC">{t('static')}</option>
-                                            <option value="DYNAMIC_SWIPER">{t('dynamicSwiper')}</option>
+                                            <option value="DYNAMIC">{t('dynamicSwiper')}</option>
                                         </select>
                                     </div>
                                 </div>
-                                {type === 'DYNAMIC_SWIPER' && (
+                                {type === 'DYNAMIC' && (
+                                    <div className="mt-4 flex items-center gap-2 cursor-pointer group" onClick={() => setIsExternalApi(!isExternalApi)}>
+                                        <div className={`w-10 h-6 rounded-full relative transition-all ${isExternalApi ? 'bg-primary' : 'bg-slate-200'}`}>
+                                            <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${isExternalApi ? 'right-1' : 'left-1'}`} />
+                                        </div>
+                                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider group-hover:text-primary transition-colors">
+                                            {locale === 'ar' ? 'استخدام API خارجي' : 'External API'}
+                                        </span>
+                                    </div>
+                                )}
+                                {type === 'DYNAMIC' && !isExternalApi && (
+                                    <div className="mt-4 space-y-2">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">{t('contentType')}</label>
+                                        <select value={categoryId} onChange={e => setCategoryId(e.target.value)} className="w-full px-4 py-2 bg-white border border-slate-200 text-slate-900 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all outline-hidden">
+                                            <option value="">{t('selectCategory')}</option>
+                                            {categories.map(c => <option key={c.id} value={c.id}>{locale === 'ar' && c.nameAr ? c.nameAr : c.name}</option>)}
+                                        </select>
+                                    </div>
+                                )}
+                                {type === 'DYNAMIC' && (
                                     <div className="mt-8 space-y-4">
                                         <div className="p-4 bg-indigo-50 border border-indigo-100 rounded-2xl">
                                             <p className="text-[11px] text-indigo-700 font-medium leading-relaxed">
-                                                {locale === 'ar' ? 'سوف تظهر البيانات بشكل متكرر داخل البطاقة. استخدم {{field}} لوضع البيانات.' : 'Data will repeat within the card. Use {{field}} to place data.'}
+                                                {locale === 'ar'
+                                                    ? (!isExternalApi
+                                                        ? 'سوف يتم جلب البيانات من القسم المحدد. استخدم {{title}}, {{description}}, {{publishDate}}, {{image}}, {{images}}.'
+                                                        : 'سوف تظهر البيانات بشكل متكرر داخل البطاقة. استخدم {{field}} لوضع البيانات.')
+                                                    : (!isExternalApi
+                                                        ? 'Data will be fetched from the selected category. Use {{title}}, {{description}}, {{publishDate}}, {{image}}, {{images}}.'
+                                                        : 'Data will repeat within the card. Use {{field}} to place data.')}
                                             </p>
                                         </div>
                                     </div>
@@ -333,10 +399,10 @@ export default function SnippetsManagement() {
                             <div className="flex-1 bg-slate-100 p-4 sm:p-8 overflow-auto relative">
                                 {activeTab === 'design' ? (
                                     viewMode === 'code' ? (
-                                        <textarea value={htmlContent} onChange={e => setHtmlContent(e.target.value)} className="w-full h-full font-mono text-[13px] sm:text-sm p-4 sm:p-8 bg-slate-900 text-indigo-100 rounded-2xl sm:rounded-3xl outline-none min-h-[300px] text-gray-400 outline-hidden" />
+                                        <textarea value={htmlContent} onChange={e => setHtmlContent(e.target.value)} className="w-full h-full font-mono text-[13px] sm:text-sm p-4 sm:p-8 bg-slate-900 !text-slate-100 rounded-2xl sm:rounded-3xl outline-none min-h-[300px] outline-hidden" />
                                     ) : (
                                         <div className="max-w-4xl mx-auto min-h-full py-10 sm:py-20 relative">
-                                            {activeElement && previewRef.current?.contains(activeElement) && (
+                                            {activeElement && previewRef.current?.contains(activeElement) && type !== 'DYNAMIC' && (
                                                 <div className="fixed z-50 flex gap-1 bg-slate-900 text-white p-1 rounded-full shadow-2xl"
                                                     style={{ top: `${activeElement.getBoundingClientRect().top - 40}px`, left: `${activeElement.getBoundingClientRect().left + activeElement.getBoundingClientRect().width / 2}px`, transform: 'translateX(-50%)' }}>
                                                     <button onMouseDown={e => {
@@ -361,16 +427,23 @@ export default function SnippetsManagement() {
                                                     )}
                                                 </div>
                                             )}
-                                            <div ref={previewRef} onClick={handlePreviewClick} dangerouslySetInnerHTML={{ __html: sanitizeHtml(htmlContent) }} className="bg-white shadow-2xl min-h-[400px]" />
+                                            {type === 'DYNAMIC' ? (
+                                                <div className="bg-slate-50 border border-slate-200 shadow-inner rounded-[2rem] min-h-[400px] relative pointer-events-none opacity-95 overflow-hidden">
+                                                    <div className="absolute top-0 right-0 bg-primary/95 text-white text-[10px] uppercase tracking-widest font-bold px-4 py-2 rounded-bl-2xl z-50 shadow-sm backdrop-blur-sm shadow-primary/20 flex items-center gap-2"><Globe className="w-3 h-3" /> Live Preview</div>
+                                                    <DynamicSwiper snippet={{ id: 'preview', htmlContent, type, apiEndpoint, swiperConfig, categoryId, fieldMapping }} singleRecordOnly={true} />
+                                                </div>
+                                            ) : (
+                                                <div ref={previewRef} onClick={handlePreviewClick} dangerouslySetInnerHTML={{ __html: sanitizeHtml(htmlContent) }} className="bg-white shadow-2xl min-h-[400px]" />
+                                            )}
                                         </div>
                                     )
-                                ) : activeTab === 'swiper' ? (
+                                ) : (activeTab === 'swiper' && type === 'DYNAMIC') ? (
                                     <div className="max-w-2xl mx-auto py-10">
                                         <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100 space-y-6">
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                                 <div className="space-y-2">
                                                     <label className="text-xs font-bold text-slate-700">{t('swiperSpeed')}</label>
-                                                    <input type="number" value={swiperConfig.speed} onChange={e => setSwiperConfig({ ...swiperConfig, speed: parseInt(e.target.value) })} className="w-full px-4 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-primary/20 text-gray-400 outline-hidden" />
+                                                    <input type="number" value={swiperConfig.speed} onChange={e => setSwiperConfig({ ...swiperConfig, speed: parseInt(e.target.value) })} className="w-full px-4 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-primary/20 outline-hidden" />
                                                 </div>
                                                 <div className="flex gap-4">
                                                     <label className="flex items-center gap-2 cursor-pointer group">
@@ -393,11 +466,11 @@ export default function SnippetsManagement() {
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                                 <div className="space-y-2">
                                                     <label className="text-xs font-bold text-slate-700">{t('spaceBetween')}</label>
-                                                    <input type="number" value={swiperConfig.spaceBetween} onChange={e => setSwiperConfig({ ...swiperConfig, spaceBetween: parseInt(e.target.value) })} className="w-full px-4 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-primary/20 text-gray-400 outline-hidden" />
+                                                    <input type="number" value={swiperConfig.spaceBetween} onChange={e => setSwiperConfig({ ...swiperConfig, spaceBetween: parseInt(e.target.value) })} className="w-full px-4 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-primary/20 outline-hidden" />
                                                 </div>
                                                 <div className="space-y-2">
                                                     <label className="text-xs font-bold text-slate-700">{t('paginationType')}</label>
-                                                    <select value={swiperConfig.paginationType} onChange={e => setSwiperConfig({ ...swiperConfig, paginationType: e.target.value })} className="w-full px-4 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-primary/20 text-gray-400 outline-hidden">
+                                                    <select value={swiperConfig.paginationType} onChange={e => setSwiperConfig({ ...swiperConfig, paginationType: e.target.value })} className="w-full px-4 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-primary/20 outline-hidden">
                                                         <option value="bullets">{t('paginationTypes.bullets')}</option>
                                                         <option value="fraction">{t('paginationTypes.fraction')}</option>
                                                         <option value="progressbar">{t('paginationTypes.progressbar')}</option>
@@ -426,27 +499,27 @@ export default function SnippetsManagement() {
                                                 <div className="grid grid-cols-3 gap-4">
                                                     <div className="space-y-2">
                                                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('desktop')}</label>
-                                                        <input type="number" value={swiperConfig.slidesPerViewDesktop} onChange={e => setSwiperConfig({ ...swiperConfig, slidesPerViewDesktop: parseInt(e.target.value) })} className="w-full px-4 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-primary/20 text-gray-400 outline-hidden" />
+                                                        <input type="number" value={swiperConfig.slidesPerViewDesktop} onChange={e => setSwiperConfig({ ...swiperConfig, slidesPerViewDesktop: parseInt(e.target.value) })} className="w-full px-4 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-primary/20 outline-hidden" />
                                                     </div>
                                                     <div className="space-y-2">
                                                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('tablet')}</label>
-                                                        <input type="number" value={swiperConfig.slidesPerViewTablet} onChange={e => setSwiperConfig({ ...swiperConfig, slidesPerViewTablet: parseInt(e.target.value) })} className="w-full px-4 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-primary/20 text-gray-400 outline-hidden" />
+                                                        <input type="number" value={swiperConfig.slidesPerViewTablet} onChange={e => setSwiperConfig({ ...swiperConfig, slidesPerViewTablet: parseInt(e.target.value) })} className="w-full px-4 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-primary/20 outline-hidden" />
                                                     </div>
                                                     <div className="space-y-2">
                                                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('mobile')}</label>
-                                                        <input type="number" value={swiperConfig.slidesPerViewMobile} onChange={e => setSwiperConfig({ ...swiperConfig, slidesPerViewMobile: parseInt(e.target.value) })} className="w-full px-4 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-primary/20 text-gray-400 outline-hidden" />
+                                                        <input type="number" value={swiperConfig.slidesPerViewMobile} onChange={e => setSwiperConfig({ ...swiperConfig, slidesPerViewMobile: parseInt(e.target.value) })} className="w-full px-4 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-primary/20 outline-hidden" />
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                ) : (
+                                ) : (activeTab === 'api' && type === 'DYNAMIC' && isExternalApi) ? (
                                     <div className="max-w-4xl mx-auto py-10 space-y-8">
                                         <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100 space-y-6">
                                             <div className="space-y-2">
                                                 <label className="text-xs font-bold text-slate-700">{t('endpointUrl')}</label>
                                                 <div className="flex gap-2">
-                                                    <input type="text" value={apiEndpoint} onChange={e => setApiEndpoint(e.target.value)} placeholder="https://api.example.com/items" className="flex-1 px-4 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-primary/20 text-gray-400 outline-hidden" />
+                                                    <input type="text" value={apiEndpoint} onChange={e => setApiEndpoint(e.target.value)} placeholder="https://api.example.com/items" className="flex-1 px-4 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-primary/20 outline-hidden" />
                                                     <button
                                                         onClick={async () => {
                                                             if (!apiEndpoint) return toast.error(commonT('error'));
@@ -472,7 +545,7 @@ export default function SnippetsManagement() {
                                                 <div className="space-y-4 pt-4 border-t border-slate-100">
                                                     <div className="flex justify-between items-center">
                                                         <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">{t('mapping')}</h3>
-                                                        <button onClick={() => setFieldMapping([...fieldMapping, { placeholder: '', apiField: '' }])} className="text-primary font-bold text-sm flex items-center gap-1 hover:underline cursor-pointer"><Plus className="w-4 h-4" /> Add Field</button>
+                                                        <button onClick={() => setFieldMapping([...fieldMapping, { placeholder: '', apiField: '' }])} className="text-primary font-bold text-sm flex items-center gap-1 hover:underline cursor-pointer"><Plus className="w-4 h-4" /> {t('addField')}</button>
                                                     </div>
                                                     <div className="grid grid-cols-1 gap-3">
                                                         {fieldMapping.map((m, i) => (
@@ -483,7 +556,7 @@ export default function SnippetsManagement() {
                                                                         const newMapping = [...fieldMapping];
                                                                         newMapping[i].placeholder = e.target.value;
                                                                         setFieldMapping(newMapping);
-                                                                    }} className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-sm text-gray-400 outline-hidden" />
+                                                                    }} className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-sm outline-hidden" />
                                                                 </div>
                                                                 <div className="flex-1 space-y-1">
                                                                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('apiField')}</label>
@@ -491,8 +564,8 @@ export default function SnippetsManagement() {
                                                                         const newMapping = [...fieldMapping];
                                                                         newMapping[i].apiField = e.target.value;
                                                                         setFieldMapping(newMapping);
-                                                                    }} className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-sm text-gray-400 outline-hidden">
-                                                                        <option value="">Select Field</option>
+                                                                    }} className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-sm outline-hidden">
+                                                                        <option value="">{t('selectField')}</option>
                                                                         {Object.keys(sampleData).map(k => <option key={k} value={k}>{k}</option>)}
                                                                     </select>
                                                                 </div>
@@ -503,7 +576,7 @@ export default function SnippetsManagement() {
                                                     <div className="mt-4 p-4 bg-slate-900 rounded-2xl overflow-hidden">
                                                         <div className="flex items-center gap-2 mb-2">
                                                             <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Sample Data Structure</span>
+                                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">{t('sampleDataStructure')}</span>
                                                         </div>
                                                         <pre className="text-[11px] text-indigo-200 font-mono overflow-auto max-h-40">{JSON.stringify(sampleData, null, 2)}</pre>
                                                     </div>
@@ -511,7 +584,37 @@ export default function SnippetsManagement() {
                                             )}
                                         </div>
                                     </div>
-                                )}
+                                ) : (activeTab === 'api' && type === 'DYNAMIC' && !isExternalApi) ? (
+                                    <div className="max-w-2xl mx-auto py-10">
+                                        <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100 space-y-6">
+                                            <div className="p-4 bg-indigo-50 border border-indigo-100 rounded-2xl">
+                                                <h3 className="text-sm font-bold text-indigo-900 mb-2 flex items-center gap-2">
+                                                    <Layers className="w-4 h-4" /> {t('internalDynamic')}
+                                                </h3>
+                                                <p className="text-xs text-indigo-700 leading-relaxed">
+                                                    {locale === 'ar'
+                                                        ? 'للمحتوى الداخلي، يتم ربط المتغيرات تلقائياً. يمكنك استخدام الحقول التالية في تصميمك:'
+                                                        : 'For internal content, variables are mapped automatically. You can use the following fields in your design:'}
+                                                </p>
+                                                <ul className="mt-3 space-y-1">
+                                                    <li className="text-xs font-mono text-indigo-600 font-bold">{"{{title}}"}</li>
+                                                    <li className="text-xs font-mono text-indigo-600 font-bold">{"{{description}}"}</li>
+                                                    <li className="text-xs font-mono text-indigo-600 font-bold">{"{{image}}"}</li>
+                                                    <li className="text-xs font-mono text-indigo-600 font-bold">{"{{images}}"}</li>
+                                                    <li className="text-xs font-mono text-indigo-600 font-bold">{"{{publishDate}}"}</li>
+                                                </ul>
+                                            </div>
+                                            <div className="space-y-4">
+                                                <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">{t('mapping')}</h3>
+                                                <p className="text-xs text-slate-500 italic">
+                                                    {locale === 'ar'
+                                                        ? 'لا حاجة لربط يدوي للمحتوى الداخلي.'
+                                                        : 'No manual mapping needed for internal content.'}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ) : null}
                             </div>
                         </div>
 

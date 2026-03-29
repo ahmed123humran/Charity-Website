@@ -105,25 +105,59 @@ export const updateMenuSchema = z.object({
 });
 
 export const createSnippetSchema = z.object({
-    name: z.string().min(1),
+    name: z.string().min(1, { message: 'snippetNameRequired' }),
     nameAr: z.string().optional(),
     category: z.string().min(1),
     htmlContent: z.string().min(1),
     thumbnail: z.string().optional(),
-    type: z.enum(['STATIC', 'DYNAMIC_SWIPER']).optional(),
-    apiEndpoint: z.string().optional().or(z.literal("")),
+    type: z.enum(['STATIC', 'DYNAMIC']).optional(),
+    apiEndpoint: z.string().optional().nullable().or(z.literal("")),
     swiperConfig: z.any().optional(),
     fieldMapping: z.any().optional(),
+    categoryId: z.string().optional(),
 });
 
 export const updateSnippetSchema = z.object({
-    name: z.string().min(1).optional(),
+    name: z.string().min(1, { message: 'snippetNameRequired' }).optional(),
     nameAr: z.string().optional(),
     category: z.string().min(1).optional(),
     htmlContent: z.string().min(1).optional(),
     thumbnail: z.string().optional(),
-    type: z.enum(['STATIC', 'DYNAMIC_SWIPER']).optional(),
-    apiEndpoint: z.string().optional().or(z.literal("")),
+    type: z.enum(['STATIC', 'DYNAMIC']).optional(),
+    apiEndpoint: z.string().optional().nullable().or(z.literal("")),
     swiperConfig: z.any().optional(),
     fieldMapping: z.any().optional(),
+    categoryId: z.string().optional(),
+});
+
+export const createContentCategorySchema = z.object({
+    name: z.string().min(1),
+    nameAr: z.string().optional(),
+});
+
+export const updateContentCategorySchema = z.object({
+    name: z.string().min(1).optional(),
+    nameAr: z.string().optional(),
+});
+
+export const createDynamicContentSchema = z.object({
+    title: z.string().min(1),
+    titleAr: z.string().optional(),
+    description: z.string().optional(),
+    descriptionAr: z.string().optional(),
+    image: z.string().optional(),
+    images: z.array(z.string()).optional(),
+    categoryId: z.string().min(1),
+    publishDate: z.coerce.date().optional(),
+});
+
+export const updateDynamicContentSchema = z.object({
+    title: z.string().min(1).optional(),
+    titleAr: z.string().optional(),
+    description: z.string().optional(),
+    descriptionAr: z.string().optional(),
+    image: z.string().optional(),
+    images: z.array(z.string()).optional(),
+    categoryId: z.string().optional(),
+    publishDate: z.coerce.date().optional(),
 });

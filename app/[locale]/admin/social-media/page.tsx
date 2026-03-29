@@ -245,7 +245,7 @@ export default function SocialMediaManagement() {
                                             type="file"
                                             accept="image/*"
                                             onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0])}
-                                            className="absolute inset-0 opacity-0 cursor-pointer text-gray-400 outline-hidden"
+                                            className="absolute inset-0 opacity-0 cursor-pointer outline-hidden"
                                         />
                                     </div>
                                     <div className="text-[10px] text-center mt-2 font-bold text-slate-400 uppercase tracking-widest">{t('socialIcon')}</div>
@@ -255,7 +255,7 @@ export default function SocialMediaManagement() {
                                         type="text"
                                         value={image}
                                         onChange={(e) => setImage(e.target.value)}
-                                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-primary/20 transition-all outline-hidden text-gray-400"
+                                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-primary/20 transition-all outline-hidden"
                                         placeholder="Icon URL (Optional)"
                                     />
                                 </div>
@@ -264,11 +264,11 @@ export default function SocialMediaManagement() {
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">{t('socialName')} (EN)</label>
-                                    <input type="text" value={nameEn} onChange={e => setNameEn(e.target.value)} required className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 transition-all outline-hidden text-gray-400" placeholder="e.g. Facebook" />
+                                    <input type="text" value={nameEn} onChange={e => setNameEn(e.target.value)} required className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 transition-all outline-hidden" placeholder="e.g. Facebook" />
                                 </div>
                                 <div>
                                     <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 text-end">{t('socialName')} (AR)</label>
-                                    <input type="text" value={nameAr} onChange={e => setNameAr(e.target.value)} required className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 transition-all outline-hidden rtl text-gray-400" placeholder="مثال: فيسبوك" />
+                                    <input type="text" value={nameAr} onChange={e => setNameAr(e.target.value)} required className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 transition-all outline-hidden rtl" placeholder="مثال: فيسبوك" />
                                 </div>
                             </div>
 
@@ -279,7 +279,7 @@ export default function SocialMediaManagement() {
                                         <Share2 className="w-3 h-3" />
                                     </span>
                                 </label>
-                                <input type="text" value={url} onChange={e => setUrl(e.target.value)} required className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 transition-all outline-hidden text-gray-400" placeholder="URL or WhatsApp Number" />
+                                <input type="text" value={url} onChange={e => setUrl(e.target.value)} required className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 transition-all outline-hidden" placeholder="URL or WhatsApp Number" />
                                 {/^\+?\d+$/.test(url.trim()) && <p className="text-[10px] text-green-600 mt-1 font-bold italic">Auto-converting to WhatsApp link</p>}
                             </div>
 

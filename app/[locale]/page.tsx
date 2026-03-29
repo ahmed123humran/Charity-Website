@@ -73,7 +73,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           contentToRender = (
             <div className="flex flex-col">
               {localizedContent.map((item: any) => (
-                item.type === 'DYNAMIC_SWIPER' ? (
+                (item.type === 'DYNAMIC') ? (
                   <DynamicSwiper key={item.id} snippet={item} />
                 ) : (
                   <div key={item.id} dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.htmlContent) }} />
@@ -89,7 +89,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         contentToRender = (
           <div className="flex flex-col">
             {parsed.map((item: any) => (
-              item.type === 'DYNAMIC_SWIPER' ? (
+              (item.type === 'DYNAMIC') ? (
                 <DynamicSwiper key={item.id} snippet={item} />
               ) : (
                 <div key={item.id} dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.htmlContent) }} />

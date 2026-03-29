@@ -102,21 +102,48 @@ model Menu {
 }
 
 model Snippet {
-  id          String      @id @default(cuid())
-  name        String
-  category    String
-  htmlContent String
-  thumbnail   String?
-  nameAr      String?
-  type        SnippetType @default(STATIC)
-  apiEndpoint String?
-  swiperConfig Json?
-  fieldMapping Json?
+  id            String          @id @default(cuid())
+  name          String
+  category      String
+  htmlContent   String
+  thumbnail     String?
+  nameAr        String?
+  type          SnippetType     @default(STATIC)
+  apiEndpoint   String?
+  swiperConfig  Json?
+  fieldMapping  Json?
+  categoryId    String?
+  contentCategory ContentCategory? @relation(fields: [categoryId], references: [id])
+}
+
+model ContentCategory {
+  id        String           @id @default(cuid())
+  name      String
+  nameAr    String?
+  contents  DynamicContent[]
+  snippets  Snippet[]
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+}
+
+model DynamicContent {
+  id            String          @id @default(cuid())
+  title         String
+  titleAr       String?
+  description   String?
+  descriptionAr String?
+  image         String?
+  images        String[]        @default([])
+  categoryId    String
+  publishDate   DateTime?       @default(now())
+  category      ContentCategory @relation(fields: [categoryId], references: [id])
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
 }
 
 enum SnippetType {
   STATIC
-  DYNAMIC_SWIPER
+  DYNAMIC
 }
 
 enum Role {

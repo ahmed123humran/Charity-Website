@@ -17,6 +17,7 @@ import toast from 'react-hot-toast';
 import EditorTour from '@/app/components/EditorTour';
 import { sanitizeHtml } from '@/app/utils/sanitize';
 import DynamicSwiper from '@/app/components/DynamicSwiper';
+import ColorInput from '@/app/components/ColorInput';
 
 interface Snippet {
     id: string;
@@ -29,6 +30,7 @@ interface Snippet {
     apiEndpoint?: string | null;
     swiperConfig?: any | null;
     fieldMapping?: any | null;
+    categoryId?: string | null;
 }
 
 interface Page {
@@ -47,6 +49,7 @@ interface DroppedSnippet {
     apiEndpoint?: string | null;
     swiperConfig?: any | null;
     fieldMapping?: any | null;
+    categoryId?: string | null;
 }
 
 // Memoized Snippet Component to prevent unnecessary re-renders that kill focus
@@ -63,7 +66,7 @@ const StableSnippet = memo(({
     onContentClick: (e: React.MouseEvent, id: string) => void,
     isBeingEdited: boolean
 }) => {
-    if (item.type === 'DYNAMIC_SWIPER') {
+    if (item.type === 'DYNAMIC') {
         return (
             <div
                 id={`snippet-content-${item.id}`}
@@ -262,7 +265,8 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
             type: snippet.type,
             apiEndpoint: snippet.apiEndpoint,
             swiperConfig: snippet.swiperConfig,
-            fieldMapping: snippet.fieldMapping
+            fieldMapping: snippet.fieldMapping,
+            categoryId: (snippet as any).categoryId
         };
         const dropIndex = index !== undefined ? index : (dragOverIndex !== null ? dragOverIndex : droppedSnippets.length);
         setDroppedSnippets(prev => {
@@ -286,7 +290,7 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
 
     const commitChanges = (id: string) => {
         const snippet = droppedSnippets.find(s => s.id === id);
-        if (snippet?.type === 'DYNAMIC_SWIPER') return;
+        if (snippet?.type === 'DYNAMIC') return;
 
         const wrapper = document.getElementById(`snippet-content-${id}`);
         if (wrapper) {
@@ -308,7 +312,9 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
 
     const rgbToHex = (color: string) => {
         if (!color || color === 'transparent') return '#ffffff';
-        if (color.startsWith('#')) return color;
+        if (color.startsWith('#')) {
+            return color.length > 7 ? color.substring(0, 7) : color;
+        }
         const rgb = color.match(/\d+/g);
         if (!rgb || rgb.length < 3) return '#ffffff';
         const hex = (x: string) => {
@@ -666,7 +672,7 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
 
     const bgColors = [
         '#EF4444', '#1E293B', '#F59E0B', '#0EA5E9',
-        '#8B5CF6', '#10B981', '#3182CE', '#000000'
+        '#8B5CF6', '#10B981', '#3182CE', '#000000', 'transparent'
     ];
 
     return (
@@ -892,23 +898,12 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                             {(!['img', 'video'].includes(activeTagName)) && (
                                 <div className="space-y-3">
                                     <span className="text-[10px] font-bold text-slate-500 uppercase px-1">{editorT('textColor')}</span>
-                                    <div className="grid grid-cols-4 gap-2">
-                                        {swatchColors.map(c => (
-                                            <button key={c} onMouseDown={(e) => { e.preventDefault(); applyStyle('foreColor', c); }} className="w-8 h-8 rounded-full border-2 border-white shadow-md hover:scale-110 transition-transform cursor-pointer" style={{ backgroundColor: c }} />
-                                        ))}
-                                        {/* مدخل اللون الديناميكي مع تدرج */}
-                                        <div className="relative w-8 h-8 rounded-full shadow-md overflow-hidden  border-2 border-white">
-                                            {/* التدرج كخلفية */}
-                                            <div className="absolute inset-0 rounded-full"
-                                                style={{ background: 'linear-gradient(to right, red, orange, yellow, green, cyan, blue, violet)' }} />
-                                            {/* input شفاف فوق التدرج */}
-                                            <input
-                                                type="color"
-                                                value={activeStyles.color || '#ff0000'}
-                                                onChange={(e) => applyStyleDebounced('foreColor', e.target.value)}
-                                                className="w-full h-full opacity-0 cursor-pointer text-gray-400 outline-hidden"
-                                            />
-                                        </div>
+                                    <div className="space-y-3">
+                                        <ColorInput
+                                            value={activeStyles.color}
+                                            onChange={(val) => applyStyleDebounced('foreColor', val)}
+                                            presets={swatchColors}
+                                        />
                                     </div>
                                 </div>
                             )}
@@ -919,11 +914,12 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                                 <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2"><PaintBucket className="w-3 h-3" /> {editorT('background')}</div>
                                 <div className="space-y-3">
                                     <span className="text-[10px] font-bold text-slate-500 uppercase px-1">{editorT('color')}</span>
-                                    <div className="grid grid-cols-4 gap-2">
-                                        {bgColors.map(c => (
-                                            <button key={c} onMouseDown={(e) => { e.preventDefault(); applyStyle('backgroundColor', c); }} className="w-8 h-8 rounded-full border-2 border-white shadow-md hover:scale-110 transition-transform cursor-pointer" style={{ backgroundColor: c }} />
-                                        ))}
-                                        <button onMouseDown={(e) => { e.preventDefault(); applyStyle('backgroundColor', 'transparent'); }} className="w-8 h-8 rounded-full bg-white border-2 border-slate-100 shadow-md flex items-center justify-center relative cursor-pointer"><div className="absolute w-full h-[1px] bg-red-400 rotate-45" /></button>
+                                    <div className="space-y-3">
+                                        <ColorInput
+                                            value={activeStyles.backgroundColor === 'transparent' ? '#ffffff' : activeStyles.backgroundColor}
+                                            onChange={(val) => applyStyleDebounced('backgroundColor', val)}
+                                            presets={bgColors}
+                                        />
                                     </div>
                                 </div>
                             </div>
