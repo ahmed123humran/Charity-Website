@@ -54,7 +54,7 @@ export async function PUT(request: NextRequest, { params }: Props) {
         const validation = updateFooterSchema.safeParse(body);
 
         if (!validation.success) {
-            return NextResponse.json({ message: validation.error.message }, { status: 400 });
+            return NextResponse.json(validation.error.issues, { status: 400 });
         }
 
         const footer = await prisma.footer.findUnique({ where: { id } });

@@ -41,9 +41,9 @@ export default function SearchReplaceTool() {
                 }
             } else {
                 const err = await res.json();
-                try {
-                    toast.error(commonT(err.message) || err.message || commonT('error'));
-                } catch (e) {
+                if (Array.isArray(err)) {
+                    err.forEach((e: any) => toast.error(t(e.message) || e.message));
+                } else {
                     toast.error(err.message || commonT('error'));
                 }
             }
@@ -73,9 +73,9 @@ export default function SearchReplaceTool() {
                 setReplaceText('');
             } else {
                 const err = await res.json();
-                try {
-                    toast.error(commonT(err.message) || err.message || commonT('error'));
-                } catch (e) {
+                if (Array.isArray(err)) {
+                    err.forEach((e: any) => toast.error(t(e.message) || e.message));
+                } else {
                     toast.error(err.message || commonT('error'));
                 }
             }

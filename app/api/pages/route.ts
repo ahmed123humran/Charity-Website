@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
         const body = (await request.json()) as CreatePageDto;
         const validation = createPageSchema.safeParse(body);
         if (!validation.success) {
-            return NextResponse.json({ message: validation.error.message }, { status: 400 });
+            return NextResponse.json(validation.error.issues, { status: 400 });
         }
 
         const { url, websiteId, title, content, userId } = validation.data;

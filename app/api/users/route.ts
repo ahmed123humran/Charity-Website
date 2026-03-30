@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
         const body = await request.json();
         const validation = createUserSchema.safeParse(body);
         if (!validation.success) {
-            return NextResponse.json({ message: validation.error.issues[0].message }, { status: 400 });
+            return NextResponse.json(validation.error.issues, { status: 400 });
         }
 
         const { email, phone } = validation.data;

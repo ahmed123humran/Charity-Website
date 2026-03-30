@@ -2,14 +2,20 @@
 
 import React, { useEffect, useState } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Autoplay, Navigation, Pagination } from 'swiper/modules';
+import { Autoplay, Navigation, Pagination, EffectFade, EffectCube, EffectCoverflow, EffectFlip, EffectCards } from 'swiper/modules';
 import { sanitizeHtml } from '@/app/utils/sanitize';
 
 // Import Swiper styles
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
+import 'swiper/css/effect-fade';
+import 'swiper/css/effect-cube';
+import 'swiper/css/effect-coverflow';
+import 'swiper/css/effect-flip';
+import 'swiper/css/effect-cards';
 import { useLocale } from 'next-intl';
+import { ChevronLeft, ChevronRight, ArrowLeft, ArrowRight, MoveLeft, MoveRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 
 interface Props {
     snippet: {
@@ -72,8 +78,28 @@ export default function DynamicSwiper({ snippet, singleRecordOnly = false }: { s
         fetchData();
     }, [apiEndpoint, type, categoryId]);
 
-    if (loading) return <div className="py-10 text-center text-slate-400">Loading dynamic content...</div>;
-    if (error) return <div className="py-10 text-center text-red-400">Error: {error}</div>;
+    if (loading) {
+        return (
+            <section className="py-20">
+                <div className="container mx-auto px-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {[1, 2, 3].map(i => (
+                            <div key={i} className="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-800 animate-pulse">
+                                <div className="w-12 h-12 bg-slate-200 dark:bg-slate-700 rounded-2xl mb-6"></div>
+                                <div className="h-6 bg-slate-200 dark:bg-slate-700 rounded-lg w-3/4 mb-4"></div>
+                                <div className="space-y-2">
+                                    <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded-lg w-full"></div>
+                                    <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded-lg w-5/6"></div>
+                                </div>
+                                <div className="mt-8 h-4 bg-slate-200 dark:bg-slate-700 rounded-lg w-24"></div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+        );
+    }
+    if (error) return <div className="py-20 text-center text-red-400">Error: {error}</div>;
     if (data.length === 0) return null;
 
     const renderSlide = (item: any) => {
@@ -100,6 +126,16 @@ export default function DynamicSwiper({ snippet, singleRecordOnly = false }: { s
     };
 
     const config = swiperConfig || {};
+
+    const NavIcon = ({ type, side }: { type: string, side: 'left' | 'right' }) => {
+        const isRtl = locale === 'ar';
+        const effectiveSide = isRtl ? (side === 'left' ? 'right' : 'left') : side;
+
+        if (type === 'arrow') return effectiveSide === 'left' ? <ArrowLeft size={20} /> : <ArrowRight size={20} />;
+        if (type === 'move') return effectiveSide === 'left' ? <MoveLeft size={20} /> : <MoveRight size={20} />;
+        if (type === 'double') return effectiveSide === 'left' ? <ChevronsLeft size={20} /> : <ChevronsRight size={20} />;
+        return effectiveSide === 'left' ? <ChevronLeft size={24} /> : <ChevronRight size={24} />;
+    };
     const sliedesPerView = {
         desktop: config.slidesPerViewDesktop || 3,
         tablet: config.slidesPerViewTablet || 2,
@@ -115,105 +151,224 @@ export default function DynamicSwiper({ snippet, singleRecordOnly = false }: { s
     }
 
     return (
-        <section className="py-20">
+        <section className="py-20 overflow-hidden">
             <div className="container mx-auto px-4">
-                <Swiper
-                    modules={[Navigation, Pagination, Autoplay]}
-                    spaceBetween={config.spaceBetween ?? 20}
-                    slidesPerView={sliedesPerView.mobile}
-                    breakpoints={{
-                        640: { slidesPerView: sliedesPerView.tablet },
-                        1024: { slidesPerView: sliedesPerView.desktop },
+                <div
+                    className={`relative p-2 ${config.navPosition === 'outside' ? 'md:px-16' : ''} ${config.paginationPosition === 'outside' ? 'pb-16' : ''} nav-${config.navStyle || 'default'}`}
+                    style={{
+                        ['--nav-offset' as any]: `${config.navOffset ?? 10}px`,
+                        ['--pagination-offset' as any]: `${config.paginationOffset ?? 20}px`
                     }}
-                    speed={config.speed || 500}
-                    loop={config.loop !== false}
-                    autoplay={config.autoplay ? { delay: 3000, disableOnInteraction: false } : false}
-                    navigation={config.showNavigation !== false}
-                    pagination={config.showPagination !== false ? {
-                        clickable: true,
-                        type: config.paginationType || 'bullets'
-                    } : false}
-                    className="mySwiper !pb-12"
                 >
-                    {data.map((item, index) => (
-                        <SwiperSlide key={index}>
-                            {renderSlide(item)}
-                        </SwiperSlide>
-                    ))}
-                </Swiper>
+                    <Swiper
+                        modules={[Navigation, Pagination, Autoplay, EffectFade, EffectCube, EffectCoverflow, EffectFlip, EffectCards]}
+                        effect={config.effect || 'slide'}
+                        spaceBetween={config.spaceBetween ?? 20}
+                        slidesPerView={sliedesPerView.mobile}
+                        breakpoints={{
+                            640: { slidesPerView: sliedesPerView.tablet },
+                            1024: { slidesPerView: sliedesPerView.desktop },
+                        }}
+                        speed={config.speed || 500}
+                        loop={config.loop !== false}
+                        autoplay={config.autoplay ? {
+                            delay: config.autoplayDelay || 3000,
+                            disableOnInteraction: false,
+                            pauseOnMouseEnter: config.pauseOnHover ?? true
+                        } : false}
+                        navigation={{
+                            nextEl: `.swiper-button-next-${snippet.id}`,
+                            prevEl: `.swiper-button-prev-${snippet.id}`,
+                        }}
+                        pagination={config.showPagination !== false ? {
+                            clickable: true,
+                            type: config.paginationType || 'bullets',
+                            el: `.swiper-pagination-${snippet.id}`
+                        } : false}
+                        className="mySwiper !static"
+                    >
+                        {data.map((item, index) => (
+                            <SwiperSlide key={index}>
+                                {renderSlide(item)}
+                            </SwiperSlide>
+                        ))}
+                    </Swiper>
 
-                <style jsx global>{`
-                .swiper-button-next, .swiper-button-prev {
-                    background: white;
-                    width: 44px;
-                    height: 44px;
-                    border-radius: 12px;
-                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-                    transition: all 0.3s ease;
-                    color: var(--primary-color);
-                }
-                .swiper-button-next:after, .swiper-button-prev:after {
-                    font-size: 18px !important;
-                    font-weight: bold;
-                }
-                .swiper-button-next:hover, .swiper-button-prev:hover {
-                    background-color: var(--primary-color);
-                    color: white;
-                    transform: scale(1.05);
-                }
-                /* Adjust for Swiper default positioning if needed */
-                .swiper-button-next { right: 10px; }
-                .swiper-button-prev { left: 10px; }
-                
-                [dir='rtl'] .swiper-button-next { 
-                    right: auto;
-                    left: 10px;
-                }
-                [dir='rtl'] .swiper-button-prev {
-                    left: auto;
-                    right: 10px;
-                }
-                [dir='rtl'] .swiper-button-next:hover, [dir='rtl'] .swiper-button-prev:hover {
-                    transform: scale(1.05);
-                }
+                    {config.showNavigation !== false && (
+                        <>
+                            <div className={`swiper-button-prev swiper-button-prev-${snippet.id} !absolute !z-10 flex items-center justify-center transition-all`}>
+                                <NavIcon type={config.navIcon} side="left" />
+                            </div>
+                            <div className={`swiper-button-next swiper-button-next-${snippet.id} !absolute !z-10 flex items-center justify-center transition-all`}>
+                                <NavIcon type={config.navIcon} side="right" />
+                            </div>
+                        </>
+                    )}
 
+                    {config.showPagination !== false && (
+                        <div className={`swiper-pagination swiper-pagination-${snippet.id} !absolute !z-10`}></div>
+                    )}
+
+                    <style jsx global>{`
+                    .nav-${config.navStyle || 'default'} {
+                        --p-offset: var(--pagination-offset);
+                        --n-offset: var(--nav-offset);
+                    }
+                    
+                    /* Navigation Positions */
+                    .swiper-button-next, .swiper-button-prev {
+                        top: 50% !important;
+                        transform: translateY(-50%) !important;
+                        margin: 0 !important;
+                        background-image: none !important;
+                    }
+                    .swiper-button-next:after, .swiper-button-prev:after {
+                        display: none !important;
+                    }
+                    
+                    .swiper-button-prev { 
+                        left: ${config.navPosition === 'outside' ? 'calc(-1 * var(--n-offset))' : 'var(--n-offset)'} !important;
+                    }
+                    .swiper-button-next { 
+                        right: ${config.navPosition === 'outside' ? 'calc(-1 * var(--n-offset))' : 'var(--n-offset)'} !important;
+                    }
+
+                    [dir='rtl'] .swiper-button-prev {
+                        left: auto !important;
+                        right: ${config.navPosition === 'outside' ? 'calc(-1 * var(--n-offset))' : 'var(--n-offset)'} !important;
+                    }
+                    [dir='rtl'] .swiper-button-next {
+                        right: auto !important;
+                        left: ${config.navPosition === 'outside' ? 'calc(-1 * var(--n-offset))' : 'var(--n-offset)'} !important;
+                    }
+
+                    .swiper-pagination {
+                        bottom: ${config.paginationPosition === 'outside' ? 'calc(-1 * var(--p-offset))' : 'var(--p-offset)'} !important;
+                        left: 50% !important;
+                        transform: translateX(-50%) !important;
+                        width: auto !important;
+                    }
+
+                    /* Navigation Styles */
+                    .swiper-button-next, .swiper-button-prev {
+                        transition: all 0.3s ease !important;
+                        color: var(--primary-color) !important;
+                    }
+
+                    /* Default Style */
+                    .nav-default .swiper-button-next, .nav-default .swiper-button-prev {
+                        background: white !important;
+                        width: 44px !important;
+                        height: 44px !important;
+                        border-radius: 12px !important;
+                        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+                    }
+
+                    /* Minimal Style */
+                    .nav-minimal .swiper-button-next, .nav-minimal .swiper-button-prev {
+                        background: transparent !important;
+                    }
+
+                    /* Rounded Style */
+                    .nav-rounded .swiper-button-next, .nav-rounded .swiper-button-prev {
+                        background: white !important;
+                        width: 50px !important;
+                        height: 50px !important;
+                        border-radius: 99px !important;
+                        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08) !important;
+                    }
+
+                    /* Glass Style */
+                    .nav-glass .swiper-button-next, .nav-glass .swiper-button-prev {
+                        background: rgba(255, 255, 255, 0.2) !important;
+                        backdrop-filter: blur(8px) !important;
+                        width: 44px !important;
+                        height: 44px !important;
+                        border-radius: 12px !important;
+                        border: 1px solid rgba(255, 255, 255, 0.3) !important;
+                    }
+
+                    /* Filled Style */
+                    .nav-filled .swiper-button-next, .nav-filled .swiper-button-prev {
+                        background: var(--primary-color) !important;
+                        color: white !important;
+                        width: 44px !important;
+                        height: 44px !important;
+                        border-radius: 12px !important;
+                        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+                    }
+
+                    /* Outline Style */
+                    .nav-outline .swiper-button-next, .nav-outline .swiper-button-prev {
+                        background: white !important;
+                        border: 2px solid var(--primary-color) !important;
+                        color: var(--primary-color) !important;
+                        width: 44px !important;
+                        height: 44px !important;
+                        border-radius: 12px !important;
+                    }
+
+                    /* Soft Style */
+                    .nav-soft .swiper-button-next, .nav-soft .swiper-button-prev {
+                        background: #eff6ff !important;
+                        color: var(--primary-color) !important;
+                        width: 44px !important;
+                        height: 44px !important;
+                        border-radius: 12px !important;
+                    }
+
+                    .swiper-button-next:after, .swiper-button-prev:after {
+                        display: none !important;
+                        background-image: none !important;
+                    }
+                    
+                    .swiper-button-next:hover, .swiper-button-prev:hover {
+                        transform: translateY(-50%) scale(1.1) !important;
+                        ${config.navStyle === 'filled' ? 'filter: brightness(1.1) !important;' : 'background-color: var(--primary-color) !important; color: white !important;'}
+                    }
+                    
+                    /* Pagination Styles */
                     .swiper-pagination-bullet {
-                        background: var(--primary-color);
-                        opacity: 0.2;
-                        transition: all 0.3s ease;
-                        width: 10px;
-                        height: 10px;
+                        background: var(--primary-color) !important;
+                        opacity: 0.2 !important;
+                        transition: all 0.3s ease !important;
+                        width: 10px !important;
+                        height: 10px !important;
                     }
                     .swiper-pagination-bullet-active {
-                        background: var(--primary-color);
-                        opacity: 1;
-                        width: 28px;
-                        border-radius: 5px;
+                        background: var(--primary-color) !important;
+                        opacity: 1 !important;
+                        width: 28px !important;
+                        border-radius: 5px !important;
                     }
                     .swiper-pagination-fraction {
-                        color: var(--primary-color);
-                        font-weight: 800;
-                        font-size: 14px;
-                        background: white;
-                        padding: 6px 16px;
-                        border-radius: 12px;
-                        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-                        display: inline-block;
+                        color: var(--primary-color) !important;
+                        font-weight: 800 !important;
+                        font-size: 14px !important;
+                        background: white !important;
+                        padding: 6px 16px !important;
+                        border-radius: 12px !important;
+                        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05) !important;
+                        display: inline-block !important;
                         width: auto !important;
                         left: 50% !important;
-                        transform: translateX(-50%);
-                        border: 1px solid rgba(0,0,0,0.05);
+                        transform: translateX(-50%) !important;
+                        border: 1px solid rgba(0,0,0,0.05) !important;
+                        bottom: ${config.paginationPosition === 'outside' ? 'calc(-1 * var(--p-offset) - 10px)' : 'var(--p-offset)'} !important;
                     }
                     .swiper-pagination-progressbar {
-                        background: color-mix(in srgb, var(--primary-color), transparent 90%);
+                        background: color-mix(in srgb, var(--primary-color), transparent 90%) !important;
                         height: 4px !important;
-                        border-radius: 99px;
+                        border-radius: 99px !important;
+                        top: auto !important;
+                        bottom: ${config.paginationPosition === 'outside' ? 'calc(-1 * var(--p-offset))' : 'var(--p-offset)'} !important;
                     }
                     .swiper-pagination-progressbar-fill {
                         background: var(--primary-color) !important;
-                        border-radius: 99px;
+                        border-radius: 99px !important;
                     }
-                `}</style>
+                    `}</style>
+                </div>
             </div>
         </section>
     );

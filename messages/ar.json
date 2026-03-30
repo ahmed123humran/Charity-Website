@@ -218,6 +218,8 @@
         "editCategory": "تعديل الفئة",
         "selectCategory": "اختر الفئة",
         "snippetNameRequired": "اسم القصاصة (EN) مطلوب",
+        "invalidCategory": "الفئة المختارة غير صالحة",
+        "invalidInput": "بيانات غير صالحة",
         "noContent": "لم يتم العثور على محتوى.",
         "manageCategories": "فئات لتنظيم المحتوى الخاص بك.",
         "snippetsDescription": "إنشاء وحدات بناء عامة لمواقعك.",
