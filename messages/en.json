@@ -218,6 +218,8 @@
         "editCategory": "Edit Category",
         "selectCategory": "Select Category",
         "snippetNameRequired": "Snippet Name (EN) is required",
+        "invalidCategory": "Invalid Category Selected",
+        "invalidInput": "Invalid data input",
         "noContent": "No content found.",
         "manageCategories": "Categories for organizing your content.",
         "snippetsDescription": "Create global building blocks for your websites.",

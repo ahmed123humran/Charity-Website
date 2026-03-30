@@ -63,11 +63,8 @@ export default function SocialMediaManagement() {
                 setImage(data.url);
                 toast.success(commonT('uploadSuccess'));
             } else {
-                try {
-                    toast.error(commonT(data.message) || data.message || commonT('uploadError'));
-                } catch (e) {
-                    toast.error(data.message || commonT('uploadError'));
-                }
+                const errorMessage = commonT(data.message) || data.message || commonT('uploadError');
+                toast.error(data.details ? `${errorMessage}: ${data.details}` : errorMessage);
             }
         } catch (error) {
             toast.error(commonT('uploadError'));
@@ -101,9 +98,9 @@ export default function SocialMediaManagement() {
                 toast.success(isEditing ? commonT('updated') : commonT('created'));
             } else {
                 const err = await res.json();
-                try {
-                    toast.error(commonT(err.message) || err.message || commonT('error'));
-                } catch (e) {
+                if (Array.isArray(err)) {
+                    err.forEach((e: any) => toast.error(t(e.message) || e.message));
+                } else {
                     toast.error(err.message || commonT('error'));
                 }
             }

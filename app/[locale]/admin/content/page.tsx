@@ -134,13 +134,17 @@ export default function ContentManagement() {
                 }),
             });
 
-            const data = await res.json();
+            const err = await res.json();
             if (res.ok) {
                 closeContentModal();
                 fetchContents();
                 toast.success(commonT('saved'));
             } else {
-                toast.error(data.message || commonT('error'));
+                if (Array.isArray(err)) {
+                    err.forEach((e: any) => toast.error(t(e.message) || e.message));
+                } else {
+                    toast.error(err.message || commonT('error'));
+                }
             }
         } catch (error) {
             toast.error(commonT('error'));
@@ -158,7 +162,8 @@ export default function ContentManagement() {
                 setImage(data.url);
                 toast.success(commonT('uploadSuccess'));
             } else {
-                toast.error(data.message || commonT('uploadError'));
+                const errorMessage = commonT(data.message) || data.message || commonT('uploadError');
+                toast.error(data.details ? `${errorMessage}: ${data.details}` : errorMessage);
             }
         } catch (error) {
             toast.error(commonT('uploadError'));
@@ -178,7 +183,8 @@ export default function ContentManagement() {
                 setImages(prev => [...prev, data.url]);
                 toast.success(commonT('uploadSuccess'));
             } else {
-                toast.error(data.message || commonT('uploadError'));
+                const errorMessage = commonT(data.message) || data.message || commonT('uploadError');
+                toast.error(data.details ? `${errorMessage}: ${data.details}` : errorMessage);
             }
         } catch (error) {
             toast.error(commonT('uploadError'));

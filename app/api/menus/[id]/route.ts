@@ -55,7 +55,7 @@ export async function PUT(request: NextRequest, { params }: Props) {
         const validation = updateMenuSchema.safeParse(body);
 
         if (!validation.success) {
-            return NextResponse.json({ message: validation.error.message }, { status: 400 });
+            return NextResponse.json(validation.error.issues, { status: 400 });
         }
 
         const menu = await prisma.menu.findUnique({ where: { id } });

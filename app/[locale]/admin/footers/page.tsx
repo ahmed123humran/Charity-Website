@@ -83,9 +83,9 @@ export default function FootersManagement() {
                 toast.success(isEditing ? commonT('updated') : commonT('created'));
             } else {
                 const err = await res.json();
-                try {
-                    toast.error(commonT(err.message) || err.message || commonT('error'));
-                } catch (e) {
+                if (Array.isArray(err)) {
+                    err.forEach((e: any) => toast.error(t(e.message) || e.message));
+                } else {
                     toast.error(err.message || commonT('error'));
                 }
             }
@@ -131,7 +131,12 @@ export default function FootersManagement() {
             } else {
                 // Revert on failure
                 setFooters(footers.map(p => p.id === id ? { ...p, isPublished: currentStatus } : p));
-                toast.error(commonT('statusUpdateError'));
+                const err = await res.json();
+                if (Array.isArray(err)) {
+                    err.forEach((e: any) => toast.error(t(e.message) || e.message));
+                } else {
+                    toast.error(err.message || commonT('statusUpdateError'));
+                }
             }
         } catch (error) {
             console.error('Failed to toggle publish status:', error);

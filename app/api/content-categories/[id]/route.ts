@@ -20,7 +20,7 @@ export async function PUT(request: NextRequest, { params }: Props) {
         const body = await request.json();
         const validation = updateContentCategorySchema.safeParse(body);
         if (!validation.success) {
-            return NextResponse.json({ message: validation.error.message }, { status: 400 });
+            return NextResponse.json(validation.error.issues, { status: 400 });
         }
 
         const oldCategory = await prisma.contentCategory.findUnique({ where: { id } });

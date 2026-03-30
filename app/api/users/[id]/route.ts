@@ -57,7 +57,7 @@ export async function PUT(request: NextRequest, { params }: Props) {
         const validation = updateUserSchema.safeParse(body);
 
         if (!validation.success) {
-            return NextResponse.json({ message: validation.error.issues[0].message }, { status: 400 });
+            return NextResponse.json(validation.error.issues, { status: 400 });
         }
 
         const user = await prisma.user.findUnique({ where: { id: parseInt(id) } });

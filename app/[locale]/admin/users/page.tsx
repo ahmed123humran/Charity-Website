@@ -72,9 +72,9 @@ export default function UsersManagement() {
                 toast.success(isEditing ? commonT('updated') : commonT('created'));
             } else {
                 const err = await res.json();
-                try {
-                    toast.error(commonT(err.message) || err.message || commonT('error'));
-                } catch (e) {
+                if (Array.isArray(err)) {
+                    err.forEach((e: any) => toast.error(t(e.message) || e.message));
+                } else {
                     toast.error(err.message || commonT('error'));
                 }
             }
