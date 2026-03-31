@@ -153,6 +153,10 @@ export const createDynamicContentSchema = z.object({
     images: z.array(z.string()).optional(),
     categoryId: z.string().min(1),
     publishDate: z.coerce.date().optional(),
+    linkUrl: z.string().optional(),
+    tag: z.string().optional(),
+    tagAr: z.string().optional(),
+    isPublished: z.boolean().optional(),
 });
 
 export const updateDynamicContentSchema = z.object({
@@ -164,4 +168,8 @@ export const updateDynamicContentSchema = z.object({
     images: z.array(z.string()).optional(),
     categoryId: z.string().optional(),
     publishDate: z.coerce.date().optional(),
+    linkUrl: z.string().optional(),
+    tag: z.string().optional(),
+    tagAr: z.string().optional(),
+    isPublished: z.boolean().optional(),
 });

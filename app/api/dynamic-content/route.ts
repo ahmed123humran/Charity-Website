@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
         const categoryId = searchParams.get('categoryId');
 
         const content = await prisma.dynamicContent.findMany({
-            where: categoryId ? { categoryId } : {},
+            where: categoryId ? { categoryId, isPublished: true } : {},
             include: { category: true },
             orderBy: { createdAt: 'desc' }
         });
