@@ -5,6 +5,7 @@ export interface WebsiteState {
     id: string | null;
     name: { en?: string; ar?: string } | null;
     themeColor: string | null;
+    secondaryColor: string | null;
     fontFamily: string | null;
     logo: string | null;
     loading: boolean;
@@ -15,6 +16,7 @@ const initialState: WebsiteState = {
     id: null,
     name: null,
     themeColor: null,
+    secondaryColor: null,
     fontFamily: null,
     logo: null,
     loading: false,
@@ -40,7 +42,7 @@ export const fetchCurrentWebsite = createAsyncThunk(
 // Async thunk to update website
 export const updateWebsite = createAsyncThunk(
     'website/update',
-    async (data: { id: string; name: { en?: string; ar?: string }; themeColor?: string; fontFamily?: string; logo?: string | null }, { rejectWithValue }) => {
+    async (data: { id: string; name: { en?: string; ar?: string }; themeColor?: string; secondaryColor?: string; fontFamily?: string; logo?: string | null }, { rejectWithValue }) => {
         try {
             const response = await fetch(`/api/websites/${data.id}`, {
                 method: 'PUT',
@@ -61,10 +63,11 @@ const websiteSlice = createSlice({
     name: 'website',
     initialState,
     reducers: {
-        setWebsite: (state, action: PayloadAction<{ id: string; name: { en?: string; ar?: string }; themeColor: string; fontFamily: string; logo?: string | null }>) => {
+        setWebsite: (state, action: PayloadAction<{ id: string; name: { en?: string; ar?: string }; themeColor: string; secondaryColor?: string; fontFamily: string; logo?: string | null }>) => {
             state.id = action.payload.id;
             state.name = action.payload.name;
             state.themeColor = action.payload.themeColor;
+            state.secondaryColor = action.payload.secondaryColor || null;
             state.fontFamily = action.payload.fontFamily;
             state.logo = action.payload.logo || null;
         },
@@ -73,6 +76,9 @@ const websiteSlice = createSlice({
         },
         setThemeColor: (state, action: PayloadAction<string>) => {
             state.themeColor = action.payload;
+        },
+        setSecondaryColor: (state, action: PayloadAction<string>) => {
+            state.secondaryColor = action.payload;
         },
         setFontFamily: (state, action: PayloadAction<string>) => {
             state.fontFamily = action.payload;
@@ -84,6 +90,7 @@ const websiteSlice = createSlice({
             state.id = null;
             state.name = null;
             state.themeColor = null;
+            state.secondaryColor = null;
             state.fontFamily = null;
             state.logo = null;
         },
@@ -100,6 +107,7 @@ const websiteSlice = createSlice({
                 state.id = action.payload.id;
                 state.name = action.payload.name;
                 state.themeColor = action.payload.themeColor;
+                state.secondaryColor = action.payload.secondaryColor;
                 state.fontFamily = action.payload.fontFamily;
                 state.logo = action.payload.logo;
             })
@@ -117,6 +125,7 @@ const websiteSlice = createSlice({
                 state.id = action.payload.id;
                 state.name = action.payload.name;
                 state.themeColor = action.payload.themeColor;
+                state.secondaryColor = action.payload.secondaryColor;
                 state.fontFamily = action.payload.fontFamily;
                 state.logo = action.payload.logo;
             })
@@ -127,5 +136,5 @@ const websiteSlice = createSlice({
     },
 });
 
-export const { setWebsite, setWebsiteName, setThemeColor, setFontFamily, setLogo, clearWebsite } = websiteSlice.actions;
+export const { setWebsite, setWebsiteName, setThemeColor, setSecondaryColor, setFontFamily, setLogo, clearWebsite } = websiteSlice.actions;
 export default websiteSlice.reducer;

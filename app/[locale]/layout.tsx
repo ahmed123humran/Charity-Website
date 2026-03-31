@@ -94,6 +94,7 @@ export default async function RootLayout({
     orderBy: { updatedAt: 'desc' }
   });
   const themeColor = website?.themeColor || "#4f46e5";
+  const secondaryColor = website?.secondaryColor || "#f59e0b";
   const fontFamilyValue = website?.fontFamily || "Inter";
 
   // Mapping font names to CSS variables
@@ -119,6 +120,12 @@ export default async function RootLayout({
           '--primary-dark': `color-mix(in srgb, ${themeColor}, black 20%)`,
           '--primary-accent': `color-mix(in srgb, ${themeColor}, #a855f7 30%)`,
           '--primary-surface': `color-mix(in srgb, ${themeColor}, transparent 95%)`,
+          '--secondary-color': secondaryColor,
+          '--secondary-glow': `color-mix(in srgb, ${secondaryColor}, transparent 80%)`,
+          '--secondary-muted': `color-mix(in srgb, ${secondaryColor}, white 80%)`,
+          '--secondary-dark': `color-mix(in srgb, ${secondaryColor}, black 20%)`,
+          '--secondary-accent': `color-mix(in srgb, ${secondaryColor}, #f59e0b 30%)`,
+          '--secondary-surface': `color-mix(in srgb, ${secondaryColor}, transparent 95%)`,
           '--font-family': selectedFont,
         } as React.CSSProperties}
       >

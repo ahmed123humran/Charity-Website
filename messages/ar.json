@@ -141,6 +141,7 @@
         "websiteName": "اسم الموقع",
         "domain": "النطاق",
         "themeColor": "لون القالب",
+        "secondaryColor": "اللون الثانوي",
         "websiteLogo": "لوجو المؤسسة",
         "manageWebsites": "إدارة وتهيئة نطاقات الجمعيات.",
         "searchWebsites": "بحث في المواقع...",

@@ -27,7 +27,6 @@ export function sanitizeHtml(html: string): string {
             'stroke-width',
             'stroke-linecap',
             'stroke-linejoin',
-            'poster',
             'd',
             'cx',
             'cy',

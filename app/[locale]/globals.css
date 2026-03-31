@@ -14,7 +14,7 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-family);
   --font-mono: var(--font-geist-mono);
-  
+
   --color-primary: var(--primary-color);
   --color-primary-foreground: #ffffff;
   --color-primary-glow: var(--primary-glow);
@@ -22,6 +22,12 @@
   --color-primary-dark: var(--primary-dark);
   --color-primary-accent: var(--primary-accent);
   --color-primary-surface: var(--primary-surface);
+
+  --color-secondary: var(--secondary-color);
+  --color-secondary-foreground: #ffffff;
+  --color-secondary-glow: var(--secondary-glow);
+  --color-secondary-muted: var(--secondary-muted);
+  --color-secondary-dark: var(--secondary-dark);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -90,7 +96,7 @@ body {
 }
 
 .shine-effect {
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
   background-size: 200% 100%;
   animation: shine 2s infinite linear;
 }
