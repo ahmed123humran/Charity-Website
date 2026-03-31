@@ -133,6 +133,8 @@
         "contentCategories": "Content Categories",
         "users": "Users",
         "overview": "Dashboard Overview",
+        "internalServerError": "Internal Server Error",
+        "urlAlreadyExists": "Another page with this URL already exists for this website",
         "subtitle": "Manage your multi-charity website platform.",
         "newWebsite": "New Website",
         "editWebsite": "Edit Website",
@@ -204,7 +206,8 @@
             "Footer": "Footer",
             "Header": "Header",
             "CTA": "Call to Action",
-            "Stats": "Statistics"
+            "Stats": "Statistics",
+            "Dynamic": "Dynamic Content"
         },
         "internalDynamic": "Internal Dynamic",
         "manageContent": "Manage site-specific content like news, activities, and more.",

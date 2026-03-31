@@ -1,13 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { writeFile } from 'fs/promises';
-import { join } from 'path';
 import { getServerUser } from '@/app/utils/auth';
+import { v2 as cloudinary } from 'cloudinary';
+
+// Configure Cloudinary
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 export async function POST(request: NextRequest) {
     try {
         const user = await getServerUser();
         if (!user) {
-            return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+            return NextResponse.json({ message: 'unauthorized' }, { status: 401 });
         }
 
         const formData = await request.formData();
@@ -20,28 +26,25 @@ export async function POST(request: NextRequest) {
         const bytes = await file.arrayBuffer();
         const buffer = Buffer.from(bytes);
 
-        // Create a unique filename
-        const filename = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
-        const uploadDir = join(process.cwd(), 'public', 'uploads');
-        const path = join(uploadDir, filename);
+        // Upload to Cloudinary using a stream
+        const result: any = await new Promise((resolve, reject) => {
+            const uploadStream = cloudinary.uploader.upload_stream(
+                {
+                    resource_type: 'auto',
+                    folder: 'uploads',
+                },
+                (error, result) => {
+                    if (error) reject(error);
+                    else resolve(result);
+                }
+            );
+            uploadStream.end(buffer);
+        });
 
-        // Ensure directory exists (even though it should, this is safer)
-        try {
-            await writeFile(path, buffer);
-        } catch (writeError: any) {
-            console.error('Write file error:', writeError);
-            return NextResponse.json({
-                message: 'uploadError',
-                details: writeError.message,
-                path: path
-            }, { status: 500 });
-        }
-
-        // Return the public URL
-        const url = `/uploads/${filename}`;
-        return NextResponse.json({ url }, { status: 200 });
+        // Return the secure URL from Cloudinary
+        return NextResponse.json({ url: result.secure_url }, { status: 200 });
     } catch (error: any) {
-        console.error('File upload error:', error);
+        console.error('Cloudinary upload error:', error);
         return NextResponse.json({
             message: 'uploadError',
             details: error.message

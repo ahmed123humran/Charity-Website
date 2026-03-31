@@ -49,13 +49,13 @@ export async function POST(request: NextRequest) {
 
         const { url, websiteId, title, content, userId } = validation.data;
 
-        const exists = await prisma.page.findUnique({
-            where: { url },
+        const exists = await prisma.page.findFirst({
+            where: { url, websiteId },
         });
 
         if (exists) {
             return NextResponse.json(
-                { message: 'URL already exists' },
+                { message: 'urlAlreadyExists' },
                 { status: 409 }
             );
         }

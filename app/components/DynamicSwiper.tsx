@@ -26,6 +26,7 @@ interface Props {
         fieldMapping?: any | null;
         type?: 'STATIC' | 'DYNAMIC';
         categoryId?: string | null;
+        containerType?: string | null;
     };
 }
 
@@ -126,6 +127,11 @@ export default function DynamicSwiper({ snippet, singleRecordOnly = false }: { s
     };
 
     const config = swiperConfig || {};
+    const sliedesPerView = {
+        desktop: config.slidesPerViewDesktop || 3,
+        tablet: config.slidesPerViewTablet || 2,
+        mobile: config.slidesPerViewMobile || 1,
+    };
 
     const NavIcon = ({ type, side }: { type: string, side: 'left' | 'right' }) => {
         const isRtl = locale === 'ar';
@@ -136,11 +142,11 @@ export default function DynamicSwiper({ snippet, singleRecordOnly = false }: { s
         if (type === 'double') return effectiveSide === 'left' ? <ChevronsLeft size={20} /> : <ChevronsRight size={20} />;
         return effectiveSide === 'left' ? <ChevronLeft size={24} /> : <ChevronRight size={24} />;
     };
-    const sliedesPerView = {
-        desktop: config.slidesPerViewDesktop || 3,
-        tablet: config.slidesPerViewTablet || 2,
-        mobile: config.slidesPerViewMobile || 1,
-    };
+    const isFullWidth = snippet.containerType === 'full';
+    const sectionPadding = config.py ?? (isFullWidth ? '0' : '20');
+    const paginationPos = config.paginationPosition ?? (isFullWidth ? 'inside' : 'outside');
+    const navPos = config.navPosition ?? (isFullWidth ? 'inside' : 'outside');
+    const sectionPaddingClass = isFullWidth ? 'py-0' : (sectionPadding === '0' ? 'py-0' : 'py-20');
 
     if (singleRecordOnly) {
         return (
@@ -151,13 +157,13 @@ export default function DynamicSwiper({ snippet, singleRecordOnly = false }: { s
     }
 
     return (
-        <section className="py-20 overflow-hidden">
-            <div className="container mx-auto px-4">
+        <section className={`${sectionPaddingClass} overflow-hidden transition-all duration-500`}>
+            <div className={isFullWidth ? 'w-full' : 'container mx-auto px-4'}>
                 <div
-                    className={`relative p-2 ${config.navPosition === 'outside' ? 'md:px-16' : ''} ${config.paginationPosition === 'outside' ? 'pb-16' : ''} nav-${config.navStyle || 'default'}`}
+                    className={`relative ${navPos === 'outside' ? 'md:px-16' : ''} ${paginationPos === 'outside' ? 'pb-14' : ''} nav-${config.navStyle || 'default'}`}
                     style={{
-                        ['--nav-offset' as any]: `${config.navOffset ?? 10}px`,
-                        ['--pagination-offset' as any]: `${config.paginationOffset ?? 20}px`
+                        ['--nav-offset' as any]: `${config.navOffset ?? (isFullWidth ? 30 : 10)}px`,
+                        ['--pagination-offset' as any]: `${config.paginationOffset ?? (isFullWidth && paginationPos === 'inside' ? 40 : 20)}px`
                     }}
                 >
                     <Swiper
@@ -227,26 +233,27 @@ export default function DynamicSwiper({ snippet, singleRecordOnly = false }: { s
                     }
                     
                     .swiper-button-prev { 
-                        left: ${config.navPosition === 'outside' ? 'calc(-1 * var(--n-offset))' : 'var(--n-offset)'} !important;
+                        left: ${navPos === 'outside' ? 'calc(-1 * var(--n-offset))' : 'var(--n-offset)'} !important;
                     }
                     .swiper-button-next { 
-                        right: ${config.navPosition === 'outside' ? 'calc(-1 * var(--n-offset))' : 'var(--n-offset)'} !important;
+                        right: ${navPos === 'outside' ? 'calc(-1 * var(--n-offset))' : 'var(--n-offset)'} !important;
                     }
 
                     [dir='rtl'] .swiper-button-prev {
                         left: auto !important;
-                        right: ${config.navPosition === 'outside' ? 'calc(-1 * var(--n-offset))' : 'var(--n-offset)'} !important;
+                        right: ${navPos === 'outside' ? 'calc(-1 * var(--n-offset))' : 'var(--n-offset)'} !important;
                     }
                     [dir='rtl'] .swiper-button-next {
                         right: auto !important;
-                        left: ${config.navPosition === 'outside' ? 'calc(-1 * var(--n-offset))' : 'var(--n-offset)'} !important;
+                        left: ${navPos === 'outside' ? 'calc(-1 * var(--n-offset))' : 'var(--n-offset)'} !important;
                     }
 
                     .swiper-pagination {
-                        bottom: ${config.paginationPosition === 'outside' ? 'calc(-1 * var(--p-offset))' : 'var(--p-offset)'} !important;
+                        bottom: var(--p-offset) !important;
                         left: 50% !important;
                         transform: translateX(-50%) !important;
                         width: auto !important;
+                        z-index: 20 !important;
                     }
 
                     /* Navigation Styles */
@@ -354,14 +361,14 @@ export default function DynamicSwiper({ snippet, singleRecordOnly = false }: { s
                         left: 50% !important;
                         transform: translateX(-50%) !important;
                         border: 1px solid rgba(0,0,0,0.05) !important;
-                        bottom: ${config.paginationPosition === 'outside' ? 'calc(-1 * var(--p-offset) - 10px)' : 'var(--p-offset)'} !important;
+                        bottom: ${paginationPos === 'outside' ? 'calc(-1 * var(--p-offset) - 10px)' : 'var(--p-offset)'} !important;
                     }
                     .swiper-pagination-progressbar {
                         background: color-mix(in srgb, var(--primary-color), transparent 90%) !important;
                         height: 4px !important;
                         border-radius: 99px !important;
                         top: auto !important;
-                        bottom: ${config.paginationPosition === 'outside' ? 'calc(-1 * var(--p-offset))' : 'var(--p-offset)'} !important;
+                        bottom: ${paginationPos === 'outside' ? 'calc(-1 * var(--p-offset))' : 'var(--p-offset)'} !important;
                     }
                     .swiper-pagination-progressbar-fill {
                         background: var(--primary-color) !important;

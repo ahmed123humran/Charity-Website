@@ -31,6 +31,7 @@ interface Snippet {
     swiperConfig?: any | null;
     fieldMapping?: any | null;
     categoryId?: string | null;
+    containerType?: string | null;
 }
 
 interface Page {
@@ -50,6 +51,7 @@ interface DroppedSnippet {
     swiperConfig?: any | null;
     fieldMapping?: any | null;
     categoryId?: string | null;
+    containerType?: string | null;
 }
 
 // Memoized Snippet Component to prevent unnecessary re-renders that kill focus
@@ -266,7 +268,8 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
             apiEndpoint: snippet.apiEndpoint,
             swiperConfig: snippet.swiperConfig,
             fieldMapping: snippet.fieldMapping,
-            categoryId: (snippet as any).categoryId
+            categoryId: (snippet as any).categoryId,
+            containerType: (snippet as any).containerType
         };
         const dropIndex = index !== undefined ? index : (dragOverIndex !== null ? dragOverIndex : droppedSnippets.length);
         setDroppedSnippets(prev => {

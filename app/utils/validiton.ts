@@ -114,7 +114,8 @@ export const createSnippetSchema = z.object({
     apiEndpoint: z.string().optional().nullable().or(z.literal("")),
     swiperConfig: z.any().optional(),
     fieldMapping: z.any().optional(),
-    categoryId: z.string().optional().nullable(),
+    categoryId: z.string().optional().nullable().transform(val => val === "" ? null : val),
+    containerType: z.string().optional(),
 });
 
 export const updateSnippetSchema = z.object({
@@ -127,7 +128,8 @@ export const updateSnippetSchema = z.object({
     apiEndpoint: z.string().optional().nullable().or(z.literal("")),
     swiperConfig: z.any().optional(),
     fieldMapping: z.any().optional(),
-    categoryId: z.string().optional().nullable(),
+    categoryId: z.string().optional().nullable().transform(val => val === "" ? null : val),
+    containerType: z.string().optional(),
 });
 
 export const createContentCategorySchema = z.object({

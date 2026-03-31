@@ -62,6 +62,20 @@ export async function PUT(request: NextRequest, { params }: Props) {
             return NextResponse.json({ message: 'notFound' }, { status: 404 });
         }
 
+        if (validation.data.url) {
+            const existingUrl = await prisma.page.findFirst({
+                where: {
+                    url: validation.data.url,
+                    websiteId: validation.data.websiteId || page.websiteId,
+                    id: { not: id }
+                }
+            });
+
+            if (existingUrl) {
+                return NextResponse.json({ message: 'urlAlreadyExists' }, { status: 409 });
+            }
+        }
+
         const updatedPage = await prisma.page.update({
             where: { id },
             data: {
