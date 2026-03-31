@@ -1,12 +1,19 @@
-import type { NextConfig } from "next"; // Last updated: 2026-01-08 15:30 (Force restart)
+import type { NextConfig } from "next";
 import createNextIntlPlugin from 'next-intl/plugin';
 
 const withNextIntl = createNextIntlPlugin();
 
+/** @type {import('next').NextConfig} */
 const nextConfig: NextConfig = {
-  /* config options here */
-  output: "standalone",
-  reactStrictMode: true,
+  serverExternalPackages: ['jsdom', 'isomorphic-dompurify'],
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+      }
+    ],
+  },
 };
 
 export default withNextIntl(nextConfig);

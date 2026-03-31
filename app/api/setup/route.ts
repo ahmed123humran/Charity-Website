@@ -117,7 +117,7 @@ export async function POST(request: NextRequest) {
         }));
 
         await prisma.page.upsert({
-            where: { url: '/' },
+            where: { url_websiteId: { url: '/', websiteId: website.id } },
             update: {
                 content: {
                     en: contentItems,

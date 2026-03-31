@@ -957,9 +957,8 @@ async function main() {
     });
   }
 
-  // Create Default Home Page
   const homePage = await prisma.page.findUnique({
-    where: { url: '/' }
+    where: { url_websiteId: { url: '/', websiteId: website.id } }
   });
 
   if (!homePage) {

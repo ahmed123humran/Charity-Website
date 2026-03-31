@@ -61,7 +61,7 @@ model SocialMedia {
 
 model Page {
   id          String   @id @default(cuid())
-  url         String   @unique
+  url         String
   isPublished Boolean  @default(false)
   websiteId   String
   createdAt   DateTime @default(now())
@@ -72,6 +72,8 @@ model Page {
   menus       Menu[]
   user        User?    @relation(fields: [userId], references: [id])
   website     Website  @relation(fields: [websiteId], references: [id])
+
+  @@unique([url, websiteId])
 }
 
 model Footer {
@@ -113,6 +115,7 @@ model Snippet {
   swiperConfig  Json?
   fieldMapping  Json?
   categoryId    String?
+  containerType String          @default("contained")
   contentCategory ContentCategory? @relation(fields: [categoryId], references: [id])
 }
 

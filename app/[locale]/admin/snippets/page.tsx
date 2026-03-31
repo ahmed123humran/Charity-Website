@@ -22,6 +22,7 @@ interface Snippet {
     swiperConfig: any | null;
     fieldMapping: any | null;
     categoryId: string | null;
+    containerType: string | null;
 }
 
 export default function SnippetsManagement() {
@@ -60,11 +61,13 @@ export default function SnippetsManagement() {
         autoplayDelay: 3000,
         pauseOnHover: true,
         navStyle: 'default',
+        navIcon: 'chevron',
         navPosition: 'inside',
         navOffset: 10,
         paginationPosition: 'inside',
         paginationOffset: 20,
     });
+    const [containerType, setContainerType] = useState('contained');
     const [fieldMapping, setFieldMapping] = useState<{ placeholder: string, apiField: string }[]>([]);
     const [activeTab, setActiveTab] = useState<'design' | 'swiper' | 'api'>('design');
     const [viewMode, setViewMode] = useState<'visual' | 'code'>('visual');
@@ -124,6 +127,7 @@ export default function SnippetsManagement() {
                     categoryId: (type === 'DYNAMIC' && !isExternalApi) ? categoryId : null,
                     swiperConfig: type === 'DYNAMIC' ? swiperConfig : null,
                     fieldMapping: type === 'DYNAMIC' ? fieldMapping : null,
+                    containerType,
                 }),
             });
             if (res.ok) {
@@ -204,6 +208,7 @@ export default function SnippetsManagement() {
             navIcon: 'chevron',
         });
         setCategoryId(snippet.categoryId || '');
+        setContainerType(snippet.containerType || 'contained');
         setFieldMapping(Array.isArray(snippet.fieldMapping) ? snippet.fieldMapping : []);
         setCurrentId(snippet.id);
         setIsEditing(true);
@@ -223,6 +228,7 @@ export default function SnippetsManagement() {
         setIsExternalApi(false);
         setApiEndpoint('');
         setCategoryId('');
+        setContainerType('contained');
         setFieldMapping([]);
         setActiveTab('design');
         setCurrentId(null);
@@ -359,7 +365,7 @@ export default function SnippetsManagement() {
                                     <div className="w-full sm:w-48 xl:w-full shrink-0">
                                         <label className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1.5 block">{t('category')}</label>
                                         <select value={category} onChange={e => setCategory(e.target.value)} className="w-full px-4 py-2.5 bg-white border border-slate-200 text-slate-900 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all">
-                                            {['Intro', 'Content', 'Features', 'Contact', 'Footer', 'Header', 'CTA', 'Stats'].map(c => <option key={c} value={c}>{t(`categories.${c}`)}</option>)}
+                                            {['Intro', 'Content', 'Features', 'Contact', 'Footer', 'Header', 'CTA', 'Stats', 'Dynamic'].map(c => <option key={c} value={c}>{t(`categories.${c}`)}</option>)}
                                         </select>
                                     </div>
                                     <div className="w-full sm:w-48 xl:w-full shrink-0">
@@ -369,6 +375,15 @@ export default function SnippetsManagement() {
                                             <option value="DYNAMIC">{t('dynamicSwiper')}</option>
                                         </select>
                                     </div>
+                                    {type === 'DYNAMIC' && (
+                                        <div className="w-full sm:w-48 xl:w-full shrink-0">
+                                            <label className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1.5 block">{locale === 'ar' ? 'نوع الحاوية' : 'Container Type'}</label>
+                                            <select value={containerType} onChange={e => setContainerType(e.target.value)} className="w-full px-4 py-2.5 bg-white border border-slate-200 text-slate-900 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all">
+                                                <option value="contained">{locale === 'ar' ? 'داخل كونتينر' : 'Contained'}</option>
+                                                <option value="full">{locale === 'ar' ? 'عرض كامل' : 'Full Width'}</option>
+                                            </select>
+                                        </div>
+                                    )}
                                 </div>
                                 {type === 'DYNAMIC' && (
                                     <div className="mt-4 flex items-center gap-2 cursor-pointer group" onClick={() => setIsExternalApi(!isExternalApi)}>

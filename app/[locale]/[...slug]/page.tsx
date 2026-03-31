@@ -15,11 +15,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { slug, locale } = await params;
     const url = slug.join('/');
 
-    // Fetch page and website info in parallel
-    const [page, website] = await Promise.all([
-        prisma.page.findUnique({ where: { url } }),
-        prisma.website.findFirst({ orderBy: { updatedAt: 'desc' } })
-    ]);
+    // Fetch page and website info sequentially to match current website
+    const website = await prisma.website.findFirst({ orderBy: { updatedAt: 'desc' } });
+    const page = website ? await prisma.page.findFirst({ where: { url, websiteId: website.id } }) : null;
 
     if (!page) return {};
 
@@ -54,10 +52,11 @@ export default async function DynamicPage({ params }: Props) {
     const url = slug.join('/');
     const isHomePage = slug.length === 0;
 
-    const page = await prisma.page.findUnique({
-        where: { url },
+    const websiteContext = await prisma.website.findFirst({ orderBy: { updatedAt: 'desc' } });
+    const page = websiteContext ? await prisma.page.findFirst({
+        where: { url, websiteId: websiteContext.id },
         include: { website: true }
-    });
+    }) : null;
 
     if (!page || !page.isPublished) {
         return (
