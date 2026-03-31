@@ -9,6 +9,7 @@ export async function GET() {
                 id: true,
                 name: true,
                 themeColor: true,
+                secondaryColor: true,
                 fontFamily: true,
                 logo: true,
             }

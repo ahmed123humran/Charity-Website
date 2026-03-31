@@ -42,6 +42,7 @@ export async function POST(request: NextRequest) {
                 },
                 domain: domain || null,
                 themeColor: '#714B67',
+                secondaryColor: '#F59E0B',
                 language: 'ar_SA'
             }
         });

@@ -16,6 +16,7 @@ interface Website {
     name: any; // Json type
     domain: string | null;
     themeColor: string;
+    secondaryColor: string;
     language: string;
     logo: string | null;
     fontFamily: string;
@@ -40,6 +41,7 @@ export default function WebsitesPage() {
     const [nameAr, setNameAr] = useState('');
     const [domain, setDomain] = useState('');
     const [themeColor, setThemeColor] = useState('#4f46e5');
+    const [secondaryColor, setSecondaryColor] = useState('#f59e0b');
     const [logo, setLogo] = useState('');
     const [fontFamily, setFontFamily] = useState('Inter');
 
@@ -91,6 +93,7 @@ export default function WebsitesPage() {
                     name: { en: nameEn, ar: nameAr },
                     domain,
                     themeColor,
+                    secondaryColor,
                     logo,
                     fontFamily,
                 }),
@@ -138,7 +141,8 @@ export default function WebsitesPage() {
         setNameEn(site.name.en || '');
         setNameAr(site.name.ar || '');
         setDomain(site.domain || '');
-        setThemeColor(site.themeColor);
+        setThemeColor(site.themeColor || '#4f46e5');
+        setSecondaryColor(site.secondaryColor || '#f59e0b');
         setLogo(site.logo || '');
         setFontFamily(site.fontFamily || 'Inter');
         setCurrentId(site.id);
@@ -153,6 +157,7 @@ export default function WebsitesPage() {
         setNameAr('');
         setDomain('');
         setThemeColor('#4f46e5');
+        setSecondaryColor('#f59e0b');
         setLogo('');
         setFontFamily('Inter');
         setCurrentId(null);
@@ -166,7 +171,7 @@ export default function WebsitesPage() {
                     <h1 className="text-3xl font-bold text-slate-900">{t('websites')}</h1>
                     <p className="text-slate-500 mt-1">{t('manageWebsites')}</p>
                 </div>
-                {(userRole === 'ADMIN' || userRole === 'EDITOR') && (
+                {/* {(userRole === 'ADMIN' || userRole === 'EDITOR') && (
                     <button
                         id="new-website-btn"
                         onClick={() => {
@@ -178,7 +183,7 @@ export default function WebsitesPage() {
                         <Plus className="w-5 h-5" />
                         {t('newWebsite')}
                     </button>
-                )}
+                )} */}
             </div>
 
             <div id="website-table" className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
@@ -323,11 +328,18 @@ export default function WebsitesPage() {
                                     placeholder="e.g. health.example.com"
                                 />
                             </div>
-                            <ColorInput
-                                label={t('themeColor')}
-                                value={themeColor}
-                                onChange={setThemeColor}
-                            />
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <ColorInput
+                                    label={t('themeColor')}
+                                    value={themeColor}
+                                    onChange={setThemeColor}
+                                />
+                                <ColorInput
+                                    label={t('secondaryColor')}
+                                    value={secondaryColor}
+                                    onChange={setSecondaryColor}
+                                />
+                            </div>
                             <div>
                                 <label className="block text-sm font-medium text-slate-700 mb-1">Font Family</label>
                                 <select

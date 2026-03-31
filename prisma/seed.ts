@@ -952,6 +952,7 @@ async function main() {
         name: { en: 'My Charity Website', ar: 'موقع جمعيتي' },
         domain: 'localhost',
         themeColor: '#4f46e5',
+        secondaryColor: '#f59e0b',
         language: 'en_US',
       }
     });

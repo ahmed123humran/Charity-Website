@@ -38,6 +38,7 @@ model Website {
   id          String   @id @default(cuid())
   domain      String?  @unique
   themeColor  String   @default("#714B67")
+  secondaryColor String @default("#F59E0B")
   fontFamily  String   @default("Inter")
   language    String   @default("en_US")
   createdAt   DateTime @default(now())

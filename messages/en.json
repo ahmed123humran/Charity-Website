@@ -141,6 +141,7 @@
         "websiteName": "Website Name",
         "domain": "Domain",
         "themeColor": "Theme Color",
+        "secondaryColor": "Secondary Color",
         "websiteLogo": "Organization Logo",
         "manageWebsites": "Manage and configure your charity domains.",
         "searchWebsites": "Search websites...",
