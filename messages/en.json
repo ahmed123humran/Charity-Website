@@ -131,6 +131,7 @@
         "dynamicContent": "Dynamic Content",
         "publishDate": "Publish Date",
         "contentLink": "Link URL",
+        "buttonTitle": "Button Title",
         "contentTag": "Tag / Label",
         "isPublished": "Published",
         "unpublished": "Unpublished",

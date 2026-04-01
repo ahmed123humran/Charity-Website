@@ -131,6 +131,7 @@
         "dynamicContent": "المحتوى",
         "publishDate": "تاريخ النشر",
         "contentLink": "رابط المحتوى",
+        "buttonTitle": "عنوان الزر",
         "contentTag": "الوسم / التصنيف",
         "isPublished": "منشور",
         "unpublished": "غير منشور",
