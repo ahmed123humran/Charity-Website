@@ -12,6 +12,9 @@ export const dynamicTailwindSafelist = [
 
     // Primary Opacities
     'bg-primary/5', 'bg-primary/10', 'bg-primary/20', 'bg-primary/50', 'bg-primary/90',
+    
+    // Gradient Opacities
+    'from-primary/90', 'to-primary/40', 'from-primary/10', 'to-primary/10', 'from-primary/20', 'to-primary/20',
 
     // Primary Hover States
     'hover:bg-primary', 'hover:text-primary',
