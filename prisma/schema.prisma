@@ -72,7 +72,7 @@ model Page {
   content     Json?
   menus       Menu[]
   user        User?    @relation(fields: [userId], references: [id])
-  website     Website  @relation(fields: [websiteId], references: [id])
+  website     Website  @relation(fields: [websiteId], references: [id], onDelete: Cascade)
 
   @@unique([url, websiteId], name: "url_websiteId")
 }
@@ -87,7 +87,7 @@ model Footer {
   title       Json
   content     Json?
   user        User?    @relation(fields: [userId], references: [id])
-  website     Website  @relation(fields: [websiteId], references: [id])
+  website     Website  @relation(fields: [websiteId], references: [id], onDelete: Cascade)
 }
 
 model Menu {
@@ -99,9 +99,9 @@ model Menu {
   name       Json
   pageId     String?
   page       Page?   @relation(fields: [pageId], references: [id])
-  parent     Menu?   @relation("SubMenus", fields: [parentId], references: [id])
+  parent     Menu?   @relation("SubMenus", fields: [parentId], references: [id], onDelete: Cascade)
   childMenus Menu[]  @relation("SubMenus")
-  website    Website @relation(fields: [websiteId], references: [id])
+  website    Website @relation(fields: [websiteId], references: [id], onDelete: Cascade)
 }
 
 model Snippet {

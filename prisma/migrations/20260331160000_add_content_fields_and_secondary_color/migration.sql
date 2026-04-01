@@ -7,9 +7,6 @@ ADD COLUMN "tagAr" TEXT;
 -- AlterTable
 ALTER TABLE "Snippet" ADD COLUMN "containerType" TEXT NOT NULL DEFAULT 'contained';
 
--- AlterTable
-ALTER TABLE "Website" ADD COLUMN "secondaryColor" TEXT NOT NULL DEFAULT '#F59E0B';
-
 -- DropIndex
 DROP INDEX IF EXISTS "Page_url_key";
 
