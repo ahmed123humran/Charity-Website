@@ -141,6 +141,8 @@ model DynamicContent {
   categoryId    String
   publishDate   DateTime?       @default(now())
   linkUrl       String?
+  linkText      String?
+  linkTextAr    String?
   tag           String?
   tagAr         String?
   isPublished   Boolean         @default(true)

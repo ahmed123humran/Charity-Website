@@ -236,19 +236,19 @@ export default function DynamicSwiper({ snippet, singleRecordOnly = false }: { s
                     }
                     
                     .swiper-button-prev { 
-                        left: ${navPos === 'outside' ? 'var(--n-offset)' : 'calc(-1 * var(--n-offset))'} !important;
+                        left: ${navPos === 'outside' ? 'calc(-1 * var(--n-offset))' : 'var(--n-offset)'} !important;
                     }
                     .swiper-button-next { 
-                        right: ${navPos === 'outside' ? 'var(--n-offset)' : 'calc(-1 * var(--n-offset))'} !important;
+                        right: ${navPos === 'outside' ? 'calc(-1 * var(--n-offset))' : 'var(--n-offset)'} !important;
                     }
 
                     [dir='rtl'] .swiper-button-prev {
                         left: auto !important;
-                        right: ${navPos === 'outside' ? 'var(--n-offset)' : 'calc(-1 * var(--n-offset))'} !important;
+                        right: ${navPos === 'outside' ? 'calc(-1 * var(--n-offset))' : 'var(--n-offset)'} !important;
                     }
                     [dir='rtl'] .swiper-button-next {
                         right: auto !important;
-                        left: ${navPos === 'outside' ? 'var(--n-offset)' : 'calc(-1 * var(--n-offset))'} !important;
+                        left: ${navPos === 'outside' ? 'calc(-1 * var(--n-offset))' : 'var(--n-offset)'} !important;
                     }
 
                     .swiper-pagination {

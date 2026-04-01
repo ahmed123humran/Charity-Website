@@ -25,6 +25,8 @@ interface DynamicContent {
     categoryId: string;
     publishDate: string | null;
     linkUrl: string | null;
+    linkText: string | null;
+    linkTextAr: string | null;
     tag: string | null;
     tagAr: string | null;
     isPublished: boolean;
@@ -61,6 +63,8 @@ export default function ContentManagement() {
     const [selectedCategoryId, setSelectedCategoryId] = useState('');
     const [publishDate, setPublishDate] = useState(new Date().toISOString().split('T')[0]);
     const [linkUrl, setLinkUrl] = useState('');
+    const [linkText, setLinkText] = useState('');
+    const [linkTextAr, setLinkTextAr] = useState('');
     const [contentTag, setContentTag] = useState('');
     const [contentTagAr, setContentTagAr] = useState('');
     const [isPublished, setIsPublished] = useState(true);
@@ -140,6 +144,8 @@ export default function ContentManagement() {
                     title, titleAr, description, descriptionAr, image, images, categoryId: selectedCategoryId,
                     publishDate: publishDate || undefined,
                     linkUrl: linkUrl || undefined,
+                    linkText: linkText || undefined,
+                    linkTextAr: linkTextAr || undefined,
                     tag: contentTag || undefined,
                     tagAr: contentTagAr || undefined,
                     isPublished,
@@ -266,6 +272,8 @@ export default function ContentManagement() {
         setSelectedCategoryId(item.categoryId);
         setPublishDate(item.publishDate ? new Date(item.publishDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]);
         setLinkUrl(item.linkUrl || '');
+        setLinkText(item.linkText || '');
+        setLinkTextAr(item.linkTextAr || '');
         setContentTag(item.tag || '');
         setContentTagAr(item.tagAr || '');
         setIsPublished(item.isPublished ?? true);
@@ -288,7 +296,7 @@ export default function ContentManagement() {
         setContentFormErrors(false);
         setTitle(''); setTitleAr(''); setDescription(''); setDescriptionAr(''); setImage(''); setImages([]); setSelectedCategoryId('');
         setPublishDate(new Date().toISOString().split('T')[0]);
-        setLinkUrl(''); setContentTag(''); setContentTagAr(''); setIsPublished(true);
+        setLinkUrl(''); setLinkText(''); setLinkTextAr(''); setContentTag(''); setContentTagAr(''); setIsPublished(true);
     };
 
     const closeCategoryModal = () => {
@@ -389,6 +397,11 @@ export default function ContentManagement() {
                                     <span className="absolute top-3 right-3 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-white/90 backdrop-blur-sm text-primary shadow-sm">
                                         {locale === 'ar' && item.category.nameAr ? item.category.nameAr : item.category.name}
                                     </span>
+                                    {item.isPublished && (
+                                        <span className="absolute top-3 left-3 px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-500/90 text-white shadow-sm">
+                                            {t('published')}
+                                        </span>
+                                    )}
                                     {!item.isPublished && (
                                         <span className="absolute top-3 left-3 px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-500/90 text-white shadow-sm">
                                             {t('unpublished')}
@@ -554,6 +567,16 @@ export default function ContentManagement() {
                             <div className="space-y-2">
                                 <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">{t('contentLink')}</label>
                                 <input type="url" value={linkUrl} onChange={e => setLinkUrl(e.target.value)} placeholder="https://..." className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all" dir="ltr" />
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">{t('buttonTitle')} (AR)</label>
+                                    <input type="text" value={linkTextAr} onChange={e => setLinkTextAr(e.target.value)} className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all" dir="rtl" />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">{t('buttonTitle')} (EN)</label>
+                                    <input type="text" value={linkText} onChange={e => setLinkText(e.target.value)} className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all" dir="ltr" />
+                                </div>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-2">
