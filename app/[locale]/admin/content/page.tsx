@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Tag, Layers, ImageIcon, Search, Filter, PlusSquare, X, RefreshCw, Calendar } from 'lucide-react';
+import { Plus, Edit2, Trash2, Tag, Layers, ImageIcon, Search, Filter, PlusSquare, X, RefreshCw, Calendar, Link, Eye, EyeOff } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import ConfirmDialog from '@/app/components/ConfirmDialog';
 import toast from 'react-hot-toast';
@@ -24,6 +24,10 @@ interface DynamicContent {
     images?: string[];
     categoryId: string;
     publishDate: string | null;
+    linkUrl: string | null;
+    tag: string | null;
+    tagAr: string | null;
+    isPublished: boolean;
     category: ContentCategory;
 }
 
@@ -56,6 +60,10 @@ export default function ContentManagement() {
     const [images, setImages] = useState<string[]>([]);
     const [selectedCategoryId, setSelectedCategoryId] = useState('');
     const [publishDate, setPublishDate] = useState(new Date().toISOString().split('T')[0]);
+    const [linkUrl, setLinkUrl] = useState('');
+    const [contentTag, setContentTag] = useState('');
+    const [contentTagAr, setContentTagAr] = useState('');
+    const [isPublished, setIsPublished] = useState(true);
 
     const [catName, setCatName] = useState('');
     const [catNameAr, setCatNameAr] = useState('');
@@ -130,7 +138,11 @@ export default function ContentManagement() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     title, titleAr, description, descriptionAr, image, images, categoryId: selectedCategoryId,
-                    publishDate: publishDate || undefined
+                    publishDate: publishDate || undefined,
+                    linkUrl: linkUrl || undefined,
+                    tag: contentTag || undefined,
+                    tagAr: contentTagAr || undefined,
+                    isPublished,
                 }),
             });
 
@@ -253,6 +265,10 @@ export default function ContentManagement() {
         setImages(item.images || []);
         setSelectedCategoryId(item.categoryId);
         setPublishDate(item.publishDate ? new Date(item.publishDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]);
+        setLinkUrl(item.linkUrl || '');
+        setContentTag(item.tag || '');
+        setContentTagAr(item.tagAr || '');
+        setIsPublished(item.isPublished ?? true);
         setCurrentContentId(item.id);
         setIsEditingContent(true);
         setShowContentModal(true);
@@ -272,6 +288,7 @@ export default function ContentManagement() {
         setContentFormErrors(false);
         setTitle(''); setTitleAr(''); setDescription(''); setDescriptionAr(''); setImage(''); setImages([]); setSelectedCategoryId('');
         setPublishDate(new Date().toISOString().split('T')[0]);
+        setLinkUrl(''); setContentTag(''); setContentTagAr(''); setIsPublished(true);
     };
 
     const closeCategoryModal = () => {
@@ -372,6 +389,11 @@ export default function ContentManagement() {
                                     <span className="absolute top-3 right-3 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-white/90 backdrop-blur-sm text-primary shadow-sm">
                                         {locale === 'ar' && item.category.nameAr ? item.category.nameAr : item.category.name}
                                     </span>
+                                    {!item.isPublished && (
+                                        <span className="absolute top-3 left-3 px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-500/90 text-white shadow-sm">
+                                            {t('unpublished')}
+                                        </span>
+                                    )}
                                 </div>
                                 <div className="p-5 flex-1 flex flex-col justify-between">
                                     <div>
@@ -528,6 +550,29 @@ export default function ContentManagement() {
                                     locale={locale}
                                     icon={<Calendar size={18} />}
                                 />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">{t('contentLink')}</label>
+                                <input type="url" value={linkUrl} onChange={e => setLinkUrl(e.target.value)} placeholder="https://..." className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all" dir="ltr" />
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">{t('contentTag')} (AR)</label>
+                                    <input type="text" value={contentTagAr} onChange={e => setContentTagAr(e.target.value)} className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all" dir="rtl" />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">{t('contentTag')} (EN)</label>
+                                    <input type="text" value={contentTag} onChange={e => setContentTag(e.target.value)} className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all" dir="ltr" />
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-3 pt-2">
+                                <button type="button" onClick={() => setIsPublished(!isPublished)} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${isPublished ? 'bg-green-500' : 'bg-slate-300'}`}>
+                                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${isPublished ? 'ltr:translate-x-6 rtl:-translate-x-6' : 'ltr:translate-x-1 rtl:-translate-x-1'}`} />
+                                </button>
+                                <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                                    {isPublished ? <Eye size={16} className="text-green-500" /> : <EyeOff size={16} className="text-slate-400" />}
+                                    {t('isPublished')}
+                                </label>
                             </div>
                         </div>
                         <div className="p-6 border-t border-slate-100 flex justify-end gap-3 bg-white">

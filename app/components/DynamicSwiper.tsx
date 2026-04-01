@@ -115,6 +115,9 @@ export default function DynamicSwiper({ snippet, singleRecordOnly = false }: { s
             content = content.split('{{description}}').join(String(description || ''));
             content = content.split('{{image}}').join(String(image || ''));
             content = content.split('{{publishDate}}').join(String(publishDate || ''));
+            content = content.split('{{link}}').join(String(item.linkUrl || '#'));
+            const tag = (locale === 'ar' && item.tagAr) ? item.tagAr : (item.tag || '');
+            content = content.split('{{tag}}').join(String(tag));
         } else if (fieldMapping && Array.isArray(fieldMapping)) {
             fieldMapping.forEach(mapping => {
                 const placeholder = `{{${mapping.placeholder}}}`;
@@ -191,7 +194,7 @@ export default function DynamicSwiper({ snippet, singleRecordOnly = false }: { s
                             type: config.paginationType || 'bullets',
                             el: `.swiper-pagination-${snippet.id}`
                         } : false}
-                        className="mySwiper !static"
+                        className="mySwiper !static !pb-6"
                     >
                         {data.map((item, index) => (
                             <SwiperSlide key={index}>
@@ -233,19 +236,19 @@ export default function DynamicSwiper({ snippet, singleRecordOnly = false }: { s
                     }
                     
                     .swiper-button-prev { 
-                        left: ${navPos === 'outside' ? 'calc(-1 * var(--n-offset))' : 'var(--n-offset)'} !important;
+                        left: ${navPos === 'outside' ? 'var(--n-offset)' : 'calc(-1 * var(--n-offset))'} !important;
                     }
                     .swiper-button-next { 
-                        right: ${navPos === 'outside' ? 'calc(-1 * var(--n-offset))' : 'var(--n-offset)'} !important;
+                        right: ${navPos === 'outside' ? 'var(--n-offset)' : 'calc(-1 * var(--n-offset))'} !important;
                     }
 
                     [dir='rtl'] .swiper-button-prev {
                         left: auto !important;
-                        right: ${navPos === 'outside' ? 'calc(-1 * var(--n-offset))' : 'var(--n-offset)'} !important;
+                        right: ${navPos === 'outside' ? 'var(--n-offset)' : 'calc(-1 * var(--n-offset))'} !important;
                     }
                     [dir='rtl'] .swiper-button-next {
                         right: auto !important;
-                        left: ${navPos === 'outside' ? 'calc(-1 * var(--n-offset))' : 'var(--n-offset)'} !important;
+                        left: ${navPos === 'outside' ? 'var(--n-offset)' : 'calc(-1 * var(--n-offset))'} !important;
                     }
 
                     .swiper-pagination {

@@ -1,0 +1,159 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model ActivityLog {
+  id         String   @id
+  action     String
+  entityType String
+  entityId   String
+  details    String?
+  oldData    Json?
+  newData    Json?
+  userId     Int
+  createdAt  DateTime @default(now())
+  User       User     @relation(fields: [userId], references: [id])
+}
+
+model ContentCategory {
+  id             String           @id
+  name           String
+  nameAr         String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime
+  DynamicContent DynamicContent[]
+  Snippet        Snippet[]
+}
+
+model DynamicContent {
+  id              String          @id
+  title           String
+  titleAr         String?
+  description     String?
+  descriptionAr   String?
+  image           String?
+  images          String[]        @default([])
+  categoryId      String
+  publishDate     DateTime?       @default(now())
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime
+  ContentCategory ContentCategory @relation(fields: [categoryId], references: [id])
+}
+
+model Footer {
+  id          String   @id
+  isPublished Boolean  @default(false)
+  websiteId   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime
+  userId      Int?
+  title       Json
+  content     Json?
+  User        User?    @relation(fields: [userId], references: [id])
+  Website     Website  @relation(fields: [websiteId], references: [id])
+}
+
+model Menu {
+  id         String  @id
+  url        String
+  sequence   Int     @default(0)
+  parentId   String?
+  websiteId  String
+  name       Json
+  pageId     String?
+  Page       Page?   @relation(fields: [pageId], references: [id])
+  Menu       Menu?   @relation("MenuToMenu", fields: [parentId], references: [id])
+  other_Menu Menu[]  @relation("MenuToMenu")
+  Website    Website @relation(fields: [websiteId], references: [id])
+}
+
+model Page {
+  id          String   @id
+  url         String
+  isPublished Boolean  @default(false)
+  websiteId   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime
+  userId      Int?
+  title       Json
+  content     Json?
+  Menu        Menu[]
+  User        User?    @relation(fields: [userId], references: [id])
+  Website     Website  @relation(fields: [websiteId], references: [id])
+
+  @@unique([url, websiteId])
+}
+
+model Snippet {
+  id              String           @id
+  name            String
+  category        String
+  htmlContent     String
+  thumbnail       String?
+  nameAr          String?
+  apiEndpoint     String?
+  fieldMapping    Json?
+  swiperConfig    Json?
+  type            SnippetType      @default(STATIC)
+  categoryId      String?
+  containerType   String           @default("contained")
+  ContentCategory ContentCategory? @relation(fields: [categoryId], references: [id])
+}
+
+model SocialMedia {
+  id        String   @id
+  name      Json?
+  url       String
+  image     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+}
+
+model User {
+  id          Int           @id @default(autoincrement())
+  email       String?       @unique
+  name        String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime
+  password    String
+  phone       String?       @unique
+  role        Role          @default(ADMIN)
+  ActivityLog ActivityLog[]
+  Footer      Footer[]
+  Page        Page[]
+}
+
+model Website {
+  id             String   @id
+  domain         String?  @unique
+  themeColor     String   @default("#714B67")
+  language       String   @default("en_US")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime
+  name           Json
+  description    Json?
+  logo           String?
+  fontFamily     String   @default("Inter")
+  secondaryColor String   @default("#F59E0B")
+  Footer         Footer[]
+  Menu           Menu[]
+  Page           Page[]
+}
+
+enum Role {
+  ADMIN
+  EDITOR
+  VIEWER
+}
+
+enum SnippetType {
+  STATIC
+  DYNAMIC
+}
+
+

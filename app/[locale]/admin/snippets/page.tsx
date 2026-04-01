@@ -410,10 +410,10 @@ export default function SnippetsManagement() {
                                             <p className="text-[11px] text-indigo-700 font-medium leading-relaxed">
                                                 {locale === 'ar'
                                                     ? (!isExternalApi
-                                                        ? 'سوف يتم جلب البيانات من القسم المحدد. استخدم {{title}}, {{description}}, {{publishDate}}, {{image}}, {{images}}.'
+                                                        ? 'سوف يتم جلب البيانات من القسم المحدد. استخدم {{title}}, {{description}}, {{publishDate}}, {{image}}, {{images}}, {{link}}, {{tag}} .'
                                                         : 'سوف تظهر البيانات بشكل متكرر داخل البطاقة. استخدم {{field}} لوضع البيانات.')
                                                     : (!isExternalApi
-                                                        ? 'Data will be fetched from the selected category. Use {{title}}, {{description}}, {{publishDate}}, {{image}}, {{images}}.'
+                                                        ? 'Data will be fetched from the selected category. Use {{title}}, {{description}}, {{publishDate}}, {{image}}, {{images}}, {{link}}, {{tag}}.'
                                                         : 'Data will repeat within the card. Use {{field}} to place data.')}
                                             </p>
                                         </div>
@@ -748,6 +748,8 @@ export default function SnippetsManagement() {
                                                         <li className="text-xs font-mono text-indigo-600 font-bold">{"{{image}}"}</li>
                                                         <li className="text-xs font-mono text-indigo-600 font-bold">{"{{images}}"}</li>
                                                         <li className="text-xs font-mono text-indigo-600 font-bold">{"{{publishDate}}"}</li>
+                                                        <li className="text-xs font-mono text-indigo-600 font-bold">{"{{link}}"}</li>
+                                                        <li className="text-xs font-mono text-indigo-600 font-bold">{"{{tag}}"}</li>
                                                     </ul>
                                                 </div>
                                                 <div className="space-y-4">

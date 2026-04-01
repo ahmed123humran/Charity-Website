@@ -140,6 +140,10 @@ model DynamicContent {
   images        String[]        @default([])
   categoryId    String
   publishDate   DateTime?       @default(now())
+  linkUrl       String?
+  tag           String?
+  tagAr         String?
+  isPublished   Boolean         @default(true)
   category      ContentCategory @relation(fields: [categoryId], references: [id])
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
