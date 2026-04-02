@@ -118,6 +118,8 @@ export default function DynamicSwiper({ snippet, singleRecordOnly = false }: { s
             content = content.split('{{link}}').join(String(item.linkUrl || '#'));
             const tag = (locale === 'ar' && item.tagAr) ? item.tagAr : (item.tag || '');
             content = content.split('{{tag}}').join(String(tag));
+            const linkText = (locale === 'ar' && item.linkTextAr) ? item.linkTextAr : (item.linkText || (locale === 'ar' ? 'اقرأ المزيد' : 'Read More'));
+            content = content.split('{{linkText}}').join(String(linkText));
         } else if (fieldMapping && Array.isArray(fieldMapping)) {
             fieldMapping.forEach(mapping => {
                 const placeholder = `{{${mapping.placeholder}}}`;

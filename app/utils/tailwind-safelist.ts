@@ -1,11 +1,16 @@
 // This file exists solely to tell Tailwind's JIT (Just-In-Time) compiler to generate these classes.
 // Since snippets are loaded from the database dynamically, Tailwind cannot "see" their classes during build time.
 // By listing them here, we guarantee they are always compiled and available for the Website Builder.
+// TIP: If you need to use arbitrary values like w-[350px], you must explicitly add them to this list.
 
 export const dynamicTailwindSafelist = [
     // Layout & Gradients
     'absolute', 'relative', 'inset-0', 'bg-gradient-to-l', 'bg-gradient-to-r', 'bg-gradient-to-t', 'bg-gradient-to-b',
-    'min-h-screen', 'min-h-[calc(100vh-80px)]', 'min-h-[calc(100vh-5rem)]', 'z-10',
+    'min-h-screen', 'min-h-[calc(100vh-80px)]', 'min-h-[calc(100vh-5rem)]', 'z-10', 'container', 'mx-auto', 'max-w-6xl', 'max-w-2xl', 'max-w-4xl', 'max-w-5xl',
+    'top-0', 'top-20', 'left-20', '-right-20', '-right-[42px]',
+    'grid', 'grid-cols-1', 'grid-cols-2', 'grid-cols-3', 'grid-cols-4',
+    'lg:grid-cols-2', 'lg:grid-cols-3', 'lg:grid-cols-4',
+    'col-span-1', 'col-span-2', 'lg:col-span-1', 'lg:col-span-2',
 
     // Primary Colors
     'bg-primary', 'text-primary', 'border-primary', 'from-primary', 'to-primary', 'ring-primary', 'fill-primary',
@@ -24,12 +29,57 @@ export const dynamicTailwindSafelist = [
     'bg-secondary', 'text-secondary', 'border-secondary', 'from-secondary', 'to-secondary', 'ring-secondary', 'fill-secondary',
 
     // Secondary Opacities
-    'bg-secondary/5', 'bg-secondary/10', 'bg-secondary/20', 'bg-secondary/50', 'shadow-secondary/30', 'border-secondary/50',
+    'bg-secondary/5', 'bg-secondary/10', 'bg-secondary/20', 'bg-secondary/30', 'bg-secondary/40', 'bg-secondary/50', 'bg-secondary/60',
+    'bg-secondary/70', 'bg-secondary/80', 'bg-secondary/90', 'shadow-secondary/30', 'border-secondary/50',
 
     // Secondary Hover States
     'hover:bg-secondary', 'hover:text-secondary', 'hover:bg-secondary-dark',
     'group-hover:bg-secondary/10', 'group-hover:bg-secondary/20', 'group-hover:text-secondary',
 
-    // Common Utilities
-    'hover:-translate-y-1', 'backdrop-blur-sm', 'w-full', 'h-full', 'object-cover', 'opacity-40', 'flex', 'items-center', 'overflow-hidden'
+    // Neutral & Gray Colors
+    'bg-white', 'text-white', 'bg-gray-50', 'bg-gray-100', 'bg-gray-200', 'text-gray-100', 'text-gray-200', 'text-gray-800', 'bg-slate-100', 'text-slate-100',
+    'bg-gray-50/30', 'bg-transparent', 'bg-red-50', 'text-red-600',
+
+    // Opacities
+    'opacity-10', 'opacity-20', 'opacity-40', 'opacity-50',
+
+    // Common Utilities & Transitions
+    'hover:-translate-y-1', 'backdrop-blur-sm', 'w-full', 'h-full', 'object-cover', 'flex', 'items-center', 'overflow-hidden',
+    'pointer-events-none', 'transform', '-rotate-45', 'rtl:rotate-180',
+    'transition-all', 'transition-colors', 'transition-transform', 'duration-300', 'duration-500',
+    'group', 'group-hover:-translate-x-1',
+
+    // Borders & Shapes
+    'border', 'border-2', 'border-4', 'border-gray-100', 'border-gray-200', 'border-b', 'border-t', 'border-r-4', 'border-white', 'border-white/10', 'border-white/30', 'border-none',
+    'rounded', 'rounded-md', 'rounded-lg', 'rounded-xl', 'rounded-2xl', 'rounded-3xl', 'rounded-full',
+
+    // Shadows
+    'shadow-sm', 'shadow', 'shadow-md', 'shadow-lg', 'shadow-xl',
+
+    // Widths (Fractional)
+    'w-1/2', 'w-1/3', 'w-2/3', 'w-1/4', 'w-2/4', 'w-3/4', 'w-1/5', 'w-2/5', 'w-3/5', 'w-4/5', 'w-1/6', 'w-2/6', 'w-3/6', 'w-4/6', 'w-5/6', 'w-1/12', 'w-2/12', 'w-3/12', 'w-4/12', 'w-5/12', 'w-6/12', 'w-7/12', 'w-8/12', 'w-9/12', 'w-10/12', 'w-11/12',
+
+    // Widths (Fixed)
+    'w-screen', 'w-min', 'w-max', 'w-fit', 'w-0', 'w-px', 'w-1', 'w-2', 'w-3', 'w-4', 'w-5', 'w-6', 'w-8', 'w-10', 'w-12', 'w-16', 'w-20', 'w-24', 'w-32', 'w-40', 'w-48', 'w-56', 'w-64', 'w-72', 'w-80', 'w-96',
+    'h-64',
+
+    // Spacing (Margins & Padding)
+    'm-0', 'm-1', 'm-2', 'm-3', 'm-4', 'm-5', 'm-6', 'm-8', 'm-10', 'm-12', 'mt-0', 'mt-1', 'mt-2', 'mt-3', 'mt-4', 'mt-5', 'mt-6', 'mt-8', 'mt-10', 'mt-12', 'mb-0', 'mb-1', 'mb-2', 'mb-3', 'mb-4', 'mb-5', 'mb-6', 'mb-8', 'mb-10', 'mb-12',
+    'p-0', 'p-1', 'p-2', 'p-3', 'p-4', 'p-5', 'p-6', 'p-8', 'p-10', 'p-12', 'pt-0', 'pt-1', 'pt-2', 'pt-3', 'pt-4', 'pt-5', 'pt-6', 'pt-8', 'pt-10', 'pt-12', 'pb-0', 'pb-1', 'pb-2', 'pb-3', 'pb-4', 'pb-5', 'pb-6', 'pb-8', 'pb-10', 'pb-12',
+    'px-2', 'px-4', 'px-6', 'py-1', 'py-3', 'py-4', 'py-20', 'pr-8',
+    'space-y-4', 'space-y-6', 'space-y-8', 'space-y-10', 'space-y-12', 'space-x-4', 'gap-2', 'gap-3', 'gap-4', 'gap-6', 'gap-8', 'gap-10', 'gap-12',
+
+    // Alignment
+    'justify-start', 'justify-center', 'justify-end', 'justify-between', 'justify-around', 'justify-evenly',
+    'items-start', 'items-center', 'items-end', 'items-baseline', 'items-stretch',
+
+    // Typography
+    'text-center', 'text-left', 'text-right',
+    'text-xs', 'text-sm', 'text-base', 'text-lg', 'text-xl', 'text-2xl', 'text-3xl', 'text-4xl', 'text-5xl', 'text-6xl',
+    'md:text-5xl', 'md:text-6xl',
+    'font-light', 'font-normal', 'font-medium', 'font-semibold', 'font-bold',
+    'leading-none', 'leading-tight', 'leading-snug', 'leading-normal', 'leading-relaxed', 'leading-loose',
+
+    // Specific & Interactive
+    'hover:bg-white/10', 'hover:bg-black/5'
 ];
