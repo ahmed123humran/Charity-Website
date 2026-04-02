@@ -29,6 +29,7 @@ interface DynamicContent {
     linkTextAr: string | null;
     tag: string | null;
     tagAr: string | null;
+    icon: string | null;
     isPublished: boolean;
     category: ContentCategory;
 }
@@ -67,6 +68,7 @@ export default function ContentManagement() {
     const [linkTextAr, setLinkTextAr] = useState('');
     const [contentTag, setContentTag] = useState('');
     const [contentTagAr, setContentTagAr] = useState('');
+    const [icon, setIcon] = useState('');
     const [isPublished, setIsPublished] = useState(true);
 
     const [catName, setCatName] = useState('');
@@ -148,6 +150,7 @@ export default function ContentManagement() {
                     linkTextAr: linkTextAr || undefined,
                     tag: contentTag || undefined,
                     tagAr: contentTagAr || undefined,
+                    icon: icon || undefined,
                     isPublished,
                 }),
             });
@@ -276,6 +279,7 @@ export default function ContentManagement() {
         setLinkTextAr(item.linkTextAr || '');
         setContentTag(item.tag || '');
         setContentTagAr(item.tagAr || '');
+        setIcon(item.icon || '');
         setIsPublished(item.isPublished ?? true);
         setCurrentContentId(item.id);
         setIsEditingContent(true);
@@ -296,7 +300,7 @@ export default function ContentManagement() {
         setContentFormErrors(false);
         setTitle(''); setTitleAr(''); setDescription(''); setDescriptionAr(''); setImage(''); setImages([]); setSelectedCategoryId('');
         setPublishDate(new Date().toISOString().split('T')[0]);
-        setLinkUrl(''); setLinkText(''); setLinkTextAr(''); setContentTag(''); setContentTagAr(''); setIsPublished(true);
+        setLinkUrl(''); setLinkText(''); setLinkTextAr(''); setContentTag(''); setContentTagAr(''); setIcon(''); setIsPublished(true);
     };
 
     const closeCategoryModal = () => {
@@ -587,6 +591,16 @@ export default function ContentManagement() {
                                     <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">{t('contentTag')} (EN)</label>
                                     <input type="text" value={contentTag} onChange={e => setContentTag(e.target.value)} className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all" dir="ltr" />
                                 </div>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">{t('icon')} / SVG</label>
+                                <textarea
+                                    value={icon}
+                                    onChange={e => setIcon(e.target.value)}
+                                    placeholder="lucide-icon-name or <svg>...</svg>"
+                                    rows={2}
+                                    className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all text-xs font-mono"
+                                />
                             </div>
                             <div className="flex items-center gap-3 pt-2">
                                 <button type="button" onClick={() => setIsPublished(!isPublished)} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${isPublished ? 'bg-green-500' : 'bg-slate-300'}`}>
