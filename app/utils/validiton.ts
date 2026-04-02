@@ -158,6 +158,7 @@ export const createDynamicContentSchema = z.object({
     linkTextAr: z.string().optional(),
     tag: z.string().optional(),
     tagAr: z.string().optional(),
+    icon: z.string().optional(),
     isPublished: z.boolean().optional(),
 });
 
@@ -175,5 +176,6 @@ export const updateDynamicContentSchema = z.object({
     linkTextAr: z.string().optional(),
     tag: z.string().optional(),
     tagAr: z.string().optional(),
+    icon: z.string().optional(),
     isPublished: z.boolean().optional(),
 });

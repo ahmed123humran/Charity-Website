@@ -230,6 +230,7 @@
         "invalidCategory": "Invalid Category Selected",
         "invalidInput": "Invalid data input",
         "noContent": "No content found.",
+        "icon": "Icon",
         "manageCategories": "Categories for organizing your content.",
         "snippetsDescription": "Create global building blocks for your websites.",
         "snippetType": "Snippet Type",
