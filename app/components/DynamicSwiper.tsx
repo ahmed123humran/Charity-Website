@@ -120,6 +120,7 @@ export default function DynamicSwiper({ snippet, singleRecordOnly = false }: { s
             content = content.split('{{tag}}').join(String(tag));
             const linkText = (locale === 'ar' && item.linkTextAr) ? item.linkTextAr : (item.linkText || (locale === 'ar' ? 'اقرأ المزيد' : 'Read More'));
             content = content.split('{{linkText}}').join(String(linkText));
+            content = content.split('{{icon}}').join(String(item.icon || ''));
         } else if (fieldMapping && Array.isArray(fieldMapping)) {
             fieldMapping.forEach(mapping => {
                 const placeholder = `{{${mapping.placeholder}}}`;
