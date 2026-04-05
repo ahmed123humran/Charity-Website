@@ -9,6 +9,23 @@ interface Props {
     params: Promise<{ id: string }>;
 }
 
+export async function GET(request: NextRequest, { params }: Props) {
+    const { id } = await params;
+    try {
+        const item = await prisma.dynamicContent.findUnique({
+            where: { id },
+            include: { category: true }
+        });
+        if (!item) {
+            return NextResponse.json({ message: 'notFound' }, { status: 404 });
+        }
+        return NextResponse.json(item, { status: 200 });
+    }
+    catch (error) {
+        return NextResponse.json({ message: 'internalServerError' }, { status: 500 });
+    }
+}
+
 export async function PUT(request: NextRequest, { params }: Props) {
     const { id } = await params;
     try {

@@ -110,8 +110,9 @@ export default async function RootLayout({
   const selectedFont = fontMap[fontFamilyValue] || inter.style.fontFamily;
 
   return (
-    <html lang={locale} dir={locale === 'ar' ? 'rtl' : 'ltr'}>
+    <html lang={locale} dir={locale === 'ar' ? 'rtl' : 'ltr'} suppressHydrationWarning>
       <body
+        suppressHydrationWarning
         className={`${inter.variable} ${cairo.variable} ${tajawal.variable} ${almarai.variable} ${roboto.variable} ${openSans.variable} antialiased`}
         style={{
           '--primary-color': themeColor,

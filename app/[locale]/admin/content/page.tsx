@@ -1,7 +1,11 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Tag, Layers, ImageIcon, Search, Filter, PlusSquare, X, RefreshCw, Calendar, Link, Eye, EyeOff } from 'lucide-react';
+import {
+    Plus, Edit2, Trash2, Tag, Layers, ImageIcon,
+    Search, Filter, PlusSquare, X, RefreshCw, Calendar,
+    Link, Eye, EyeOff, Share2
+} from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import ConfirmDialog from '@/app/components/ConfirmDialog';
 import toast from 'react-hot-toast';
@@ -411,10 +415,22 @@ export default function ContentManagement() {
                                             {t('unpublished')}
                                         </span>
                                     )}
+                                    {item.icon && (
+                                        <div className="absolute bottom-3 right-3 bg-white/95 backdrop-blur-sm p-1.5 rounded-lg shadow-md border border-white/20 text-primary w-8 h-8 flex items-center justify-center overflow-hidden">
+                                            {item.icon.trim().startsWith('<svg') ? (
+                                                <div
+                                                    className="w-full h-full flex items-center justify-center [&_svg]:w-full [&_svg]:h-full"
+                                                    dangerouslySetInnerHTML={{ __html: item.icon }}
+                                                />
+                                            ) : (
+                                                <Share2 className="w-5 h-5" />
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="p-5 flex-1 flex flex-col justify-between">
                                     <div>
-                                        <h3 className="font-bold text-slate-900 text-lg mb-1">{locale === 'ar' && item.titleAr ? item.titleAr : item.title}</h3>
+                                        <h3 className="font-bold text-slate-900 text-lg mb-1 line-clamp-2 leading-snug">{locale === 'ar' && item.titleAr ? item.titleAr : item.title}</h3>
                                         <p className="text-slate-500 text-sm line-clamp-2">{locale === 'ar' && item.descriptionAr ? item.descriptionAr : item.description}</p>
                                     </div>
                                     <div className="flex justify-end gap-2 mt-4 pt-4 border-t border-slate-50">
@@ -598,9 +614,25 @@ export default function ContentManagement() {
                                     value={icon}
                                     onChange={e => setIcon(e.target.value)}
                                     placeholder="lucide-icon-name or <svg>...</svg>"
-                                    rows={2}
-                                    className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all text-xs font-mono"
+                                    className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all h-24"
+                                    dir="ltr"
                                 />
+                                {icon && (
+                                    <div className="mt-2 p-4 bg-slate-50 rounded-xl border border-dashed border-slate-200 flex flex-col items-center justify-center gap-2">
+                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('preview')}</div>
+                                        {icon.trim().startsWith('<svg') ? (
+                                            <div
+                                                className="w-12 h-12 flex items-center justify-center icon-preview text-primary"
+                                                dangerouslySetInnerHTML={{ __html: icon }}
+                                            />
+                                        ) : (
+                                            <div className="text-sm font-mono text-slate-600 bg-white px-3 py-1 rounded-md border border-slate-100 flex items-center gap-2">
+                                                <Share2 className="w-4 h-4 text-primary" />
+                                                {icon}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                             <div className="flex items-center gap-3 pt-2">
                                 <button type="button" onClick={() => setIsPublished(!isPublished)} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${isPublished ? 'bg-green-500' : 'bg-slate-300'}`}>

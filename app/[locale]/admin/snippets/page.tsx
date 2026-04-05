@@ -66,6 +66,7 @@ export default function SnippetsManagement() {
         navOffset: 10,
         paginationPosition: 'inside',
         paginationOffset: 20,
+        isDetailView: false,
     });
     const [containerType, setContainerType] = useState('contained');
     const [fieldMapping, setFieldMapping] = useState<{ placeholder: string, apiField: string }[]>([]);
@@ -206,6 +207,8 @@ export default function SnippetsManagement() {
             pauseOnHover: true,
             navStyle: 'default',
             navIcon: 'chevron',
+            isDetailView: false,
+            ...snippet.swiperConfig
         });
         setCategoryId(snippet.categoryId || '');
         setContainerType(snippet.containerType || 'contained');
@@ -410,10 +413,10 @@ export default function SnippetsManagement() {
                                             <p className="text-[11px] text-indigo-700 font-medium leading-relaxed">
                                                 {locale === 'ar'
                                                     ? (!isExternalApi
-                                                        ? 'سوف يتم جلب البيانات من القسم المحدد. استخدم {{title}}, {{description}}, {{publishDate}}, {{image}}, {{images}}, {{link}}, {{tag}}, {{linkText}}, {{icon}} .'
+                                                        ? 'سوف يتم جلب البيانات من القسم المحدد. استخدم {{title}}, {{description}}, {{publishDate}}, {{image}}, {{images}}, {{link}}, {{tag}}, {{linkText}}, {{icon}}, {{id}} .'
                                                         : 'سوف تظهر البيانات بشكل متكرر داخل البطاقة. استخدم {{field}} لوضع البيانات.')
                                                     : (!isExternalApi
-                                                        ? 'Data will be fetched from the selected category. Use {{title}}, {{description}}, {{publishDate}}, {{image}}, {{images}}, {{link}}, {{tag}}, {{linkText}}, {{icon}}.'
+                                                        ? 'Data will be fetched from the selected category. Use {{title}}, {{description}}, {{publishDate}}, {{image}}, {{images}}, {{link}}, {{tag}}, {{linkText}}, {{icon}}, {{id}}.'
                                                         : 'Data will repeat within the card. Use {{field}} to place data.')}
                                             </p>
                                         </div>
@@ -427,7 +430,7 @@ export default function SnippetsManagement() {
                             <div className="flex-1 bg-slate-100 p-4 sm:p-8 overflow-auto relative">
                                 {activeTab === 'design' ? (
                                     viewMode === 'code' ? (
-                                        <textarea value={htmlContent} onChange={e => setHtmlContent(e.target.value)} className="w-full h-full font-mono text-[13px] sm:text-sm p-4 sm:p-8 bg-slate-900 !text-slate-100 rounded-2xl sm:rounded-3xl outline-none min-h-[300px] outline-hidden" />
+                                        <textarea value={htmlContent} onChange={e => setHtmlContent(e.target.value)} dir="ltr" className="w-full h-full font-mono text-[13px] sm:text-sm p-4 sm:p-8 bg-slate-900 !text-slate-100 rounded-2xl sm:rounded-3xl outline-none min-h-[300px] outline-hidden selection:bg-secondary selection:text-white" />
                                     ) : (
                                         <div className="max-w-4xl mx-auto min-h-full py-10 sm:py-20 relative">
                                             {activeElement && previewRef.current?.contains(activeElement) && type !== 'DYNAMIC' && (
@@ -495,25 +498,37 @@ export default function SnippetsManagement() {
                                         </div>
 
                                         <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100 space-y-8">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                                                 <div className="space-y-3">
                                                     <label className="text-xs font-black text-slate-400 uppercase tracking-widest">{t('swiperSpeed')}</label>
                                                     <input type="number" value={swiperConfig.speed} onChange={e => setSwiperConfig({ ...swiperConfig, speed: parseInt(e.target.value) })} className="w-full px-5 py-3 bg-white border border-slate-200 text-slate-900 rounded-2xl outline-none focus:ring-2 focus:ring-primary/20 transition-all font-medium" />
                                                 </div>
-                                                <div className="flex items-center gap-6 pt-6">
+                                                <div className="flex flex-col gap-4 pt-4">
                                                     <label className="flex items-center gap-3 cursor-pointer group">
                                                         <div className={`w-12 h-7 rounded-full relative transition-all ${swiperConfig.loop ? 'bg-primary' : 'bg-slate-200'}`}>
                                                             <div className={`absolute top-1 w-5 h-5 bg-white rounded-full shadow-sm transition-all ${swiperConfig.loop ? 'right-1' : 'left-1'}`} />
                                                         </div>
                                                         <input type="checkbox" className="hidden" checked={swiperConfig.loop} onChange={e => setSwiperConfig({ ...swiperConfig, loop: e.target.checked })} />
-                                                        <span className="text-sm font-bold text-slate-700 group-hover:text-primary transition-colors">{t('loop')}</span>
+                                                        <span className="text-xs font-bold text-slate-700 group-hover:text-primary transition-colors">{t('loop')}</span>
                                                     </label>
                                                     <label className="flex items-center gap-3 cursor-pointer group">
                                                         <div className={`w-12 h-7 rounded-full relative transition-all ${swiperConfig.autoplay ? 'bg-primary' : 'bg-slate-200'}`}>
                                                             <div className={`absolute top-1 w-5 h-5 bg-white rounded-full shadow-sm transition-all ${swiperConfig.autoplay ? 'right-1' : 'left-1'}`} />
                                                         </div>
                                                         <input type="checkbox" className="hidden" checked={swiperConfig.autoplay} onChange={e => setSwiperConfig({ ...swiperConfig, autoplay: e.target.checked })} />
-                                                        <span className="text-sm font-bold text-slate-700 group-hover:text-primary transition-colors">{t('autoplay')}</span>
+                                                        <span className="text-xs font-bold text-slate-700 group-hover:text-primary transition-colors">{t('autoplay')}</span>
+                                                    </label>
+                                                </div>
+                                                <div className="p-4 bg-indigo-50 border border-indigo-100 rounded-3xl flex flex-col justify-center">
+                                                    <label className="flex items-center gap-3 cursor-pointer group">
+                                                        <div className={`w-12 h-7 rounded-full relative transition-all ${swiperConfig.isDetailView ? 'bg-indigo-600' : 'bg-slate-200'}`}>
+                                                            <div className={`absolute top-1 w-5 h-5 bg-white rounded-full shadow-md transition-all ${swiperConfig.isDetailView ? 'right-1' : 'left-1'}`} />
+                                                        </div>
+                                                        <input type="checkbox" className="hidden" checked={swiperConfig.isDetailView} onChange={e => setSwiperConfig({ ...swiperConfig, isDetailView: e.target.checked })} />
+                                                        <div className="flex flex-col">
+                                                            <span className="text-xs font-black text-indigo-900 leading-tight uppercase tracking-widest">{locale === 'ar' ? 'العرض كصفحة تفاصيل' : 'Detail View Mode'}</span>
+                                                            <span className="text-[9px] text-indigo-600 font-medium">{locale === 'ar' ? 'لجلب بيانات سجل واحد فقط من الرابط' : 'Fetch record from URL ID'}</span>
+                                                        </div>
                                                     </label>
                                                 </div>
                                             </div>
@@ -752,6 +767,7 @@ export default function SnippetsManagement() {
                                                         <li className="text-xs font-mono text-indigo-600 font-bold">{"{{tag}}"}</li>
                                                         <li className="text-xs font-mono text-indigo-600 font-bold">{"{{linkText}}"}</li>
                                                         <li className="text-xs font-mono text-indigo-600 font-bold">{"{{icon}}"}</li>
+                                                        <li className="text-xs font-mono text-indigo-600 font-bold">{"{{id}}"}</li>
                                                     </ul>
                                                 </div>
                                                 <div className="space-y-4">

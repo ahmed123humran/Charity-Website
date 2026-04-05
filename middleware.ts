@@ -47,14 +47,5 @@ export default async function proxy(request: NextRequest) {
 
 export const config = {
     // Match only internationalized pathnames
-    matcher: [
-        // Enable a redirect to a matching locale at the root
-        '/',
-        // Set a cookie to remember the previous locale for
-        // all requests that have a locale prefix
-        '/(ar|en)/:path*',
-        // Enable redirects for internal paths
-        '/admin/:path*',
-        '/login'
-    ]
+    matcher: ['/((?!api|_next|_vercel|.*\\..*).*)']
 };

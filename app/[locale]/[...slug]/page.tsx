@@ -53,10 +53,30 @@ export default async function DynamicPage({ params }: Props) {
     const isHomePage = slug.length === 0;
 
     const websiteContext = await prisma.website.findFirst({ orderBy: { updatedAt: 'desc' } });
-    const page = websiteContext ? await prisma.page.findFirst({
+
+    let page = websiteContext ? await prisma.page.findFirst({
         where: { url, websiteId: websiteContext.id },
         include: { website: true }
     }) : null;
+
+    let dynamicId = null;
+
+    // If exact page not found, try finding a parent page for dynamic routes (e.g. /media/center/1 -> /media/center)
+    if (!page && websiteContext && slug.length > 1) {
+        const parentUrl = slug.slice(0, -1).join('/');
+        const possibleDynamicId = slug[slug.length - 1];
+
+        // Basic check if it could be an ID (usually starts with a letter/number and has a certain length, or is just a fallback)
+        // Here we try to fetch the parent page. If it exists, we treat the last slug as the ID.
+        page = await prisma.page.findFirst({
+            where: { url: parentUrl, websiteId: websiteContext.id },
+            include: { website: true }
+        });
+
+        if (page) {
+            dynamicId = possibleDynamicId;
+        }
+    }
 
     if (!page || !page.isPublished) {
         return (
@@ -84,7 +104,7 @@ export default async function DynamicPage({ params }: Props) {
                     <div className="flex flex-col">
                         {localizedContent.map((item: any) => (
                             (item.type === 'DYNAMIC') ? (
-                                <DynamicSwiper key={item.id} snippet={item} />
+                                <DynamicSwiper key={item.id} snippet={item} dynamicId={dynamicId} />
                             ) : (
                                 <div key={item.id} dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.htmlContent) }} />
                             )
@@ -96,7 +116,7 @@ export default async function DynamicPage({ params }: Props) {
                     <div className="flex flex-col">
                         {parsed.map((item: any) => (
                             (item.type === 'DYNAMIC') ? (
-                                <DynamicSwiper key={item.id} snippet={item} />
+                                <DynamicSwiper key={item.id} snippet={item} dynamicId={dynamicId} />
                             ) : (
                                 <div key={item.id} dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.htmlContent) }} />
                             )
