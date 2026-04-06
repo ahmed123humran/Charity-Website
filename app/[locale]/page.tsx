@@ -7,6 +7,7 @@ import { Metadata } from "next";
 import { getLocalizedName, getContentSnippet } from "@/app/utils/locale";
 import { sanitizeHtml } from "@/app/utils/sanitize";
 import DynamicSwiper from "@/app/components/DynamicSwiper";
+import DynamicGrid from "@/app/components/DynamicGrid";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -75,6 +76,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
               {localizedContent.map((item: any) => (
                 (item.type === 'DYNAMIC') ? (
                   <DynamicSwiper key={item.id} snippet={item} />
+                ) : (item.type === 'DYNAMIC_GRID') ? (
+                  <DynamicGrid key={item.id} snippet={item} />
                 ) : (
                   <div key={item.id} dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.htmlContent) }} />
                 )
@@ -91,6 +94,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             {parsed.map((item: any) => (
               (item.type === 'DYNAMIC') ? (
                 <DynamicSwiper key={item.id} snippet={item} />
+              ) : (item.type === 'DYNAMIC_GRID') ? (
+                <DynamicGrid key={item.id} snippet={item} />
               ) : (
                 <div key={item.id} dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.htmlContent) }} />
               )

@@ -4,6 +4,7 @@ import React from 'react';
 import { useAppSelector, useAppDispatch } from '@/app/store/hooks';
 import { closeModal } from '@/app/store/slices/dynamicModalSlice';
 import DynamicSwiper from './DynamicSwiper';
+import DynamicGrid from './DynamicGrid';
 import { X } from 'lucide-react';
 
 const DynamicDetailModal = () => {
@@ -30,17 +31,31 @@ const DynamicDetailModal = () => {
 
                 {/* Content Area */}
                 <div className="flex-1 overflow-y-auto p-0 custom-scrollbar">
-                    <DynamicSwiper
-                        snippet={{
-                            ...snippet,
-                            htmlContent: snippet.swiperConfig?.modalHtml ? snippet.swiperConfig.modalHtml : snippet.htmlContent,
-                            swiperConfig: {
-                                ...snippet.swiperConfig,
-                                isDetailView: true // Always force detail view mode inside this modal
-                            }
-                        }}
-                        dynamicId={dynamicId}
-                    />
+                    {snippet.type === 'DYNAMIC' ? (
+                        <DynamicSwiper
+                            snippet={{
+                                ...snippet,
+                                htmlContent: snippet.swiperConfig?.modalHtml ? snippet.swiperConfig.modalHtml : snippet.htmlContent,
+                                swiperConfig: {
+                                    ...snippet.swiperConfig,
+                                    isDetailView: true // Always force detail view mode inside this modal
+                                }
+                            }}
+                            dynamicId={dynamicId}
+                        />
+                    ) : (
+                        <DynamicGrid
+                            snippet={{
+                                ...snippet,
+                                htmlContent: snippet.swiperConfig?.modalHtml ? snippet.swiperConfig.modalHtml : snippet.htmlContent,
+                                swiperConfig: {
+                                    ...snippet.swiperConfig,
+                                    isDetailView: true // Always force detail view mode inside this modal
+                                }
+                            }}
+                            dynamicId={dynamicId}
+                        />
+                    )}
                 </div>
             </div>
         </div>
