@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import DynamicSwiper from '@/app/components/DynamicSwiper';
+import DynamicGrid from '@/app/components/DynamicGrid';
 import Header from '@/app/components/Header';
 import Footer from '@/app/components/Footer';
 import prisma from '@/app/utils/db';
@@ -105,6 +106,8 @@ export default async function DynamicPage({ params }: Props) {
                         {localizedContent.map((item: any) => (
                             (item.type === 'DYNAMIC') ? (
                                 <DynamicSwiper key={item.id} snippet={item} dynamicId={dynamicId} />
+                            ) : (item.type === 'DYNAMIC_GRID') ? (
+                                <DynamicGrid key={item.id} snippet={item} dynamicId={dynamicId} />
                             ) : (
                                 <div key={item.id} dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.htmlContent) }} />
                             )
@@ -117,6 +120,8 @@ export default async function DynamicPage({ params }: Props) {
                         {parsed.map((item: any) => (
                             (item.type === 'DYNAMIC') ? (
                                 <DynamicSwiper key={item.id} snippet={item} dynamicId={dynamicId} />
+                            ) : (item.type === 'DYNAMIC_GRID') ? (
+                                <DynamicGrid key={item.id} snippet={item} dynamicId={dynamicId} />
                             ) : (
                                 <div key={item.id} dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.htmlContent) }} />
                             )

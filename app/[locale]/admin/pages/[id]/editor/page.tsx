@@ -17,6 +17,7 @@ import toast from 'react-hot-toast';
 import EditorTour from '@/app/components/EditorTour';
 import { sanitizeHtml } from '@/app/utils/sanitize';
 import DynamicSwiper from '@/app/components/DynamicSwiper';
+import DynamicGrid from '@/app/components/DynamicGrid';
 import ColorInput from '@/app/components/ColorInput';
 
 interface Snippet {
@@ -68,7 +69,8 @@ const StableSnippet = memo(({
     onContentClick: (e: React.MouseEvent, id: string) => void,
     isBeingEdited: boolean
 }) => {
-    if (item.type === 'DYNAMIC') {
+    if (item.type === 'DYNAMIC' || item.type === 'DYNAMIC_GRID') {
+        const isGrid = item.type === 'DYNAMIC_GRID';
         return (
             <div
                 id={`snippet-content-${item.id}`}
@@ -76,13 +78,19 @@ const StableSnippet = memo(({
                 className={`transition-all duration-300 min-h-[50px] relative ${!previewMode && isActive ? 'outline-2 outline outline-indigo-500 shadow-xl z-10' : ''}`}
             >
                 <div className="pointer-events-none opacity-80">
-                    <DynamicSwiper snippet={item as any} isPreview={true} />
+                    {isGrid ? (
+                        <DynamicGrid snippet={item as any} isPreview={true} />
+                    ) : (
+                        <DynamicSwiper snippet={item as any} isPreview={true} />
+                    )}
                 </div>
                 {!previewMode && (
                     <div className="absolute inset-0 bg-primary/5 flex items-center justify-center cursor-pointer hover:bg-primary/10 transition-colors z-20">
                         <div className="bg-white px-4 py-2 rounded-full shadow-lg border border-primary/20 flex items-center gap-2">
                             <Monitor className="w-4 h-4 text-primary" />
-                            <span className="text-xs font-bold text-primary">Dynamic Swiper Preview</span>
+                            <span className="text-xs font-bold text-primary">
+                                {isGrid ? 'Dynamic Grid Preview' : 'Dynamic Swiper Preview'}
+                            </span>
                         </div>
                     </div>
                 )}
@@ -192,7 +200,7 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                             setContentAr(ar);
                             setDroppedSnippets(editorLocale === 'en' ? en : ar);
                         }
-                    } catch (e) { console.log('Content parse error', e); }
+                    } catch (e) { /* Content parse error */ }
                 }
             }
         } catch (error) { console.error('Failed to fetch page', error); }
@@ -293,7 +301,7 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
 
     const commitChanges = (id: string) => {
         const snippet = droppedSnippets.find(s => s.id === id);
-        if (snippet?.type === 'DYNAMIC') return;
+        if (snippet?.type === 'DYNAMIC' || snippet?.type === 'DYNAMIC_GRID') return;
 
         const wrapper = document.getElementById(`snippet-content-${id}`);
         if (wrapper) {

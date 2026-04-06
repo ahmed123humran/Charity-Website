@@ -155,6 +155,7 @@ model DynamicContent {
 enum SnippetType {
   STATIC
   DYNAMIC
+  DYNAMIC_GRID
 }
 
 enum Role {

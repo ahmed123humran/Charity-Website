@@ -5,7 +5,7 @@ import {
     Plus, Search, PlusSquare, Edit2, Trash2, Tag, Layers, Code,
     LayoutTemplate, ImageIcon, Copy, MousePointer2, Type, Move, Globe,
     Settings, Database, RefreshCw, CheckCircle2, X, Monitor, FileText,
-    Check, Zap, FileSearch
+    Check, Zap, FileSearch, AlignLeft, AlignCenter, AlignRight
 } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import ConfirmDialog from '@/app/components/ConfirmDialog';
@@ -14,6 +14,7 @@ import { useAppSelector } from '@/app/store/hooks';
 import SnippetsTour from '@/app/components/SnippetsTour';
 import { sanitizeHtml } from '@/app/utils/sanitize';
 import DynamicSwiper from '@/app/components/DynamicSwiper';
+import DynamicGrid from '@/app/components/DynamicGrid';
 
 interface Snippet {
     id: string;
@@ -22,7 +23,7 @@ interface Snippet {
     category: string;
     htmlContent: string;
     thumbnail: string | null;
-    type: 'STATIC' | 'DYNAMIC';
+    type: 'STATIC' | 'DYNAMIC' | 'DYNAMIC_GRID';
     apiEndpoint: string | null;
     swiperConfig: any | null;
     fieldMapping: any | null;
@@ -46,7 +47,7 @@ export default function SnippetsManagement() {
     const [nameAr, setNameAr] = useState('');
     const [category, setCategory] = useState('Intro');
     const [htmlContent, setHtmlContent] = useState('');
-    const [type, setType] = useState<'STATIC' | 'DYNAMIC'>('STATIC');
+    const [type, setType] = useState<'STATIC' | 'DYNAMIC' | 'DYNAMIC_GRID'>('STATIC');
     const [isExternalApi, setIsExternalApi] = useState(false);
     const [apiEndpoint, setApiEndpoint] = useState('');
     const [categoryId, setCategoryId] = useState('');
@@ -74,10 +75,13 @@ export default function SnippetsManagement() {
         isDetailView: false,
         linkType: 'page',
         modalHtml: '',
+        itemsPerPage: 6,
+        paginationStyle: 'numbers-rounded',
+        paginationAlign: 'center',
     });
     const [containerType, setContainerType] = useState('contained');
     const [fieldMapping, setFieldMapping] = useState<{ placeholder: string, apiField: string }[]>([]);
-    const [activeTab, setActiveTab] = useState<'design' | 'swiper' | 'api' | 'modalDesign'>('design');
+    const [activeTab, setActiveTab] = useState<'design' | 'swiper' | 'grid' | 'api' | 'modalDesign'>('design');
     const [viewMode, setViewMode] = useState<'visual' | 'code'>('visual');
     const [activeElement, setActiveElement] = useState<HTMLElement | null>(null);
     const [sampleData, setSampleData] = useState<any>(null);
@@ -130,11 +134,11 @@ export default function SnippetsManagement() {
                     nameAr,
                     category,
                     htmlContent: finalContent,
-                    type: type === 'DYNAMIC' ? 'DYNAMIC' : 'STATIC',
-                    apiEndpoint: (type === 'DYNAMIC' && isExternalApi) ? apiEndpoint : null,
-                    categoryId: (type === 'DYNAMIC' && !isExternalApi) ? categoryId : null,
-                    swiperConfig: type === 'DYNAMIC' ? swiperConfig : null,
-                    fieldMapping: type === 'DYNAMIC' ? fieldMapping : null,
+                    type: type,
+                    apiEndpoint: ((type === 'DYNAMIC' || type === 'DYNAMIC_GRID') && isExternalApi) ? apiEndpoint : null,
+                    categoryId: ((type === 'DYNAMIC' || type === 'DYNAMIC_GRID') && !isExternalApi) ? categoryId : null,
+                    swiperConfig: (type === 'DYNAMIC' || type === 'DYNAMIC_GRID') ? swiperConfig : null,
+                    fieldMapping: (type === 'DYNAMIC' || type === 'DYNAMIC_GRID') ? fieldMapping : null,
                     containerType,
                 }),
             });
@@ -191,6 +195,9 @@ export default function SnippetsManagement() {
         const snippetType = snippet.type || 'STATIC';
         if (snippetType === 'DYNAMIC') {
             setType('DYNAMIC');
+            setIsExternalApi(!!snippet.apiEndpoint);
+        } else if (snippetType === 'DYNAMIC_GRID') {
+            setType('DYNAMIC_GRID');
             setIsExternalApi(!!snippet.apiEndpoint);
         } else {
             setType('STATIC');
@@ -268,6 +275,9 @@ export default function SnippetsManagement() {
             isDetailView: false,
             linkType: 'page',
             modalHtml: '',
+            itemsPerPage: 6,
+            paginationStyle: 'numbers-rounded',
+            paginationAlign: 'center',
         });
     };
 
@@ -323,6 +333,10 @@ export default function SnippetsManagement() {
                                         <div className="scale-75 origin-center pointer-events-none w-full h-full overflow-hidden flex items-center justify-center">
                                             <DynamicSwiper snippet={s} singleRecordOnly={true} />
                                         </div>
+                                    ) : s.type === 'DYNAMIC_GRID' ? (
+                                        <div className="scale-75 origin-center pointer-events-none w-full h-full overflow-hidden flex items-center justify-center">
+                                            <DynamicGrid snippet={s} singleRecordOnly={true} />
+                                        </div>
                                     ) : (
                                         <div className="scale-50 origin-center opacity-40 pointer-events-none w-full h-full overflow-hidden" dangerouslySetInnerHTML={{ __html: sanitizeHtml(s.htmlContent) }} />
                                     )}
@@ -364,7 +378,7 @@ export default function SnippetsManagement() {
                             </div>
                         </div>
 
-                        {type === 'DYNAMIC' && (
+                        {(type === 'DYNAMIC' || type === 'DYNAMIC_GRID') && (
                             <div className="bg-slate-50 border-b border-slate-100 flex px-6 sm:px-10 overflow-x-auto no-scrollbar">
                                 <button
                                     onClick={() => setActiveTab('design')}
@@ -372,18 +386,30 @@ export default function SnippetsManagement() {
                                 >
                                     <Layers className="w-4 h-4" /> {t('design')}
                                 </button>
-                                <button
-                                    onClick={() => setActiveTab('swiper')}
-                                    className={`py-4 px-6 text-sm font-bold flex items-center gap-2 border-b-2 transition-all cursor-pointer whitespace-nowrap ${activeTab === 'swiper' ? 'border-primary text-primary bg-white shadow-[0_-4px_0_inset_white]' : 'border-transparent text-slate-400 hover:text-slate-600'}`}
-                                >
-                                    <Settings className="w-4 h-4" /> {t('settings')}
-                                </button>
-                                <button
-                                    onClick={() => setActiveTab('api')}
-                                    className={`py-4 px-6 text-sm font-bold flex items-center gap-2 border-b-2 transition-all cursor-pointer whitespace-nowrap ${activeTab === 'api' ? 'border-primary text-primary bg-white shadow-[0_-4px_0_inset_white]' : 'border-transparent text-slate-400 hover:text-slate-600'}`}
-                                >
-                                    <Database className="w-4 h-4" /> {t('apiConfig')}
-                                </button>
+                                {type === 'DYNAMIC' && (
+                                    <button
+                                        onClick={() => setActiveTab('swiper')}
+                                        className={`py-4 px-6 text-sm font-bold flex items-center gap-2 border-b-2 transition-all cursor-pointer whitespace-nowrap ${activeTab === 'swiper' ? 'border-primary text-primary bg-white shadow-[0_-4px_0_inset_white]' : 'border-transparent text-slate-400 hover:text-slate-600'}`}
+                                    >
+                                        <Settings className="w-4 h-4" /> {t('settings')}
+                                    </button>
+                                )}
+                                {type === 'DYNAMIC_GRID' && (
+                                    <button
+                                        onClick={() => setActiveTab('grid')}
+                                        className={`py-4 px-6 text-sm font-bold flex items-center gap-2 border-b-2 transition-all cursor-pointer whitespace-nowrap ${activeTab === 'grid' ? 'border-primary text-primary bg-white shadow-[0_-4px_0_inset_white]' : 'border-transparent text-slate-400 hover:text-slate-600'}`}
+                                    >
+                                        <LayoutTemplate className="w-4 h-4" /> {locale === 'ar' ? 'إعدادات الشبكة' : 'Grid Settings'}
+                                    </button>
+                                )}
+                                {isExternalApi && (
+                                    <button
+                                        onClick={() => setActiveTab('api')}
+                                        className={`py-4 px-6 text-sm font-bold flex items-center gap-2 border-b-2 transition-all cursor-pointer whitespace-nowrap ${activeTab === 'api' ? 'border-primary text-primary bg-white shadow-[0_-4px_0_inset_white]' : 'border-transparent text-slate-400 hover:text-slate-600'}`}
+                                    >
+                                        <Database className="w-4 h-4" /> {t('apiConfig')}
+                                    </button>
+                                )}
                                 {swiperConfig.linkType === 'modal' && (
                                     <button
                                         onClick={() => setActiveTab('modalDesign')}
@@ -413,12 +439,17 @@ export default function SnippetsManagement() {
                                     </div>
                                     <div className="w-full sm:w-48 xl:w-full shrink-0">
                                         <label className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1.5 block">{t('snippetType')}</label>
-                                        <select value={type} onChange={e => setType(e.target.value as any)} className="w-full px-4 py-2.5 bg-white border border-slate-200 text-slate-900 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all">
+                                        <select value={type} onChange={e => {
+                                            const newType = e.target.value as any;
+                                            setType(newType);
+                                            if (newType === 'DYNAMIC_GRID') setActiveTab('design');
+                                        }} className="w-full px-4 py-2.5 bg-white border border-slate-200 text-slate-900 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all">
                                             <option value="STATIC">{t('static')}</option>
                                             <option value="DYNAMIC">{t('dynamicSwiper')}</option>
+                                            <option value="DYNAMIC_GRID">{locale === 'ar' ? 'شبكة ديناميكية' : 'Dynamic Grid'}</option>
                                         </select>
                                     </div>
-                                    {type === 'DYNAMIC' && (
+                                    {(type === 'DYNAMIC' || type === 'DYNAMIC_GRID') && (
                                         <>
                                             <div className="w-full sm:w-48 xl:w-full shrink-0">
                                                 <label className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1.5 block">{locale === 'ar' ? 'نوع الحاوية' : 'Container Type'}</label>
@@ -429,19 +460,21 @@ export default function SnippetsManagement() {
                                             </div>
 
                                             {/* Detail Mode Toggle */}
-                                            <div className="w-full sm:w-48 xl:w-full shrink-0">
-                                                <label className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1.5 block">{locale === 'ar' ? 'نمط صفحة التفاصيل' : 'Detail Page Mode'}</label>
-                                                <div onClick={() => setSwiperConfig({ ...swiperConfig, isDetailView: !swiperConfig.isDetailView })}
-                                                    className={`p-3 rounded-xl border-2 transition-all cursor-pointer flex items-center justify-between group ${swiperConfig.isDetailView ? 'border-primary bg-primary/5' : 'border-slate-100 bg-white hover:border-slate-200'}`}>
-                                                    <div className="flex items-center gap-2">
-                                                        <FileText className={`w-4 h-4 ${swiperConfig.isDetailView ? 'text-primary' : 'text-slate-400'}`} />
-                                                        <span className="text-[11px] font-bold text-slate-700">{locale === 'ar' ? 'تفاصيل' : 'Detail'}</span>
-                                                    </div>
-                                                    <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all ${swiperConfig.isDetailView ? 'border-primary bg-primary' : 'border-slate-300'}`}>
-                                                        {swiperConfig.isDetailView && <Check className="w-2.5 h-2.5 text-white" />}
+                                            {type !== 'DYNAMIC_GRID' && (
+                                                <div className="w-full sm:w-48 xl:w-full shrink-0">
+                                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1.5 block">{locale === 'ar' ? 'نمط صفحة التفاصيل' : 'Detail Page Mode'}</label>
+                                                    <div onClick={() => setSwiperConfig({ ...swiperConfig, isDetailView: !swiperConfig.isDetailView })}
+                                                        className={`p-3 rounded-xl border-2 transition-all cursor-pointer flex items-center justify-between group ${swiperConfig.isDetailView ? 'border-primary bg-primary/5' : 'border-slate-100 bg-white hover:border-slate-200'}`}>
+                                                        <div className="flex items-center gap-3">
+                                                            <FileText className={`w-4 h-4 ${swiperConfig.isDetailView ? 'text-primary' : 'text-slate-400'}`} />
+                                                            <span className={`text-xs font-bold ${swiperConfig.isDetailView ? 'text-slate-900' : 'text-slate-500 group-hover:text-slate-700'}`}>{locale === 'ar' ? 'نمط صفحة التفاصيل' : 'Detail Page Layout'}</span>
+                                                        </div>
+                                                        <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all ${swiperConfig.isDetailView ? 'border-primary bg-primary' : 'border-slate-300'}`}>
+                                                            {swiperConfig.isDetailView && <Check className="w-2.5 h-2.5 text-white" />}
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
+                                            )}
 
                                             {/* Modal Toggle */}
                                             <div className="w-full sm:w-48 xl:w-full shrink-0">
@@ -460,8 +493,14 @@ export default function SnippetsManagement() {
                                         </>
                                     )}
                                 </div>
-                                {type === 'DYNAMIC' && (
-                                    <div className="mt-4 flex items-center gap-2 cursor-pointer group" onClick={() => setIsExternalApi(!isExternalApi)}>
+                                {(type === 'DYNAMIC' || type === 'DYNAMIC_GRID') && (
+                                    <div className="mt-4 flex items-center gap-2 cursor-pointer group" onClick={() => {
+                                        const newValue = !isExternalApi;
+                                        setIsExternalApi(newValue);
+                                        if (!newValue && activeTab === 'api') {
+                                            setActiveTab('design');
+                                        }
+                                    }}>
                                         <div className={`w-10 h-6 rounded-full relative transition-all ${isExternalApi ? 'bg-primary' : 'bg-slate-200'}`}>
                                             <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${isExternalApi ? 'right-1' : 'left-1'}`} />
                                         </div>
@@ -470,7 +509,7 @@ export default function SnippetsManagement() {
                                         </span>
                                     </div>
                                 )}
-                                {type === 'DYNAMIC' && !isExternalApi && (
+                                {(type === 'DYNAMIC' || type === 'DYNAMIC_GRID') && !isExternalApi && (
                                     <div className="mt-4 space-y-2">
                                         <label className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1.5 block">{t('contentType')}</label>
                                         <select value={categoryId} onChange={e => setCategoryId(e.target.value)} className="w-full px-4 py-2.5 bg-white border border-slate-200 text-slate-900 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all">
@@ -479,7 +518,7 @@ export default function SnippetsManagement() {
                                         </select>
                                     </div>
                                 )}
-                                {type === 'DYNAMIC' && (
+                                {(type === 'DYNAMIC' || type === 'DYNAMIC_GRID') && (
                                     <div className="mt-8 space-y-4">
                                         <div className="p-4 bg-indigo-50 border border-indigo-100 rounded-2xl">
                                             <p className="text-[11px] text-indigo-700 font-medium leading-relaxed">
@@ -505,7 +544,7 @@ export default function SnippetsManagement() {
                                         <textarea value={htmlContent} onChange={e => setHtmlContent(e.target.value)} dir="ltr" className="w-full h-full font-mono text-[13px] sm:text-sm p-4 sm:p-8 bg-slate-900 !text-slate-100 rounded-2xl sm:rounded-3xl outline-none min-h-[300px] outline-hidden selection:bg-secondary selection:text-white" />
                                     ) : (
                                         <div className="max-w-4xl mx-auto min-h-full py-10 sm:py-20 relative">
-                                            {activeElement && previewRef.current?.contains(activeElement) && type !== 'DYNAMIC' && (
+                                            {activeElement && previewRef.current?.contains(activeElement) && type !== 'DYNAMIC' && type !== 'DYNAMIC_GRID' && (
                                                 <div className="fixed z-50 flex gap-1 bg-slate-900 text-white p-1 rounded-full shadow-2xl"
                                                     style={{ top: `${activeElement.getBoundingClientRect().top - 40}px`, left: `${activeElement.getBoundingClientRect().left + activeElement.getBoundingClientRect().width / 2}px`, transform: 'translateX(-50%)' }}>
                                                     <button onMouseDown={e => {
@@ -530,10 +569,14 @@ export default function SnippetsManagement() {
                                                     )}
                                                 </div>
                                             )}
-                                            {type === 'DYNAMIC' ? (
+                                            {(type === 'DYNAMIC' || type === 'DYNAMIC_GRID') ? (
                                                 <div className="bg-slate-50 border border-slate-200 shadow-inner rounded-[2rem] min-h-[400px] relative pointer-events-none opacity-95 overflow-hidden">
                                                     <div className="absolute top-0 right-0 bg-primary/95 text-white text-[10px] uppercase tracking-widest font-bold px-4 py-2 rounded-bl-2xl z-50 shadow-sm backdrop-blur-sm shadow-primary/20 flex items-center gap-2"><Globe className="w-3 h-3" /> Live Preview</div>
-                                                    <DynamicSwiper snippet={{ id: 'preview', htmlContent, type, apiEndpoint, swiperConfig, categoryId, fieldMapping }} singleRecordOnly={true} />
+                                                    {type === 'DYNAMIC' ? (
+                                                        <DynamicSwiper snippet={{ id: 'preview', htmlContent, type, apiEndpoint, swiperConfig, categoryId, fieldMapping }} singleRecordOnly={true} />
+                                                    ) : (
+                                                        <DynamicGrid snippet={{ id: 'preview', htmlContent, type, apiEndpoint, swiperConfig, categoryId, fieldMapping }} singleRecordOnly={true} />
+                                                    )}
                                                 </div>
                                             ) : (
                                                 <div ref={previewRef} onClick={handlePreviewClick} dangerouslySetInnerHTML={{ __html: sanitizeHtml(htmlContent) }} className="bg-white shadow-2xl min-h-[400px]" />
@@ -551,7 +594,11 @@ export default function SnippetsManagement() {
                                         <div className="w-full xl:w-1/2 bg-white border-t xl:border-t-0 xl:border-r border-slate-200 p-4 sm:p-8 overflow-y-auto shrink-0 z-10 transition-all">
                                             <div className="bg-slate-50 border border-slate-200 shadow-inner rounded-[2rem] min-h-[400px] relative pointer-events-none opacity-95 overflow-hidden">
                                                 <div className="absolute top-0 right-0 bg-indigo-500 text-white text-[10px] uppercase tracking-widest font-bold px-4 py-2 rounded-bl-2xl z-50 shadow-sm backdrop-blur-sm shadow-indigo-500/20 flex items-center gap-2"><Globe className="w-3 h-3" /> {locale === 'ar' ? 'معاينة المودال' : 'Modal Preview'}</div>
-                                                <DynamicSwiper snippet={{ id: 'modal-preview', htmlContent: swiperConfig.modalHtml || '<div class="p-10 text-center text-slate-400">Modal HTML Empty</div>', type, apiEndpoint, swiperConfig: { ...swiperConfig, isDetailView: true }, categoryId, fieldMapping }} singleRecordOnly={true} isPreview={true} />
+                                                {type === 'DYNAMIC' ? (
+                                                    <DynamicSwiper snippet={{ id: 'modal-preview', htmlContent: swiperConfig.modalHtml || '<div class="p-10 text-center text-slate-400">Modal HTML Empty</div>', type, apiEndpoint, swiperConfig: { ...swiperConfig, isDetailView: true }, categoryId, fieldMapping }} singleRecordOnly={true} isPreview={true} />
+                                                ) : (
+                                                    <DynamicGrid snippet={{ id: 'modal-preview', htmlContent: swiperConfig.modalHtml || '<div class="p-10 text-center text-slate-400">Modal HTML Empty</div>', type, apiEndpoint, swiperConfig: { ...swiperConfig, isDetailView: true }, categoryId, fieldMapping }} singleRecordOnly={true} isPreview={true} />
+                                                )}
                                             </div>
                                         </div>
                                     </div>
@@ -775,7 +822,116 @@ export default function SnippetsManagement() {
                                             </div>
                                         )}
                                     </div>
-                                ) : (activeTab === 'api' && type === 'DYNAMIC' && isExternalApi) ? (
+                                ) : (activeTab === 'grid' && type === 'DYNAMIC_GRID') ? (
+                                    <div className="max-w-3xl mx-auto py-10 space-y-8">
+                                        <div className="bg-slate-900 rounded-[2rem] p-8 text-white shadow-xl shadow-slate-200">
+                                            <div className="flex items-center gap-3 mb-6">
+                                                <LayoutTemplate className="w-5 h-5 text-indigo-300" />
+                                                <h3 className="text-lg font-bold">{locale === 'ar' ? 'القوالب السريعة للشركات والجمعيات' : 'Quick Presets'}</h3>
+                                            </div>
+                                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                                                {[
+                                                    { id: 'grid3', name: '3 Columns', nameAr: '٣ أعمدة', config: { slidesPerViewDesktop: 3, slidesPerViewTablet: 2, slidesPerViewMobile: 1, itemsPerPage: 6, spaceBetween: 30 } },
+                                                    { id: 'grid4', name: '4 Columns', nameAr: '٤ أعمدة', config: { slidesPerViewDesktop: 4, slidesPerViewTablet: 2, slidesPerViewMobile: 1, itemsPerPage: 8, spaceBetween: 20 } },
+                                                    { id: 'list', name: 'List View', nameAr: 'عرض قائمة', config: { slidesPerViewDesktop: 1, slidesPerViewTablet: 1, slidesPerViewMobile: 1, itemsPerPage: 5, spaceBetween: 20 } },
+                                                    { id: 'compact', name: 'Compact Grid', nameAr: 'شبكة مكثفة', config: { slidesPerViewDesktop: 6, slidesPerViewTablet: 3, slidesPerViewMobile: 2, itemsPerPage: 12, spaceBetween: 15 } }
+                                                ].map(preset => (
+                                                    <button
+                                                        key={preset.id}
+                                                        onClick={() => setSwiperConfig({ ...swiperConfig, ...preset.config })}
+                                                        className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/10 transition-all group cursor-pointer"
+                                                    >
+                                                        <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                                            <PlusSquare className="w-5 h-5 text-indigo-300" />
+                                                        </div>
+                                                        <span className="text-[10px] font-black uppercase tracking-wider">{locale === 'ar' ? preset.nameAr : preset.name}</span>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                            <div className="space-y-3">
+                                                <label className="text-xs font-black text-slate-400 uppercase tracking-widest block">{locale === 'ar' ? 'عناصر الصفحة' : 'Items Per Page'}</label>
+                                                <input type="number" value={swiperConfig.itemsPerPage} onChange={e => setSwiperConfig({ ...swiperConfig, itemsPerPage: parseInt(e.target.value) })} className="w-full px-5 py-3 bg-white border border-slate-200 text-slate-900 rounded-2xl outline-none focus:ring-2 focus:ring-primary/20 font-medium" />
+                                            </div>
+                                            <div className="space-y-3">
+                                                <label className="text-xs font-black text-slate-400 uppercase tracking-widest block">{t('spaceBetween')}</label>
+                                                <input type="number" value={swiperConfig.spaceBetween} onChange={e => setSwiperConfig({ ...swiperConfig, spaceBetween: parseInt(e.target.value) })} className="w-full px-5 py-3 bg-white border border-slate-200 text-slate-900 rounded-2xl outline-none focus:ring-2 focus:ring-primary/20 font-medium" />
+                                            </div>
+                                            <div className="space-y-3">
+                                                <label className="text-xs font-black text-slate-400 uppercase tracking-widest block">{locale === 'ar' ? 'محاذاة الترقيم' : 'Pagination Alignment'}</label>
+                                                <div className="flex bg-white border border-slate-200 rounded-2xl p-1 gap-1">
+                                                    {[
+                                                        { id: 'start', icon: AlignLeft },
+                                                        { id: 'center', icon: AlignCenter },
+                                                        { id: 'end', icon: AlignRight }
+                                                    ].map(align => (
+                                                        <button
+                                                            key={align.id}
+                                                            onClick={() => setSwiperConfig({ ...swiperConfig, paginationAlign: align.id })}
+                                                            className={`flex-1 py-2.5 rounded-xl flex items-center justify-center transition-all ${swiperConfig.paginationAlign === align.id ? 'bg-primary text-white shadow-md' : 'text-slate-400 hover:bg-slate-50'}`}
+                                                        >
+                                                            <align.icon className="w-4 h-4" />
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                            <div className="space-y-4 md:col-span-2 mt-4">
+                                                <label className="text-xs font-black text-slate-400 uppercase tracking-widest block">{locale === 'ar' ? 'نمط الترقيم المرئي' : 'Visual Pagination Style'}</label>
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                    {[
+                                                        { id: 'numbers-rounded', label: locale === 'ar' ? 'أرقام مستديرة' : 'Rounded Numbers', img: 'rounded' },
+                                                        { id: 'numbers-circle', label: locale === 'ar' ? 'أرقام دائرية' : 'Circular Numbers', img: 'circle' },
+                                                        { id: 'numbers-square', label: locale === 'ar' ? 'أرقام مربعة' : 'Square Numbers', img: 'square' },
+                                                        { id: 'numbers-outline', label: locale === 'ar' ? 'أرقام مفرغة' : 'Outline Numbers', img: 'outline' },
+                                                        { id: 'load-more', label: locale === 'ar' ? 'زر تحميل المزيد' : 'Load More Button', img: 'load-more' },
+                                                    ].map(style => (
+                                                        <div
+                                                            key={style.id}
+                                                            onClick={() => setSwiperConfig({ ...swiperConfig, paginationStyle: style.id })}
+                                                            className={`group relative overflow-hidden rounded-2xl border-2 transition-all cursor-pointer ${swiperConfig.paginationStyle === style.id ? 'border-primary bg-primary/5 ring-4 ring-primary/5' : 'border-slate-100 bg-white hover:border-slate-200'}`}
+                                                        >
+                                                            <div className="aspect-[4/2] bg-slate-50 flex items-center justify-center p-6 border-b border-inherit">
+                                                                <img src={`/pagination/${style.img}.png`} alt={style.label} className="max-w-full max-h-full object-contain grayscale group-hover:grayscale-0 transition-all duration-500 scale-110 group-hover:scale-125" />
+                                                            </div>
+                                                            <div className={`p-3 text-center text-[10px] sm:text-xs font-black uppercase tracking-wider transition-colors ${swiperConfig.paginationStyle === style.id ? 'text-primary' : 'text-slate-400'}`}>
+                                                                {style.label}
+                                                            </div>
+                                                            {swiperConfig.paginationStyle === style.id && (
+                                                                <div className="absolute top-2 right-2 w-5 h-5 bg-primary text-white rounded-full flex items-center justify-center shadow-lg animate-in zoom-in-50 duration-300">
+                                                                    <Check className="w-3 h-3" />
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-6 pt-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="h-px bg-slate-100 flex-1"></div>
+                                                <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">{locale === 'ar' ? 'عدد الأعمدة' : 'Columns'}</h3>
+                                                <div className="h-px bg-slate-100 flex-1"></div>
+                                            </div>
+                                            <div className="grid grid-cols-3 gap-6">
+                                                <div className="space-y-2">
+                                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest text-center block">{t('desktop')}</label>
+                                                    <input type="number" value={swiperConfig.slidesPerViewDesktop} onChange={e => setSwiperConfig({ ...swiperConfig, slidesPerViewDesktop: parseInt(e.target.value) })} className="w-full px-4 py-3 bg-white border border-slate-200 text-slate-900 rounded-2xl outline-none focus:ring-2 focus:ring-primary/20 font-medium text-center" />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest text-center block">{t('tablet')}</label>
+                                                    <input type="number" value={swiperConfig.slidesPerViewTablet} onChange={e => setSwiperConfig({ ...swiperConfig, slidesPerViewTablet: parseInt(e.target.value) })} className="w-full px-4 py-3 bg-white border border-slate-200 text-slate-900 rounded-2xl outline-none focus:ring-2 focus:ring-primary/20 font-medium text-center" />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest text-center block">{t('mobile')}</label>
+                                                    <input type="number" value={swiperConfig.slidesPerViewMobile} onChange={e => setSwiperConfig({ ...swiperConfig, slidesPerViewMobile: parseInt(e.target.value) })} className="w-full px-4 py-3 bg-white border border-slate-200 text-slate-900 rounded-2xl outline-none focus:ring-2 focus:ring-primary/20 font-medium text-center" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ) : (activeTab === 'api' && (type === 'DYNAMIC' || type === 'DYNAMIC_GRID') && isExternalApi) ? (
                                     <div className="max-w-4xl mx-auto py-10 space-y-8">
                                         <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100 space-y-6">
                                             <div className="space-y-2">
