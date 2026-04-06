@@ -15,9 +15,12 @@ import 'swiper/css/effect-coverflow';
 import 'swiper/css/effect-flip';
 import 'swiper/css/effect-cards';
 import { useLocale } from 'next-intl';
+import { useRouter } from '@/navigation';
+import { useAppDispatch } from '@/app/store/hooks';
+import { openModal, closeModal } from '@/app/store/slices/dynamicModalSlice';
 import { ChevronLeft, ChevronRight, ArrowLeft, ArrowRight, MoveLeft, MoveRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 
-interface Props {
+interface DynamicSwiperProps {
     snippet: {
         id: string;
         htmlContent: string;
@@ -28,13 +31,28 @@ interface Props {
         categoryId?: string | null;
         containerType?: string | null;
     };
+    dynamicId?: string | null;
+    singleRecordOnly?: boolean;
+    isPreview?: boolean;
 }
 
-export default function DynamicSwiper({ snippet, singleRecordOnly = false }: { snippet: any, singleRecordOnly?: boolean }) {
+export default function DynamicSwiper({
+    snippet,
+    dynamicId,
+    singleRecordOnly = false,
+    isPreview = false
+}: {
+    snippet: any;
+    dynamicId?: string | null;
+    singleRecordOnly?: boolean;
+    isPreview?: boolean;
+}) {
+    const dispatch = useAppDispatch();
     const [data, setData] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+    const router = useRouter();
     const {
         apiEndpoint,
         htmlContent,
@@ -45,13 +63,17 @@ export default function DynamicSwiper({ snippet, singleRecordOnly = false }: { s
     } = snippet;
 
     const locale = useLocale();
-
-    const isInternal = type === 'DYNAMIC' && !apiEndpoint && categoryId;
+    const isInternal = type === 'DYNAMIC' && (!apiEndpoint || apiEndpoint === '') && categoryId;
 
     useEffect(() => {
-        const effectiveEndpoint = isInternal
+        let effectiveEndpoint = isInternal
             ? `/api/dynamic-content?categoryId=${categoryId}`
             : apiEndpoint;
+
+        // Only use the dynamic ID if the snippet is specifically configured as a "Detail View"
+        if (dynamicId && isInternal && swiperConfig?.isDetailView) {
+            effectiveEndpoint = `/api/dynamic-content/${dynamicId}`;
+        }
 
         if (!effectiveEndpoint) {
             setLoading(false);
@@ -64,9 +86,23 @@ export default function DynamicSwiper({ snippet, singleRecordOnly = false }: { s
                 if (!res.ok) throw new Error('Failed to fetch data');
                 const json = await res.json();
 
-                // Try to find the array in the response
-                let items = Array.isArray(json) ? json : (json.results || json.items || json.data || []);
-                if (!Array.isArray(items) && typeof json === 'object') items = [json];
+                let items = [];
+                if (Array.isArray(json)) {
+                    items = json;
+                } else if (json && typeof json === 'object') {
+                    // Handle wrapped results from common API patterns
+                    if (Array.isArray(json.data)) items = json.data;
+                    else if (Array.isArray(json.results)) items = json.results;
+                    else if (Array.isArray(json.items)) items = json.items;
+                    // Otherwise, if it's a single object (like our ID fetch), wrap it
+                    else items = [json];
+                }
+
+                // If we are in a LIST view but have a dynamicId (e.g. "Other Media" section on a detail page),
+                // filter out the currently viewed item to avoid duplication.
+                if (dynamicId && !swiperConfig?.isDetailView) {
+                    items = items.filter((item: any) => item.id !== dynamicId);
+                }
 
                 setData(items);
             } catch (err: any) {
@@ -77,22 +113,43 @@ export default function DynamicSwiper({ snippet, singleRecordOnly = false }: { s
         };
 
         fetchData();
-    }, [apiEndpoint, type, categoryId]);
+    }, [apiEndpoint, type, categoryId, dynamicId, swiperConfig?.isDetailView]);
+
+    const config = swiperConfig || {};
+    const sliedesPerView = {
+        desktop: config.slidesPerViewDesktop || 3,
+        tablet: config.slidesPerViewTablet || 2,
+        mobile: config.slidesPerViewMobile || 1,
+    };
+
+    const isFullWidth = snippet.containerType === 'full';
+    const sectionPadding = config.py ?? (isFullWidth ? '0' : '20');
+    const paginationPos = config.paginationPosition ?? (isFullWidth ? 'inside' : 'outside');
+    const navPos = config.navPosition ?? (isFullWidth ? 'inside' : 'outside');
+    const maxSlides = Math.max(sliedesPerView.desktop, sliedesPerView.tablet, sliedesPerView.mobile);
+    const effectiveLoop = (data.length > maxSlides) ? (config.loop ?? true) : false;
+    const sectionPaddingClass = isFullWidth ? 'py-0' : (sectionPadding === '0' ? 'py-0' : 'py-20');
 
     if (loading) {
+        // If it's specifically a detail view but we don't have an ID, don't show loading (we'll hide it anyway), unless it's a preview
+        if (!isPreview && swiperConfig?.isDetailView && !dynamicId) return null;
+        const isDetail = ((isPreview || dynamicId) && swiperConfig?.isDetailView);
         return (
-            <section className="py-20">
-                <div className="container mx-auto px-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {[1, 2, 3].map(i => (
-                            <div key={i} className="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-800 animate-pulse">
-                                <div className="w-12 h-12 bg-slate-200 dark:bg-slate-700 rounded-2xl mb-6"></div>
-                                <div className="h-6 bg-slate-200 dark:bg-slate-700 rounded-lg w-3/4 mb-4"></div>
-                                <div className="space-y-2">
-                                    <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded-lg w-full"></div>
-                                    <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded-lg w-5/6"></div>
-                                </div>
-                                <div className="mt-8 h-4 bg-slate-200 dark:bg-slate-700 rounded-lg w-24"></div>
+            <section className={isFullWidth ? 'py-0' : 'py-20'}>
+                <div className={isFullWidth ? 'w-full' : 'container mx-auto px-4'}>
+                    <div className={isDetail ? 'w-full max-w-4xl mx-auto' : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8'}>
+                        {(isDetail ? [1] : [1, 2, 3]).map(i => (
+                            <div key={i} className={`bg-white dark:bg-slate-800 ${isDetail ? 'rounded-none h-[500px]' : 'rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-800 h-80'} animate-pulse`}>
+                                <div className={isDetail ? 'w-full h-full bg-slate-200 dark:bg-slate-700' : 'w-12 h-12 bg-slate-200 dark:bg-slate-700 rounded-2xl mb-6'}></div>
+                                {!isDetail && (
+                                    <>
+                                        <div className="h-6 bg-slate-200 dark:bg-slate-700 rounded-lg w-3/4 mb-4"></div>
+                                        <div className="space-y-2">
+                                            <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded-lg w-full"></div>
+                                            <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded-lg w-5/6"></div>
+                                        </div>
+                                    </>
+                                )}
                             </div>
                         ))}
                     </div>
@@ -101,9 +158,12 @@ export default function DynamicSwiper({ snippet, singleRecordOnly = false }: { s
         );
     }
     if (error) return <div className="py-20 text-center text-red-400">Error: {error}</div>;
-    if (data.length === 0) return null;
+    if (!loading && (data.length === 0 || (!singleRecordOnly && !isPreview && swiperConfig?.isDetailView && !dynamicId))) {
+        return null;
+    }
 
     const renderSlide = (item: any) => {
+        if (!item) return null;
         let content = htmlContent;
         if (isInternal) {
             const title = (locale === 'ar' && item.titleAr) ? item.titleAr : item.title;
@@ -115,12 +175,21 @@ export default function DynamicSwiper({ snippet, singleRecordOnly = false }: { s
             content = content.split('{{description}}').join(String(description || ''));
             content = content.split('{{image}}').join(String(image || ''));
             content = content.split('{{publishDate}}').join(String(publishDate || ''));
-            content = content.split('{{link}}').join(String(item.linkUrl || '#'));
+            let linkUrl = String(item.linkUrl || '#');
+            if (config.linkType === 'modal') {
+                linkUrl = `#modal-${item.id}`;
+                // If it's a modal, we want to completely overtake the href attribute just in case the template has extra text like href="/{{link}}"
+                content = content.replace(/href=['"][^'"]*\{\{link\}\}[^'"]*['"]/g, `href="${linkUrl}"`);
+            } else if (linkUrl !== '#' && !linkUrl.startsWith('http') && !linkUrl.startsWith('/')) {
+                linkUrl = '/' + linkUrl;
+            }
+            content = content.split('{{link}}').join(linkUrl);
             const tag = (locale === 'ar' && item.tagAr) ? item.tagAr : (item.tag || '');
             content = content.split('{{tag}}').join(String(tag));
             const linkText = (locale === 'ar' && item.linkTextAr) ? item.linkTextAr : (item.linkText || (locale === 'ar' ? 'اقرأ المزيد' : 'Read More'));
             content = content.split('{{linkText}}').join(String(linkText));
             content = content.split('{{icon}}').join(String(item.icon || ''));
+            content = content.split('{{id}}').join(String(item.id || ''));
         } else if (fieldMapping && Array.isArray(fieldMapping)) {
             fieldMapping.forEach(mapping => {
                 const placeholder = `{{${mapping.placeholder}}}`;
@@ -129,14 +198,42 @@ export default function DynamicSwiper({ snippet, singleRecordOnly = false }: { s
                 content = content.split(placeholder).join(String(value));
             });
         }
-        return <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }} />;
-    };
+        // Handle interal navigation for <a> tags to prevent full page reloads
+        const handleClick = (e: React.MouseEvent) => {
+            const target = e.target as HTMLElement;
+            const link = target.closest('a');
+            if (link && link.href && link.href.startsWith(window.location.origin)) {
+                e.preventDefault();
+                let path = link.href.replace(window.location.origin, '');
 
-    const config = swiperConfig || {};
-    const sliedesPerView = {
-        desktop: config.slidesPerViewDesktop || 3,
-        tablet: config.slidesPerViewTablet || 2,
-        mobile: config.slidesPerViewMobile || 1,
+                // 1. Check for Modal Trigger (starts with #modal-)
+                if (path.includes('#modal-')) {
+                    const id = path.split('#modal-')[1];
+                    if (id) {
+                        dispatch(openModal({ dynamicId: id, snippet: snippet }));
+                        return;
+                    }
+                }
+
+                // 2. Standard SPA Navigation
+                // as router.push from next-intl automatically adds the current locale.
+                const localesList = ['ar', 'en'];
+                for (const loc of localesList) {
+                    if (path.startsWith(`/${loc}/`)) {
+                        path = path.replace(`/${loc}`, '');
+                        break;
+                    } else if (path === `/${loc}`) {
+                        path = '/';
+                        break;
+                    }
+                }
+
+                dispatch(closeModal());
+                router.push(path as any);
+            }
+        };
+
+        return <div onClick={handleClick} dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }} />;
     };
 
     const NavIcon = ({ type, side }: { type: string, side: 'left' | 'right' }) => {
@@ -148,17 +245,14 @@ export default function DynamicSwiper({ snippet, singleRecordOnly = false }: { s
         if (type === 'double') return effectiveSide === 'left' ? <ChevronsLeft size={20} /> : <ChevronsRight size={20} />;
         return effectiveSide === 'left' ? <ChevronLeft size={24} /> : <ChevronRight size={24} />;
     };
-    const isFullWidth = snippet.containerType === 'full';
-    const sectionPadding = config.py ?? (isFullWidth ? '0' : '20');
-    const paginationPos = config.paginationPosition ?? (isFullWidth ? 'inside' : 'outside');
-    const navPos = config.navPosition ?? (isFullWidth ? 'inside' : 'outside');
-    const sectionPaddingClass = isFullWidth ? 'py-0' : (sectionPadding === '0' ? 'py-0' : 'py-20');
 
-    if (singleRecordOnly) {
+    if (singleRecordOnly || ((isPreview || dynamicId) && swiperConfig?.isDetailView)) {
         return (
-            <div className="w-full h-full p-4">
-                {renderSlide(data[0])}
-            </div>
+            <section className={`${sectionPaddingClass} transition-all duration-500`}>
+                <div className={isFullWidth ? 'w-full' : 'container mx-auto px-4'}>
+                    {renderSlide(data[0])}
+                </div>
+            </section>
         );
     }
 
@@ -182,7 +276,7 @@ export default function DynamicSwiper({ snippet, singleRecordOnly = false }: { s
                             1024: { slidesPerView: sliedesPerView.desktop },
                         }}
                         speed={config.speed || 500}
-                        loop={config.loop !== false}
+                        loop={effectiveLoop}
                         autoplay={config.autoplay ? {
                             delay: config.autoplayDelay || 3000,
                             disableOnInteraction: false,

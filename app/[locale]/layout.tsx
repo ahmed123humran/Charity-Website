@@ -10,6 +10,7 @@ import ToastProvider from '@/app/components/ToastProvider';
 import ReduxProvider from '@/app/components/ReduxProvider';
 import FloatingSocialMenu from '@/app/components/FloatingSocialMenu';
 import { getLocalizedName } from '@/app/utils/locale';
+import DynamicDetailModal from '@/app/components/DynamicDetailModal';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -110,8 +111,9 @@ export default async function RootLayout({
   const selectedFont = fontMap[fontFamilyValue] || inter.style.fontFamily;
 
   return (
-    <html lang={locale} dir={locale === 'ar' ? 'rtl' : 'ltr'}>
+    <html lang={locale} dir={locale === 'ar' ? 'rtl' : 'ltr'} suppressHydrationWarning>
       <body
+        suppressHydrationWarning
         className={`${inter.variable} ${cairo.variable} ${tajawal.variable} ${almarai.variable} ${roboto.variable} ${openSans.variable} antialiased`}
         style={{
           '--primary-color': themeColor,
@@ -133,6 +135,7 @@ export default async function RootLayout({
           <NextIntlClientProvider messages={messages}>
             <ToastProvider />
             <FloatingSocialMenu />
+            <DynamicDetailModal />
             {children}
           </NextIntlClientProvider>
         </ReduxProvider>
