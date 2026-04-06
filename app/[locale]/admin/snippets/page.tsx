@@ -1,7 +1,12 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Plus, Search, PlusSquare, Edit2, Trash2, Tag, Layers, Code, LayoutTemplate, ImageIcon, Copy, MousePointer2, Type, Move, Globe, Settings, Database, RefreshCw, CheckCircle2, X } from 'lucide-react';
+import {
+    Plus, Search, PlusSquare, Edit2, Trash2, Tag, Layers, Code,
+    LayoutTemplate, ImageIcon, Copy, MousePointer2, Type, Move, Globe,
+    Settings, Database, RefreshCw, CheckCircle2, X, Monitor, FileText,
+    Check, Zap, FileSearch
+} from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import ConfirmDialog from '@/app/components/ConfirmDialog';
 import toast from 'react-hot-toast';
@@ -67,10 +72,12 @@ export default function SnippetsManagement() {
         paginationPosition: 'inside',
         paginationOffset: 20,
         isDetailView: false,
+        linkType: 'page',
+        modalHtml: '',
     });
     const [containerType, setContainerType] = useState('contained');
     const [fieldMapping, setFieldMapping] = useState<{ placeholder: string, apiField: string }[]>([]);
-    const [activeTab, setActiveTab] = useState<'design' | 'swiper' | 'api'>('design');
+    const [activeTab, setActiveTab] = useState<'design' | 'swiper' | 'api' | 'modalDesign'>('design');
     const [viewMode, setViewMode] = useState<'visual' | 'code'>('visual');
     const [activeElement, setActiveElement] = useState<HTMLElement | null>(null);
     const [sampleData, setSampleData] = useState<any>(null);
@@ -208,6 +215,7 @@ export default function SnippetsManagement() {
             navStyle: 'default',
             navIcon: 'chevron',
             isDetailView: false,
+            linkType: 'page',
             ...snippet.swiperConfig
         });
         setCategoryId(snippet.categoryId || '');
@@ -237,6 +245,30 @@ export default function SnippetsManagement() {
         setCurrentId(null);
         setActiveElement(null);
         setSampleData(null);
+        setSwiperConfig({
+            speed: 500,
+            slidesPerViewDesktop: 3,
+            slidesPerViewTablet: 2,
+            slidesPerViewMobile: 1,
+            loop: true,
+            autoplay: false,
+            spaceBetween: 20,
+            paginationType: 'bullets',
+            showNavigation: true,
+            showPagination: true,
+            effect: 'slide',
+            autoplayDelay: 3000,
+            pauseOnHover: true,
+            navStyle: 'default',
+            navIcon: 'chevron',
+            navPosition: 'inside',
+            navOffset: 10,
+            paginationPosition: 'inside',
+            paginationOffset: 20,
+            isDetailView: false,
+            linkType: 'page',
+            modalHtml: '',
+        });
     };
 
     const handlePreviewClick = (e: React.MouseEvent) => {
@@ -352,6 +384,14 @@ export default function SnippetsManagement() {
                                 >
                                     <Database className="w-4 h-4" /> {t('apiConfig')}
                                 </button>
+                                {swiperConfig.linkType === 'modal' && (
+                                    <button
+                                        onClick={() => setActiveTab('modalDesign')}
+                                        className={`py-4 px-6 text-sm font-bold flex items-center gap-2 border-b-2 transition-all cursor-pointer whitespace-nowrap ${activeTab === 'modalDesign' ? 'border-indigo-500 text-indigo-500 bg-white shadow-[0_-4px_0_inset_white]' : 'border-transparent text-slate-400 hover:text-slate-600'}`}
+                                    >
+                                        <FileText className="w-4 h-4" /> {locale === 'ar' ? 'تصميم النافذة' : 'Modal Design'}
+                                    </button>
+                                )}
                             </div>
                         )}
 
@@ -379,13 +419,45 @@ export default function SnippetsManagement() {
                                         </select>
                                     </div>
                                     {type === 'DYNAMIC' && (
-                                        <div className="w-full sm:w-48 xl:w-full shrink-0">
-                                            <label className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1.5 block">{locale === 'ar' ? 'نوع الحاوية' : 'Container Type'}</label>
-                                            <select value={containerType} onChange={e => setContainerType(e.target.value)} className="w-full px-4 py-2.5 bg-white border border-slate-200 text-slate-900 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all">
-                                                <option value="contained">{locale === 'ar' ? 'داخل كونتينر' : 'Contained'}</option>
-                                                <option value="full">{locale === 'ar' ? 'عرض كامل' : 'Full Width'}</option>
-                                            </select>
-                                        </div>
+                                        <>
+                                            <div className="w-full sm:w-48 xl:w-full shrink-0">
+                                                <label className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1.5 block">{locale === 'ar' ? 'نوع الحاوية' : 'Container Type'}</label>
+                                                <select value={containerType} onChange={e => setContainerType(e.target.value)} className="w-full px-4 py-2.5 bg-white border border-slate-200 text-slate-900 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all">
+                                                    <option value="contained">{locale === 'ar' ? 'داخل كونتينر' : 'Contained'}</option>
+                                                    <option value="full">{locale === 'ar' ? 'عرض كامل' : 'Full Width'}</option>
+                                                </select>
+                                            </div>
+
+                                            {/* Detail Mode Toggle */}
+                                            <div className="w-full sm:w-48 xl:w-full shrink-0">
+                                                <label className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1.5 block">{locale === 'ar' ? 'نمط صفحة التفاصيل' : 'Detail Page Mode'}</label>
+                                                <div onClick={() => setSwiperConfig({ ...swiperConfig, isDetailView: !swiperConfig.isDetailView })}
+                                                    className={`p-3 rounded-xl border-2 transition-all cursor-pointer flex items-center justify-between group ${swiperConfig.isDetailView ? 'border-primary bg-primary/5' : 'border-slate-100 bg-white hover:border-slate-200'}`}>
+                                                    <div className="flex items-center gap-2">
+                                                        <FileText className={`w-4 h-4 ${swiperConfig.isDetailView ? 'text-primary' : 'text-slate-400'}`} />
+                                                        <span className="text-[11px] font-bold text-slate-700">{locale === 'ar' ? 'تفاصيل' : 'Detail'}</span>
+                                                    </div>
+                                                    <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all ${swiperConfig.isDetailView ? 'border-primary bg-primary' : 'border-slate-300'}`}>
+                                                        {swiperConfig.isDetailView && <Check className="w-2.5 h-2.5 text-white" />}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Modal Toggle */}
+                                            <div className="w-full sm:w-48 xl:w-full shrink-0">
+                                                <label className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1.5 block">{locale === 'ar' ? 'نمط المودال' : 'Modal Popup Mode'}</label>
+                                                <div onClick={() => setSwiperConfig({ ...swiperConfig, linkType: swiperConfig.linkType === 'modal' ? 'page' : 'modal' })}
+                                                    className={`p-3 rounded-xl border-2 transition-all cursor-pointer flex items-center justify-between group ${swiperConfig.linkType === 'modal' ? 'border-indigo-500 bg-indigo-50/50' : 'border-indigo-50 bg-white hover:border-indigo-100'}`}>
+                                                    <div className="flex items-center gap-2">
+                                                        <Layers className={`w-4 h-4 ${swiperConfig.linkType === 'modal' ? 'text-indigo-500' : 'text-slate-400'}`} />
+                                                        <span className="text-[11px] font-bold text-slate-700">{locale === 'ar' ? 'نافذة منبثقة' : 'Modal'}</span>
+                                                    </div>
+                                                    <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all ${swiperConfig.linkType === 'modal' ? 'border-indigo-500 bg-indigo-500' : 'border-slate-300'}`}>
+                                                        {swiperConfig.linkType === 'modal' && <Check className="w-2.5 h-2.5 text-white" />}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </>
                                     )}
                                 </div>
                                 {type === 'DYNAMIC' && (
@@ -468,6 +540,21 @@ export default function SnippetsManagement() {
                                             )}
                                         </div>
                                     )
+                                ) : (activeTab === 'modalDesign' && type === 'DYNAMIC') ? (
+                                    <div className="flex-1 overflow-hidden flex flex-col xl:flex-row relative bg-slate-100">
+                                        <div className="flex-1 p-4 sm:p-8 overflow-auto relative">
+                                            <div className="mb-4 text-xs font-bold text-slate-500 uppercase tracking-widest bg-white inline-block px-4 py-1.5 rounded-lg border border-slate-200">
+                                                {locale === 'ar' ? 'كود التصميم للنافذة المنبثقة' : 'HTML Design for Modal Popup'}
+                                            </div>
+                                            <textarea value={swiperConfig.modalHtml || ''} onChange={e => setSwiperConfig({ ...swiperConfig, modalHtml: e.target.value })} dir="ltr" className="w-full font-mono text-[13px] sm:text-sm p-4 sm:p-8 bg-slate-900 !text-slate-100 rounded-2xl sm:rounded-3xl outline-none min-h-[400px] outline-hidden selection:bg-secondary selection:text-white" placeholder="<!-- HTML for Modal details -->" />
+                                        </div>
+                                        <div className="w-full xl:w-1/2 bg-white border-t xl:border-t-0 xl:border-r border-slate-200 p-4 sm:p-8 overflow-y-auto shrink-0 z-10 transition-all">
+                                            <div className="bg-slate-50 border border-slate-200 shadow-inner rounded-[2rem] min-h-[400px] relative pointer-events-none opacity-95 overflow-hidden">
+                                                <div className="absolute top-0 right-0 bg-indigo-500 text-white text-[10px] uppercase tracking-widest font-bold px-4 py-2 rounded-bl-2xl z-50 shadow-sm backdrop-blur-sm shadow-indigo-500/20 flex items-center gap-2"><Globe className="w-3 h-3" /> {locale === 'ar' ? 'معاينة المودال' : 'Modal Preview'}</div>
+                                                <DynamicSwiper snippet={{ id: 'modal-preview', htmlContent: swiperConfig.modalHtml || '<div class="p-10 text-center text-slate-400">Modal HTML Empty</div>', type, apiEndpoint, swiperConfig: { ...swiperConfig, isDetailView: true }, categoryId, fieldMapping }} singleRecordOnly={true} isPreview={true} />
+                                            </div>
+                                        </div>
+                                    </div>
                                 ) : (activeTab === 'swiper' && type === 'DYNAMIC') ? (
                                     <div className="max-w-3xl mx-auto py-10 space-y-8">
                                         {/* Quick Presets */}
@@ -497,290 +584,304 @@ export default function SnippetsManagement() {
                                             </div>
                                         </div>
 
-                                        <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100 space-y-8">
-                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                                                <div className="space-y-3">
-                                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest">{t('swiperSpeed')}</label>
-                                                    <input type="number" value={swiperConfig.speed} onChange={e => setSwiperConfig({ ...swiperConfig, speed: parseInt(e.target.value) })} className="w-full px-5 py-3 bg-white border border-slate-200 text-slate-900 rounded-2xl outline-none focus:ring-2 focus:ring-primary/20 transition-all font-medium" />
-                                                </div>
-                                                <div className="flex flex-col gap-4 pt-4">
-                                                    <label className="flex items-center gap-3 cursor-pointer group">
-                                                        <div className={`w-12 h-7 rounded-full relative transition-all ${swiperConfig.loop ? 'bg-primary' : 'bg-slate-200'}`}>
-                                                            <div className={`absolute top-1 w-5 h-5 bg-white rounded-full shadow-sm transition-all ${swiperConfig.loop ? 'right-1' : 'left-1'}`} />
-                                                        </div>
-                                                        <input type="checkbox" className="hidden" checked={swiperConfig.loop} onChange={e => setSwiperConfig({ ...swiperConfig, loop: e.target.checked })} />
-                                                        <span className="text-xs font-bold text-slate-700 group-hover:text-primary transition-colors">{t('loop')}</span>
-                                                    </label>
-                                                    <label className="flex items-center gap-3 cursor-pointer group">
-                                                        <div className={`w-12 h-7 rounded-full relative transition-all ${swiperConfig.autoplay ? 'bg-primary' : 'bg-slate-200'}`}>
-                                                            <div className={`absolute top-1 w-5 h-5 bg-white rounded-full shadow-sm transition-all ${swiperConfig.autoplay ? 'right-1' : 'left-1'}`} />
-                                                        </div>
-                                                        <input type="checkbox" className="hidden" checked={swiperConfig.autoplay} onChange={e => setSwiperConfig({ ...swiperConfig, autoplay: e.target.checked })} />
-                                                        <span className="text-xs font-bold text-slate-700 group-hover:text-primary transition-colors">{t('autoplay')}</span>
-                                                    </label>
-                                                </div>
-                                                <div className="p-4 bg-indigo-50 border border-indigo-100 rounded-3xl flex flex-col justify-center">
-                                                    <label className="flex items-center gap-3 cursor-pointer group">
-                                                        <div className={`w-12 h-7 rounded-full relative transition-all ${swiperConfig.isDetailView ? 'bg-indigo-600' : 'bg-slate-200'}`}>
-                                                            <div className={`absolute top-1 w-5 h-5 bg-white rounded-full shadow-md transition-all ${swiperConfig.isDetailView ? 'right-1' : 'left-1'}`} />
-                                                        </div>
-                                                        <input type="checkbox" className="hidden" checked={swiperConfig.isDetailView} onChange={e => setSwiperConfig({ ...swiperConfig, isDetailView: e.target.checked })} />
-                                                        <div className="flex flex-col">
-                                                            <span className="text-xs font-black text-indigo-900 leading-tight uppercase tracking-widest">{locale === 'ar' ? 'العرض كصفحة تفاصيل' : 'Detail View Mode'}</span>
-                                                            <span className="text-[9px] text-indigo-600 font-medium">{locale === 'ar' ? 'لجلب بيانات سجل واحد فقط من الرابط' : 'Fetch record from URL ID'}</span>
-                                                        </div>
-                                                    </label>
-                                                </div>
-                                            </div>
 
-                                            {swiperConfig.autoplay && (
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6 bg-slate-50 rounded-[2rem] border border-slate-100 animate-in fade-in zoom-in-95">
-                                                    <div className="space-y-3">
-                                                        <label className="text-xs font-black text-slate-400 uppercase tracking-widest block">{locale === 'ar' ? 'تأخير التشغيل (مللي ثانية)' : 'Autoplay Delay (ms)'}</label>
-                                                        <input type="number" step="500" value={swiperConfig.autoplayDelay} onChange={e => setSwiperConfig({ ...swiperConfig, autoplayDelay: parseInt(e.target.value) })} className="w-full px-5 py-3 bg-white border border-slate-200 text-slate-900 rounded-2xl outline-none focus:ring-2 focus:ring-primary/20 font-medium" />
+                                        {/* Section 2: Swiper Behavior (Only visible in LIST mode) */}
+                                        {!swiperConfig.isDetailView ? (
+                                            <div className="space-y-10 pt-6 border-t border-slate-50 animate-in fade-in slide-in-from-top-4 duration-500">
+                                                <div className="flex items-center gap-3 border-b border-slate-50 pb-4">
+                                                    <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
+                                                        <Zap className="w-4 h-4 text-blue-500" />
                                                     </div>
-                                                    <div className="flex items-center gap-3 pt-6">
+                                                    <h4 className="text-sm font-black text-slate-800 uppercase tracking-wider">{locale === 'ar' ? 'سلوك العرض المتحرك' : 'Slide Behavior'}</h4>
+                                                </div>
+
+                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                                                    <div className="space-y-3">
+                                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('swiperSpeed')}</label>
+                                                        <input type="number" value={swiperConfig.speed} onChange={e => setSwiperConfig({ ...swiperConfig, speed: parseInt(e.target.value) })} className="w-full px-5 py-3 bg-white border border-slate-200 text-slate-900 rounded-2xl outline-none focus:ring-2 focus:ring-primary/20 transition-all font-medium" />
+                                                    </div>
+                                                    <div className="flex flex-col gap-4 pt-4">
                                                         <label className="flex items-center gap-3 cursor-pointer group">
-                                                            <div className={`w-12 h-7 rounded-full relative transition-all ${swiperConfig.pauseOnHover ? 'bg-primary' : 'bg-slate-200'}`}>
-                                                                <div className={`absolute top-1 w-5 h-5 bg-white rounded-full shadow-sm transition-all ${swiperConfig.pauseOnHover ? 'right-1' : 'left-1'}`} />
+                                                            <div className={`w-12 h-7 rounded-full relative transition-all ${swiperConfig.loop ? 'bg-primary' : 'bg-slate-200'}`}>
+                                                                <div className={`absolute top-1 w-5 h-5 bg-white rounded-full shadow-sm transition-all ${swiperConfig.loop ? 'right-1' : 'left-1'}`} />
                                                             </div>
-                                                            <input type="checkbox" className="hidden" checked={swiperConfig.pauseOnHover} onChange={e => setSwiperConfig({ ...swiperConfig, pauseOnHover: e.target.checked })} />
-                                                            <span className="text-xs font-bold text-slate-600 group-hover:text-primary transition-colors">{locale === 'ar' ? 'توقف عند التمرير' : 'Pause on Hover'}</span>
+                                                            <input type="checkbox" className="hidden" checked={swiperConfig.loop} onChange={e => setSwiperConfig({ ...swiperConfig, loop: e.target.checked })} />
+                                                            <span className="text-xs font-bold text-slate-700 group-hover:text-primary transition-colors">{t('loop')}</span>
+                                                        </label>
+                                                        <label className="flex items-center gap-3 cursor-pointer group">
+                                                            <div className={`w-12 h-7 rounded-full relative transition-all ${swiperConfig.autoplay ? 'bg-primary' : 'bg-slate-200'}`}>
+                                                                <div className={`absolute top-1 w-5 h-5 bg-white rounded-full shadow-sm transition-all ${swiperConfig.autoplay ? 'right-1' : 'left-1'}`} />
+                                                            </div>
+                                                            <input type="checkbox" className="hidden" checked={swiperConfig.autoplay} onChange={e => setSwiperConfig({ ...swiperConfig, autoplay: e.target.checked })} />
+                                                            <span className="text-xs font-bold text-slate-700 group-hover:text-primary transition-colors">{t('autoplay')}</span>
                                                         </label>
                                                     </div>
                                                 </div>
-                                            )}
 
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                                <div className="space-y-3">
-                                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest block">{locale === 'ar' ? 'تأثير الانتقال' : 'Transition Effect'}</label>
-                                                    <select value={swiperConfig.effect} onChange={e => setSwiperConfig({ ...swiperConfig, effect: e.target.value })} className="w-full px-5 py-3 bg-white border border-slate-200 text-slate-900 rounded-2xl outline-none focus:ring-2 focus:ring-primary/20 font-medium">
-                                                        <option value="slide">Slide</option>
-                                                        <option value="fade">Fade</option>
-                                                        <option value="cube">Cube</option>
-                                                        <option value="coverflow">Coverflow</option>
-                                                        <option value="flip">Flip</option>
-                                                        <option value="cards">Cards</option>
-                                                    </select>
-                                                </div>
-                                                <div className="space-y-3">
-                                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest block">{locale === 'ar' ? 'نمط التنقل' : 'Navigation Style'}</label>
-                                                    <select value={swiperConfig.navStyle} onChange={e => setSwiperConfig({ ...swiperConfig, navStyle: e.target.value })} className="w-full px-5 py-3 bg-white border border-slate-200 text-slate-900 rounded-2xl outline-none focus:ring-2 focus:ring-primary/20 font-medium">
-                                                        <option value="default">{locale === 'ar' ? 'افتراضي (مربع)' : 'Default (Square)'}</option>
-                                                        <option value="minimal">{locale === 'ar' ? 'بسيط' : 'Minimal'}</option>
-                                                        <option value="rounded">{locale === 'ar' ? 'دائري' : 'Rounded'}</option>
-                                                        <option value="glass">{locale === 'ar' ? 'زجاجي' : 'Glass'}</option>
-                                                        <option value="filled">{locale === 'ar' ? 'ممتلئ' : 'Filled'}</option>
-                                                        <option value="outline">{locale === 'ar' ? 'محدد' : 'Outline'}</option>
-                                                        <option value="soft">{locale === 'ar' ? 'ناعم' : 'Soft'}</option>
-                                                    </select>
-                                                </div>
-                                            </div>
-
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 border-t border-slate-50 pt-8">
-                                                <div className="space-y-3">
-                                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest block">{t('spaceBetween')}</label>
-                                                    <input type="number" value={swiperConfig.spaceBetween} onChange={e => setSwiperConfig({ ...swiperConfig, spaceBetween: parseInt(e.target.value) })} className="w-full px-5 py-3 bg-white border border-slate-200 text-slate-900 rounded-2xl outline-none focus:ring-2 focus:ring-primary/20 font-medium" />
-                                                </div>
-                                                <div className="space-y-3">
-                                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest block">{t('paginationType')}</label>
-                                                    <select value={swiperConfig.paginationType} onChange={e => setSwiperConfig({ ...swiperConfig, paginationType: e.target.value })} className="w-full px-5 py-3 bg-white border border-slate-200 text-slate-900 rounded-2xl outline-none focus:ring-2 focus:ring-primary/20 font-medium">
-                                                        <option value="bullets">{t('paginationTypes.bullets')}</option>
-                                                        <option value="fraction">{t('paginationTypes.fraction')}</option>
-                                                        <option value="progressbar">{t('paginationTypes.progressbar')}</option>
-                                                    </select>
-                                                </div>
-                                            </div>
-
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4 px-6 bg-slate-50/50 rounded-3xl border border-dashed border-slate-200">
-                                                <div className="space-y-4">
-                                                    <label className="flex items-center gap-3 cursor-pointer group">
-                                                        <div className={`w-12 h-7 rounded-full relative transition-all ${swiperConfig.showNavigation ? 'bg-primary' : 'bg-slate-200'}`}>
-                                                            <div className={`absolute top-1 w-5 h-5 bg-white rounded-full shadow-sm transition-all ${swiperConfig.showNavigation ? 'right-1' : 'left-1'}`} />
+                                                {swiperConfig.autoplay && (
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6 bg-slate-50 rounded-[2rem] border border-slate-100 animate-in fade-in zoom-in-95">
+                                                        <div className="space-y-3">
+                                                            <label className="text-xs font-black text-slate-400 uppercase tracking-widest block">{locale === 'ar' ? 'تأخير التشغيل (مللي ثانية)' : 'Autoplay Delay (ms)'}</label>
+                                                            <input type="number" step="500" value={swiperConfig.autoplayDelay} onChange={e => setSwiperConfig({ ...swiperConfig, autoplayDelay: parseInt(e.target.value) })} className="w-full px-5 py-3 bg-white border border-slate-200 text-slate-900 rounded-2xl outline-none focus:ring-2 focus:ring-primary/20 font-medium" />
                                                         </div>
-                                                        <input type="checkbox" className="hidden" checked={swiperConfig.showNavigation} onChange={e => setSwiperConfig({ ...swiperConfig, showNavigation: e.target.checked })} />
-                                                        <span className="text-sm font-bold text-slate-700 group-hover:text-primary transition-colors">{t('showNavigation')}</span>
-                                                    </label>
-                                                    {swiperConfig.showNavigation && (
-                                                        <div className="grid grid-cols-2 gap-3 p-3 bg-white rounded-2xl border border-slate-100 animate-in fade-in slide-in-from-top-1">
-                                                            <div className="space-y-1">
-                                                                <label className="text-xs font-black text-slate-400 uppercase tracking-widest">{locale === 'ar' ? 'الموقع' : 'Position'}</label>
-                                                                <select value={swiperConfig.navPosition} onChange={e => setSwiperConfig({ ...swiperConfig, navPosition: e.target.value })} className="w-full px-3 py-1.5 bg-white border border-slate-200 text-slate-900 rounded-lg text-xs font-medium outline-none focus:ring-1 focus:ring-primary/20">
-                                                                    <option value="inside">{locale === 'ar' ? 'داخل' : 'Inside'}</option>
-                                                                    <option value="outside">{locale === 'ar' ? 'خارج' : 'Outside'}</option>
-                                                                </select>
-                                                            </div>
-                                                            <div className="space-y-1">
-                                                                <label className="text-xs font-black text-slate-400 uppercase tracking-widest">{locale === 'ar' ? 'الأيقونة' : 'Icon'}</label>
-                                                                <select value={swiperConfig.navIcon} onChange={e => setSwiperConfig({ ...swiperConfig, navIcon: e.target.value })} className="w-full px-3 py-1.5 bg-white border border-slate-200 text-slate-900 rounded-lg text-xs font-medium outline-none focus:ring-1 focus:ring-primary/20">
-                                                                    <option value="chevron">Chevron</option>
-                                                                    <option value="arrow">Arrow</option>
-                                                                    <option value="move">Move</option>
-                                                                    <option value="double">Double</option>
-                                                                </select>
-                                                            </div>
-                                                            <div className="col-span-2 space-y-1">
-                                                                <label className="text-xs font-black text-slate-400 uppercase tracking-widest">{locale === 'ar' ? 'المسافة' : 'Offset'}</label>
-                                                                <input type="number" value={swiperConfig.navOffset} onChange={e => setSwiperConfig({ ...swiperConfig, navOffset: parseInt(e.target.value) })} className="w-full px-3 py-1.5 bg-white border border-slate-200 text-slate-900 rounded-lg text-xs font-medium outline-none focus:ring-1 focus:ring-primary/20" />
-                                                            </div>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                                <div className="space-y-4">
-                                                    <label className="flex items-center gap-3 cursor-pointer group">
-                                                        <div className={`w-12 h-7 rounded-full relative transition-all ${swiperConfig.showPagination ? 'bg-primary' : 'bg-slate-200'}`}>
-                                                            <div className={`absolute top-1 w-5 h-5 bg-white rounded-full shadow-sm transition-all ${swiperConfig.showPagination ? 'right-1' : 'left-1'}`} />
-                                                        </div>
-                                                        <input type="checkbox" className="hidden" checked={swiperConfig.showPagination} onChange={e => setSwiperConfig({ ...swiperConfig, showPagination: e.target.checked })} />
-                                                        <span className="text-sm font-bold text-slate-700 group-hover:text-primary transition-colors">{t('showPagination')}</span>
-                                                    </label>
-                                                    {swiperConfig.showPagination && (
-                                                        <div className="grid grid-cols-2 gap-3 p-3 bg-white rounded-2xl border border-slate-100 animate-in fade-in slide-in-from-top-1">
-                                                            <div className="space-y-1">
-                                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{locale === 'ar' ? 'الموقع' : 'Position'}</label>
-                                                                <select value={swiperConfig.paginationPosition} onChange={e => setSwiperConfig({ ...swiperConfig, paginationPosition: e.target.value })} className="w-full px-3 py-1.5 bg-white border border-slate-200 text-slate-900 rounded-lg text-xs font-medium outline-none focus:ring-1 focus:ring-primary/20">
-                                                                    <option value="inside">{locale === 'ar' ? 'داخل' : 'Inside'}</option>
-                                                                    <option value="outside">{locale === 'ar' ? 'خارج' : 'Outside'}</option>
-                                                                </select>
-                                                            </div>
-                                                            <div className="space-y-1">
-                                                                <label className="text-xs font-black text-slate-400 uppercase tracking-widest">{locale === 'ar' ? 'المسافة' : 'Offset'}</label>
-                                                                <input type="number" value={swiperConfig.paginationOffset} onChange={e => setSwiperConfig({ ...swiperConfig, paginationOffset: parseInt(e.target.value) })} className="w-full px-3 py-1.5 bg-white border border-slate-200 text-slate-900 rounded-lg text-xs font-medium outline-none focus:ring-1 focus:ring-primary/20" />
-                                                            </div>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-
-                                            <div className="space-y-6 pt-4">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="h-px bg-slate-100 flex-1"></div>
-                                                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">{t('slidesPerView')}</h3>
-                                                    <div className="h-px bg-slate-100 flex-1"></div>
-                                                </div>
-                                                <div className="grid grid-cols-3 gap-6">
-                                                    <div className="space-y-2">
-                                                        <label className="text-xs font-black text-slate-400 uppercase tracking-widest text-center block">{t('desktop')}</label>
-                                                        <input type="number" value={swiperConfig.slidesPerViewDesktop} onChange={e => setSwiperConfig({ ...swiperConfig, slidesPerViewDesktop: parseInt(e.target.value) })} className="w-full px-4 py-3 bg-white border border-slate-200 text-slate-900 rounded-2xl outline-none focus:ring-2 focus:ring-primary/20 font-medium text-center" />
-                                                    </div>
-                                                    <div className="space-y-2">
-                                                        <label className="text-xs font-black text-slate-400 uppercase tracking-widest text-center block">{t('tablet')}</label>
-                                                        <input type="number" value={swiperConfig.slidesPerViewTablet} onChange={e => setSwiperConfig({ ...swiperConfig, slidesPerViewTablet: parseInt(e.target.value) })} className="w-full px-4 py-3 bg-white border border-slate-200 text-slate-900 rounded-2xl outline-none focus:ring-2 focus:ring-primary/20 font-medium text-center" />
-                                                    </div>
-                                                    <div className="space-y-2">
-                                                        <label className="text-xs font-black text-slate-400 uppercase tracking-widest text-center block">{t('mobile')}</label>
-                                                        <input type="number" value={swiperConfig.slidesPerViewMobile} onChange={e => setSwiperConfig({ ...swiperConfig, slidesPerViewMobile: parseInt(e.target.value) })} className="w-full px-4 py-3 bg-white border border-slate-200 text-slate-900 rounded-2xl outline-none focus:ring-2 focus:ring-primary/20 font-medium text-center" />
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>) : (activeTab === 'api' && type === 'DYNAMIC' && isExternalApi) ? (
-                                        <div className="max-w-4xl mx-auto py-10 space-y-8">
-                                            <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100 space-y-6">
-                                                <div className="space-y-2">
-                                                    <label className="text-xs font-bold text-slate-700">{t('endpointUrl')}</label>
-                                                    <div className="flex gap-2">
-                                                        <input type="text" value={apiEndpoint} onChange={e => setApiEndpoint(e.target.value)} placeholder="https://api.example.com/items" className="flex-1 px-4 py-2.5 bg-white border border-slate-200 text-slate-900 rounded-xl outline-none focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-slate-400" />
-                                                        <button
-                                                            onClick={async () => {
-                                                                if (!apiEndpoint) return toast.error(commonT('error'));
-                                                                setIsFetchingSample(true);
-                                                                try {
-                                                                    const res = await fetch(apiEndpoint);
-                                                                    const data = await res.json();
-                                                                    const sample = Array.isArray(data) ? data[0] : (data.results ? data.results[0] : (data.items ? data.items[0] : data));
-                                                                    setSampleData(sample);
-                                                                    toast.success(commonT('saved'));
-                                                                } catch (e) { toast.error(commonT('error')); }
-                                                                finally { setIsFetchingSample(false); }
-                                                            }}
-                                                            disabled={isFetchingSample}
-                                                            className="px-6 bg-slate-900 text-white font-bold rounded-xl flex items-center gap-2 hover:bg-slate-800 transition-colors disabled:opacity-50 cursor-pointer"
-                                                        >
-                                                            {isFetchingSample ? <RefreshCw className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />} {t('fetchSample')}
-                                                        </button>
-                                                    </div>
-                                                </div>
-
-                                                {sampleData && (
-                                                    <div className="space-y-4 pt-4 border-t border-slate-100">
-                                                        <div className="flex justify-between items-center">
-                                                            <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">{t('mapping')}</h3>
-                                                            <button onClick={() => setFieldMapping([...fieldMapping, { placeholder: '', apiField: '' }])} className="text-primary font-bold text-sm flex items-center gap-1 hover:underline cursor-pointer"><Plus className="w-4 h-4" /> {t('addField')}</button>
-                                                        </div>
-                                                        <div className="grid grid-cols-1 gap-3">
-                                                            {fieldMapping.map((m, i) => (
-                                                                <div key={i} className="flex gap-4 items-end bg-slate-50 p-4 rounded-2xl border border-slate-100 animate-in fade-in slide-in-from-top-1">
-                                                                    <div className="flex-1 space-y-1">
-                                                                        <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('placeholder')} (e.g. title)</label>
-                                                                        <input type="text" value={m.placeholder} onChange={e => {
-                                                                            const newMapping = [...fieldMapping];
-                                                                            newMapping[i].placeholder = e.target.value;
-                                                                            setFieldMapping(newMapping);
-                                                                        }} className="w-full px-3 py-1.5 bg-white border border-slate-200 text-slate-900 rounded-lg text-sm outline-none transition-all placeholder:text-slate-400" />
-                                                                    </div>
-                                                                    <div className="flex-1 space-y-1">
-                                                                        <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('apiField')}</label>
-                                                                        <select value={m.apiField} onChange={e => {
-                                                                            const newMapping = [...fieldMapping];
-                                                                            newMapping[i].apiField = e.target.value;
-                                                                            setFieldMapping(newMapping);
-                                                                        }} className="w-full px-3 py-1.5 bg-white border border-slate-200 text-slate-900 rounded-lg text-sm outline-none transition-all">
-                                                                            <option value="">{t('selectField')}</option>
-                                                                            {Object.keys(sampleData).map(k => <option key={k} value={k}>{k}</option>)}
-                                                                        </select>
-                                                                    </div>
-                                                                    <button onClick={() => setFieldMapping(fieldMapping.filter((_, idx) => idx !== i))} className="p-2 text-red-400 hover:text-red-600 cursor-pointer"><Trash2 className="w-4 h-4" /></button>
+                                                        <div className="flex items-center gap-3 pt-6">
+                                                            <label className="flex items-center gap-3 cursor-pointer group">
+                                                                <div className={`w-12 h-7 rounded-full relative transition-all ${swiperConfig.pauseOnHover ? 'bg-primary' : 'bg-slate-200'}`}>
+                                                                    <div className={`absolute top-1 w-5 h-5 bg-white rounded-full shadow-sm transition-all ${swiperConfig.pauseOnHover ? 'right-1' : 'left-1'}`} />
                                                                 </div>
-                                                            ))}
-                                                        </div>
-                                                        <div className="mt-4 p-4 bg-slate-900 rounded-2xl overflow-hidden">
-                                                            <div className="flex items-center gap-2 mb-2">
-                                                                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">{t('sampleDataStructure')}</span>
-                                                            </div>
-                                                            <pre className="text-[11px] text-indigo-200 font-mono overflow-auto max-h-40">{JSON.stringify(sampleData, null, 2)}</pre>
+                                                                <input type="checkbox" className="hidden" checked={swiperConfig.pauseOnHover} onChange={e => setSwiperConfig({ ...swiperConfig, pauseOnHover: e.target.checked })} />
+                                                                <span className="text-xs font-bold text-slate-600 group-hover:text-primary transition-colors">{locale === 'ar' ? 'توقف عند التمرير' : 'Pause on Hover'}</span>
+                                                            </label>
                                                         </div>
                                                     </div>
                                                 )}
+
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                                    <div className="space-y-3">
+                                                        <label className="text-xs font-black text-slate-400 uppercase tracking-widest block">{locale === 'ar' ? 'تأثير الانتقال' : 'Transition Effect'}</label>
+                                                        <select value={swiperConfig.effect} onChange={e => setSwiperConfig({ ...swiperConfig, effect: e.target.value })} className="w-full px-5 py-3 bg-white border border-slate-200 text-slate-900 rounded-2xl outline-none focus:ring-2 focus:ring-primary/20 font-medium">
+                                                            <option value="slide">Slide</option>
+                                                            <option value="fade">Fade</option>
+                                                            <option value="cube">Cube</option>
+                                                            <option value="coverflow">Coverflow</option>
+                                                            <option value="flip">Flip</option>
+                                                            <option value="cards">Cards</option>
+                                                        </select>
+                                                    </div>
+                                                    <div className="space-y-3">
+                                                        <label className="text-xs font-black text-slate-400 uppercase tracking-widest block">{locale === 'ar' ? 'نمط التنقل' : 'Navigation Style'}</label>
+                                                        <select value={swiperConfig.navStyle} onChange={e => setSwiperConfig({ ...swiperConfig, navStyle: e.target.value })} className="w-full px-5 py-3 bg-white border border-slate-200 text-slate-900 rounded-2xl outline-none focus:ring-2 focus:ring-primary/20 font-medium">
+                                                            <option value="default">{locale === 'ar' ? 'افتراضي (مربع)' : 'Default (Square)'}</option>
+                                                            <option value="minimal">{locale === 'ar' ? 'بسيط' : 'Minimal'}</option>
+                                                            <option value="rounded">{locale === 'ar' ? 'دائري' : 'Rounded'}</option>
+                                                            <option value="glass">{locale === 'ar' ? 'زجاجي' : 'Glass'}</option>
+                                                            <option value="filled">{locale === 'ar' ? 'ممتلئ' : 'Filled'}</option>
+                                                            <option value="outline">{locale === 'ar' ? 'محدد' : 'Outline'}</option>
+                                                            <option value="soft">{locale === 'ar' ? 'ناعم' : 'Soft'}</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 border-t border-slate-50 pt-8">
+                                                    <div className="space-y-3">
+                                                        <label className="text-xs font-black text-slate-400 uppercase tracking-widest block">{t('spaceBetween')}</label>
+                                                        <input type="number" value={swiperConfig.spaceBetween} onChange={e => setSwiperConfig({ ...swiperConfig, spaceBetween: parseInt(e.target.value) })} className="w-full px-5 py-3 bg-white border border-slate-200 text-slate-900 rounded-2xl outline-none focus:ring-2 focus:ring-primary/20 font-medium" />
+                                                    </div>
+                                                    <div className="space-y-3">
+                                                        <label className="text-xs font-black text-slate-400 uppercase tracking-widest block">{t('paginationType')}</label>
+                                                        <select value={swiperConfig.paginationType} onChange={e => setSwiperConfig({ ...swiperConfig, paginationType: e.target.value })} className="w-full px-5 py-3 bg-white border border-slate-200 text-slate-900 rounded-2xl outline-none focus:ring-2 focus:ring-primary/20 font-medium">
+                                                            <option value="bullets">{t('paginationTypes.bullets')}</option>
+                                                            <option value="fraction">{t('paginationTypes.fraction')}</option>
+                                                            <option value="progressbar">{t('paginationTypes.progressbar')}</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4 px-6 bg-slate-50/50 rounded-3xl border border-dashed border-slate-200">
+                                                    <div className="space-y-4">
+                                                        <label className="flex items-center gap-3 cursor-pointer group">
+                                                            <div className={`w-12 h-7 rounded-full relative transition-all ${swiperConfig.showNavigation ? 'bg-primary' : 'bg-slate-200'}`}>
+                                                                <div className={`absolute top-1 w-5 h-5 bg-white rounded-full shadow-sm transition-all ${swiperConfig.showNavigation ? 'right-1' : 'left-1'}`} />
+                                                            </div>
+                                                            <input type="checkbox" className="hidden" checked={swiperConfig.showNavigation} onChange={e => setSwiperConfig({ ...swiperConfig, showNavigation: e.target.checked })} />
+                                                            <span className="text-sm font-bold text-slate-700 group-hover:text-primary transition-colors">{t('showNavigation')}</span>
+                                                        </label>
+                                                        {swiperConfig.showNavigation && (
+                                                            <div className="grid grid-cols-2 gap-3 p-3 bg-white rounded-2xl border border-slate-100 animate-in fade-in slide-in-from-top-1">
+                                                                <div className="space-y-1">
+                                                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest">{locale === 'ar' ? 'الموقع' : 'Position'}</label>
+                                                                    <select value={swiperConfig.navPosition} onChange={e => setSwiperConfig({ ...swiperConfig, navPosition: e.target.value })} className="w-full px-3 py-1.5 bg-white border border-slate-200 text-slate-900 rounded-lg text-xs font-medium outline-none focus:ring-1 focus:ring-primary/20">
+                                                                        <option value="inside">{locale === 'ar' ? 'داخل' : 'Inside'}</option>
+                                                                        <option value="outside">{locale === 'ar' ? 'خارج' : 'Outside'}</option>
+                                                                    </select>
+                                                                </div>
+                                                                <div className="space-y-1">
+                                                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest">{locale === 'ar' ? 'الأيقونة' : 'Icon'}</label>
+                                                                    <select value={swiperConfig.navIcon} onChange={e => setSwiperConfig({ ...swiperConfig, navIcon: e.target.value })} className="w-full px-3 py-1.5 bg-white border border-slate-200 text-slate-900 rounded-lg text-xs font-medium outline-none focus:ring-1 focus:ring-primary/20">
+                                                                        <option value="chevron">Chevron</option>
+                                                                        <option value="arrow">Arrow</option>
+                                                                        <option value="move">Move</option>
+                                                                        <option value="double">Double</option>
+                                                                    </select>
+                                                                </div>
+                                                                <div className="col-span-2 space-y-1">
+                                                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest">{locale === 'ar' ? 'المسافة' : 'Offset'}</label>
+                                                                    <input type="number" value={swiperConfig.navOffset} onChange={e => setSwiperConfig({ ...swiperConfig, navOffset: parseInt(e.target.value) })} className="w-full px-3 py-1.5 bg-white border border-slate-200 text-slate-900 rounded-lg text-xs font-medium outline-none focus:ring-1 focus:ring-primary/20" />
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <div className="space-y-4">
+                                                        <label className="flex items-center gap-3 cursor-pointer group">
+                                                            <div className={`w-12 h-7 rounded-full relative transition-all ${swiperConfig.showPagination ? 'bg-primary' : 'bg-slate-200'}`}>
+                                                                <div className={`absolute top-1 w-5 h-5 bg-white rounded-full shadow-sm transition-all ${swiperConfig.showPagination ? 'right-1' : 'left-1'}`} />
+                                                            </div>
+                                                            <input type="checkbox" className="hidden" checked={swiperConfig.showPagination} onChange={e => setSwiperConfig({ ...swiperConfig, showPagination: e.target.checked })} />
+                                                            <span className="text-sm font-bold text-slate-700 group-hover:text-primary transition-colors">{t('showPagination')}</span>
+                                                        </label>
+                                                        {swiperConfig.showPagination && (
+                                                            <div className="grid grid-cols-2 gap-3 p-3 bg-white rounded-2xl border border-slate-100 animate-in fade-in slide-in-from-top-1">
+                                                                <div className="space-y-1">
+                                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{locale === 'ar' ? 'الموقع' : 'Position'}</label>
+                                                                    <select value={swiperConfig.paginationPosition} onChange={e => setSwiperConfig({ ...swiperConfig, paginationPosition: e.target.value })} className="w-full px-3 py-1.5 bg-white border border-slate-200 text-slate-900 rounded-lg text-xs font-medium outline-none focus:ring-1 focus:ring-primary/20">
+                                                                        <option value="inside">{locale === 'ar' ? 'داخل' : 'Inside'}</option>
+                                                                        <option value="outside">{locale === 'ar' ? 'خارج' : 'Outside'}</option>
+                                                                    </select>
+                                                                </div>
+                                                                <div className="space-y-1">
+                                                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest">{locale === 'ar' ? 'المسافة' : 'Offset'}</label>
+                                                                    <input type="number" value={swiperConfig.paginationOffset} onChange={e => setSwiperConfig({ ...swiperConfig, paginationOffset: parseInt(e.target.value) })} className="w-full px-3 py-1.5 bg-white border border-slate-200 text-slate-900 rounded-lg text-xs font-medium outline-none focus:ring-1 focus:ring-primary/20" />
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                <div className="space-y-6 pt-4">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="h-px bg-slate-100 flex-1"></div>
+                                                        <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">{t('slidesPerView')}</h3>
+                                                        <div className="h-px bg-slate-100 flex-1"></div>
+                                                    </div>
+                                                    <div className="grid grid-cols-3 gap-6">
+                                                        <div className="space-y-2">
+                                                            <label className="text-xs font-black text-slate-400 uppercase tracking-widest text-center block">{t('desktop')}</label>
+                                                            <input type="number" value={swiperConfig.slidesPerViewDesktop} onChange={e => setSwiperConfig({ ...swiperConfig, slidesPerViewDesktop: parseInt(e.target.value) })} className="w-full px-4 py-3 bg-white border border-slate-200 text-slate-900 rounded-2xl outline-none focus:ring-2 focus:ring-primary/20 font-medium text-center" />
+                                                        </div>
+                                                        <div className="space-y-2">
+                                                            <label className="text-xs font-black text-slate-400 uppercase tracking-widest text-center block">{t('tablet')}</label>
+                                                            <input type="number" value={swiperConfig.slidesPerViewTablet} onChange={e => setSwiperConfig({ ...swiperConfig, slidesPerViewTablet: parseInt(e.target.value) })} className="w-full px-4 py-3 bg-white border border-slate-200 text-slate-900 rounded-2xl outline-none focus:ring-2 focus:ring-primary/20 font-medium text-center" />
+                                                        </div>
+                                                        <div className="space-y-2">
+                                                            <label className="text-xs font-black text-slate-400 uppercase tracking-widest text-center block">{t('mobile')}</label>
+                                                            <input type="number" value={swiperConfig.slidesPerViewMobile} onChange={e => setSwiperConfig({ ...swiperConfig, slidesPerViewMobile: parseInt(e.target.value) })} className="w-full px-4 py-3 bg-white border border-slate-200 text-slate-900 rounded-2xl outline-none focus:ring-2 focus:ring-primary/20 font-medium text-center" />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="flex flex-col items-center justify-center py-20 px-10 text-center space-y-6 animate-in fade-in zoom-in-95 duration-500">
+                                                <div className="w-20 h-20 rounded-3xl bg-primary/5 flex items-center justify-center">
+                                                    <FileSearch className="w-10 h-10 text-primary" />
+                                                </div>
+                                                <div className="max-w-md">
+                                                    <h3 className="text-lg font-black text-slate-800 mb-2">{locale === 'ar' ? 'نمط صفحة التفاصيل نشط' : 'Detail Page Mode Active'}</h3>
+                                                    <p className="text-sm text-slate-500 font-medium">
+                                                        {locale === 'ar'
+                                                            ? 'في هذا النمط، يتم عرض سجل واحد فقط. إعدادات السلايدر والتنقل معطلة لأنها غير منطقية عند عرض تفاصيل عنصر واحد.'
+                                                            : 'In this mode, only a single record is rendered. Swiper and navigation settings are disabled as they are not applicable for a single item view.'}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                ) : (activeTab === 'api' && type === 'DYNAMIC' && isExternalApi) ? (
+                                    <div className="max-w-4xl mx-auto py-10 space-y-8">
+                                        <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100 space-y-6">
+                                            <div className="space-y-2">
+                                                <label className="text-xs font-bold text-slate-700">{t('endpointUrl')}</label>
+                                                <div className="flex gap-2">
+                                                    <input type="text" value={apiEndpoint} onChange={e => setApiEndpoint(e.target.value)} placeholder="https://api.example.com/items" className="flex-1 px-4 py-2.5 bg-white border border-slate-200 text-slate-900 rounded-xl outline-none focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-slate-400" />
+                                                    <button
+                                                        onClick={async () => {
+                                                            if (!apiEndpoint) return toast.error(commonT('error'));
+                                                            setIsFetchingSample(true);
+                                                            try {
+                                                                const res = await fetch(apiEndpoint);
+                                                                const data = await res.json();
+                                                                const sample = Array.isArray(data) ? data[0] : (data.results ? data.results[0] : (data.items ? data.items[0] : data));
+                                                                setSampleData(sample);
+                                                                toast.success(commonT('saved'));
+                                                            } catch (e) { toast.error(commonT('error')); }
+                                                            finally { setIsFetchingSample(false); }
+                                                        }}
+                                                        disabled={isFetchingSample}
+                                                        className="px-6 bg-slate-900 text-white font-bold rounded-xl flex items-center gap-2 hover:bg-slate-800 transition-colors disabled:opacity-50 cursor-pointer"
+                                                    >
+                                                        {isFetchingSample ? <RefreshCw className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />} {t('fetchSample')}
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            {sampleData && (
+                                                <div className="space-y-4 pt-4 border-t border-slate-100">
+                                                    <div className="flex justify-between items-center">
+                                                        <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">{t('mapping')}</h3>
+                                                        <button onClick={() => setFieldMapping([...fieldMapping, { placeholder: '', apiField: '' }])} className="text-primary font-bold text-sm flex items-center gap-1 hover:underline cursor-pointer"><Plus className="w-4 h-4" /> {t('addField')}</button>
+                                                    </div>
+                                                    <div className="grid grid-cols-1 gap-3">
+                                                        {fieldMapping.map((m, i) => (
+                                                            <div key={i} className="flex gap-4 items-end bg-slate-50 p-4 rounded-2xl border border-slate-100 animate-in fade-in slide-in-from-top-1">
+                                                                <div className="flex-1 space-y-1">
+                                                                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('placeholder')} (e.g. title)</label>
+                                                                    <input type="text" value={m.placeholder} onChange={e => {
+                                                                        const newMapping = [...fieldMapping];
+                                                                        newMapping[i].placeholder = e.target.value;
+                                                                        setFieldMapping(newMapping);
+                                                                    }} className="w-full px-3 py-1.5 bg-white border border-slate-200 text-slate-900 rounded-lg text-sm outline-none transition-all placeholder:text-slate-400" />
+                                                                </div>
+                                                                <div className="flex-1 space-y-1">
+                                                                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('apiField')}</label>
+                                                                    <select value={m.apiField} onChange={e => {
+                                                                        const newMapping = [...fieldMapping];
+                                                                        newMapping[i].apiField = e.target.value;
+                                                                        setFieldMapping(newMapping);
+                                                                    }} className="w-full px-3 py-1.5 bg-white border border-slate-200 text-slate-900 rounded-lg text-sm outline-none transition-all">
+                                                                        <option value="">{t('selectField')}</option>
+                                                                        {Object.keys(sampleData).map(k => <option key={k} value={k}>{k}</option>)}
+                                                                    </select>
+                                                                </div>
+                                                                <button onClick={() => setFieldMapping(fieldMapping.filter((_, idx) => idx !== i))} className="p-2 text-red-400 hover:text-red-600 cursor-pointer"><Trash2 className="w-4 h-4" /></button>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                    <div className="mt-4 p-4 bg-slate-900 rounded-2xl overflow-hidden">
+                                                        <div className="flex items-center gap-2 mb-2">
+                                                            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">{t('sampleDataStructure')}</span>
+                                                        </div>
+                                                        <pre className="text-[11px] text-indigo-200 font-mono overflow-auto max-h-40">{JSON.stringify(sampleData, null, 2)}</pre>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                ) : (activeTab === 'api' && type === 'DYNAMIC' && !isExternalApi) ? (
+                                    <div className="max-w-2xl mx-auto py-10">
+                                        <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100 space-y-6">
+                                            <div className="p-4 bg-indigo-50 border border-indigo-100 rounded-2xl">
+                                                <h3 className="text-sm font-bold text-indigo-900 mb-2 flex items-center gap-2">
+                                                    <Layers className="w-4 h-4" /> {t('internalDynamic')}
+                                                </h3>
+                                                <p className="text-xs text-indigo-700 leading-relaxed">
+                                                    {locale === 'ar'
+                                                        ? 'للمحتوى الداخلي، يتم ربط المتغيرات تلقائياً. يمكنك استخدام الحقول التالية في تصميمك:'
+                                                        : 'For internal content, variables are mapped automatically. You can use the following fields in your design:'}
+                                                </p>
+                                                <ul className="mt-3 space-y-1">
+                                                    <li className="text-xs font-mono text-indigo-600 font-bold">{"{{title}}"}</li>
+                                                    <li className="text-xs font-mono text-indigo-600 font-bold">{"{{description}}"}</li>
+                                                    <li className="text-xs font-mono text-indigo-600 font-bold">{"{{image}}"}</li>
+                                                    <li className="text-xs font-mono text-indigo-600 font-bold">{"{{images}}"}</li>
+                                                    <li className="text-xs font-mono text-indigo-600 font-bold">{"{{publishDate}}"}</li>
+                                                    <li className="text-xs font-mono text-indigo-600 font-bold">{"{{link}}"}</li>
+                                                    <li className="text-xs font-mono text-indigo-600 font-bold">{"{{tag}}"}</li>
+                                                    <li className="text-xs font-mono text-indigo-600 font-bold">{"{{linkText}}"}</li>
+                                                    <li className="text-xs font-mono text-indigo-600 font-bold">{"{{icon}}"}</li>
+                                                    <li className="text-xs font-mono text-indigo-600 font-bold">{"{{id}}"}</li>
+                                                </ul>
+                                            </div>
+                                            <div className="space-y-4">
+                                                <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">{t('mapping')}</h3>
+                                                <p className="text-xs text-slate-500 italic">
+                                                    {locale === 'ar'
+                                                        ? 'لا حاجة لربط يدوي للمحتوى الداخلي.'
+                                                        : 'No manual mapping needed for internal content.'}
+                                                </p>
                                             </div>
                                         </div>
-                                    ) : (activeTab === 'api' && type === 'DYNAMIC' && !isExternalApi) ? (
-                                        <div className="max-w-2xl mx-auto py-10">
-                                            <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100 space-y-6">
-                                                <div className="p-4 bg-indigo-50 border border-indigo-100 rounded-2xl">
-                                                    <h3 className="text-sm font-bold text-indigo-900 mb-2 flex items-center gap-2">
-                                                        <Layers className="w-4 h-4" /> {t('internalDynamic')}
-                                                    </h3>
-                                                    <p className="text-xs text-indigo-700 leading-relaxed">
-                                                        {locale === 'ar'
-                                                            ? 'للمحتوى الداخلي، يتم ربط المتغيرات تلقائياً. يمكنك استخدام الحقول التالية في تصميمك:'
-                                                            : 'For internal content, variables are mapped automatically. You can use the following fields in your design:'}
-                                                    </p>
-                                                    <ul className="mt-3 space-y-1">
-                                                        <li className="text-xs font-mono text-indigo-600 font-bold">{"{{title}}"}</li>
-                                                        <li className="text-xs font-mono text-indigo-600 font-bold">{"{{description}}"}</li>
-                                                        <li className="text-xs font-mono text-indigo-600 font-bold">{"{{image}}"}</li>
-                                                        <li className="text-xs font-mono text-indigo-600 font-bold">{"{{images}}"}</li>
-                                                        <li className="text-xs font-mono text-indigo-600 font-bold">{"{{publishDate}}"}</li>
-                                                        <li className="text-xs font-mono text-indigo-600 font-bold">{"{{link}}"}</li>
-                                                        <li className="text-xs font-mono text-indigo-600 font-bold">{"{{tag}}"}</li>
-                                                        <li className="text-xs font-mono text-indigo-600 font-bold">{"{{linkText}}"}</li>
-                                                        <li className="text-xs font-mono text-indigo-600 font-bold">{"{{icon}}"}</li>
-                                                        <li className="text-xs font-mono text-indigo-600 font-bold">{"{{id}}"}</li>
-                                                    </ul>
-                                                </div>
-                                                <div className="space-y-4">
-                                                    <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">{t('mapping')}</h3>
-                                                    <p className="text-xs text-slate-500 italic">
-                                                        {locale === 'ar'
-                                                            ? 'لا حاجة لربط يدوي للمحتوى الداخلي.'
-                                                            : 'No manual mapping needed for internal content.'}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ) : null}
+                                    </div>
+                                ) : null}
                             </div>
                         </div>
 

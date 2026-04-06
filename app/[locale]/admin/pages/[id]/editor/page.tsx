@@ -76,7 +76,7 @@ const StableSnippet = memo(({
                 className={`transition-all duration-300 min-h-[50px] relative ${!previewMode && isActive ? 'outline-2 outline outline-indigo-500 shadow-xl z-10' : ''}`}
             >
                 <div className="pointer-events-none opacity-80">
-                    <DynamicSwiper snippet={item as any} />
+                    <DynamicSwiper snippet={item as any} isPreview={true} />
                 </div>
                 {!previewMode && (
                     <div className="absolute inset-0 bg-primary/5 flex items-center justify-center cursor-pointer hover:bg-primary/10 transition-colors z-20">

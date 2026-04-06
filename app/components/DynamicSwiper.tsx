@@ -16,6 +16,8 @@ import 'swiper/css/effect-flip';
 import 'swiper/css/effect-cards';
 import { useLocale } from 'next-intl';
 import { useRouter } from '@/navigation';
+import { useAppDispatch } from '@/app/store/hooks';
+import { openModal, closeModal } from '@/app/store/slices/dynamicModalSlice';
 import { ChevronLeft, ChevronRight, ArrowLeft, ArrowRight, MoveLeft, MoveRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 
 interface DynamicSwiperProps {
@@ -31,17 +33,21 @@ interface DynamicSwiperProps {
     };
     dynamicId?: string | null;
     singleRecordOnly?: boolean;
+    isPreview?: boolean;
 }
 
 export default function DynamicSwiper({
     snippet,
     dynamicId,
-    singleRecordOnly = false
+    singleRecordOnly = false,
+    isPreview = false
 }: {
     snippet: any;
     dynamicId?: string | null;
     singleRecordOnly?: boolean;
+    isPreview?: boolean;
 }) {
+    const dispatch = useAppDispatch();
     const [data, setData] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -92,6 +98,12 @@ export default function DynamicSwiper({
                     else items = [json];
                 }
 
+                // If we are in a LIST view but have a dynamicId (e.g. "Other Media" section on a detail page),
+                // filter out the currently viewed item to avoid duplication.
+                if (dynamicId && !swiperConfig?.isDetailView) {
+                    items = items.filter((item: any) => item.id !== dynamicId);
+                }
+
                 setData(items);
             } catch (err: any) {
                 setError(err.message);
@@ -119,7 +131,9 @@ export default function DynamicSwiper({
     const sectionPaddingClass = isFullWidth ? 'py-0' : (sectionPadding === '0' ? 'py-0' : 'py-20');
 
     if (loading) {
-        const isDetail = (dynamicId && swiperConfig?.isDetailView);
+        // If it's specifically a detail view but we don't have an ID, don't show loading (we'll hide it anyway), unless it's a preview
+        if (!isPreview && swiperConfig?.isDetailView && !dynamicId) return null;
+        const isDetail = ((isPreview || dynamicId) && swiperConfig?.isDetailView);
         return (
             <section className={isFullWidth ? 'py-0' : 'py-20'}>
                 <div className={isFullWidth ? 'w-full' : 'container mx-auto px-4'}>
@@ -144,7 +158,9 @@ export default function DynamicSwiper({
         );
     }
     if (error) return <div className="py-20 text-center text-red-400">Error: {error}</div>;
-    if (data.length === 0) return null;
+    if (!loading && (data.length === 0 || (!singleRecordOnly && !isPreview && swiperConfig?.isDetailView && !dynamicId))) {
+        return null;
+    }
 
     const renderSlide = (item: any) => {
         if (!item) return null;
@@ -160,7 +176,11 @@ export default function DynamicSwiper({
             content = content.split('{{image}}').join(String(image || ''));
             content = content.split('{{publishDate}}').join(String(publishDate || ''));
             let linkUrl = String(item.linkUrl || '#');
-            if (linkUrl !== '#' && !linkUrl.startsWith('http') && !linkUrl.startsWith('/')) {
+            if (config.linkType === 'modal') {
+                linkUrl = `#modal-${item.id}`;
+                // If it's a modal, we want to completely overtake the href attribute just in case the template has extra text like href="/{{link}}"
+                content = content.replace(/href=['"][^'"]*\{\{link\}\}[^'"]*['"]/g, `href="${linkUrl}"`);
+            } else if (linkUrl !== '#' && !linkUrl.startsWith('http') && !linkUrl.startsWith('/')) {
                 linkUrl = '/' + linkUrl;
             }
             content = content.split('{{link}}').join(linkUrl);
@@ -186,7 +206,16 @@ export default function DynamicSwiper({
                 e.preventDefault();
                 let path = link.href.replace(window.location.origin, '');
 
-                // CRITICAL: Strip locale prefix (e.g. /ar or /en) if standard localized router is used
+                // 1. Check for Modal Trigger (starts with #modal-)
+                if (path.includes('#modal-')) {
+                    const id = path.split('#modal-')[1];
+                    if (id) {
+                        dispatch(openModal({ dynamicId: id, snippet: snippet }));
+                        return;
+                    }
+                }
+
+                // 2. Standard SPA Navigation
                 // as router.push from next-intl automatically adds the current locale.
                 const localesList = ['ar', 'en'];
                 for (const loc of localesList) {
@@ -199,6 +228,7 @@ export default function DynamicSwiper({
                     }
                 }
 
+                dispatch(closeModal());
                 router.push(path as any);
             }
         };
@@ -216,7 +246,7 @@ export default function DynamicSwiper({
         return effectiveSide === 'left' ? <ChevronLeft size={24} /> : <ChevronRight size={24} />;
     };
 
-    if (singleRecordOnly || (dynamicId && swiperConfig?.isDetailView)) {
+    if (singleRecordOnly || ((isPreview || dynamicId) && swiperConfig?.isDetailView)) {
         return (
             <section className={`${sectionPaddingClass} transition-all duration-500`}>
                 <div className={isFullWidth ? 'w-full' : 'container mx-auto px-4'}>

@@ -10,6 +10,7 @@ import ToastProvider from '@/app/components/ToastProvider';
 import ReduxProvider from '@/app/components/ReduxProvider';
 import FloatingSocialMenu from '@/app/components/FloatingSocialMenu';
 import { getLocalizedName } from '@/app/utils/locale';
+import DynamicDetailModal from '@/app/components/DynamicDetailModal';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -134,6 +135,7 @@ export default async function RootLayout({
           <NextIntlClientProvider messages={messages}>
             <ToastProvider />
             <FloatingSocialMenu />
+            <DynamicDetailModal />
             {children}
           </NextIntlClientProvider>
         </ReduxProvider>
