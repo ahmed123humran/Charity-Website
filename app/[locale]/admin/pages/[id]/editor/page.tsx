@@ -426,6 +426,25 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                 target.style.outline = '2px solid #3b82f6';
                 target.style.outlineOffset = '2px';
                 target.focus();
+
+                // Prevent duplicate listeners and rich text pasting
+                if (!(target as any)._hasPasteHandler) {
+                    (target as any)._hasPasteHandler = true;
+                    const handlePaste = (e: ClipboardEvent) => {
+                        e.preventDefault();
+                        const text = e.clipboardData?.getData('text/plain') || '';
+                        document.execCommand('insertText', false, text);
+                    };
+
+                    target.addEventListener('paste', handlePaste as any);
+
+                    const handleBlur = () => {
+                        target.removeEventListener('paste', handlePaste as any);
+                        (target as any)._hasPasteHandler = false;
+                        target.removeEventListener('blur', handleBlur);
+                    };
+                    target.addEventListener('blur', handleBlur);
+                }
             }
         } else {
             target.style.outline = '2px solid #3b82f6';
