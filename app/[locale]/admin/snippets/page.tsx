@@ -78,6 +78,8 @@ export default function SnippetsManagement() {
         itemsPerPage: 6,
         paginationStyle: 'numbers-rounded',
         paginationAlign: 'center',
+        useAlternatingColors: false,
+        useAlternatingLayout: false,
     });
     const [containerType, setContainerType] = useState('contained');
     const [fieldMapping, setFieldMapping] = useState<{ placeholder: string, apiField: string }[]>([]);
@@ -223,6 +225,8 @@ export default function SnippetsManagement() {
             navIcon: 'chevron',
             isDetailView: false,
             linkType: 'page',
+            useAlternatingColors: false,
+            useAlternatingLayout: false,
             ...snippet.swiperConfig
         });
         setCategoryId(snippet.categoryId || '');
@@ -278,6 +282,8 @@ export default function SnippetsManagement() {
             itemsPerPage: 6,
             paginationStyle: 'numbers-rounded',
             paginationAlign: 'center',
+            useAlternatingColors: false,
+            useAlternatingLayout: false,
         });
     };
 
@@ -858,6 +864,49 @@ export default function SnippetsManagement() {
                                             <div className="space-y-3">
                                                 <label className="text-xs font-black text-slate-400 uppercase tracking-widest block">{t('spaceBetween')}</label>
                                                 <input type="number" value={swiperConfig.spaceBetween} onChange={e => setSwiperConfig({ ...swiperConfig, spaceBetween: parseInt(e.target.value) })} className="w-full px-5 py-3 bg-white border border-slate-200 text-slate-900 rounded-2xl outline-none focus:ring-2 focus:ring-primary/20 font-medium" />
+                                            </div>
+                                            <div className="space-y-3">
+                                                <label className="text-xs font-black text-slate-400 uppercase tracking-widest block">{locale === 'ar' ? 'تبادل الألوان (Zebra)' : 'Alternating Colors'}</label>
+                                                <div onClick={() => setSwiperConfig({ ...swiperConfig, useAlternatingColors: !swiperConfig.useAlternatingColors })}
+                                                    className={`p-3 rounded-xl border-2 transition-all cursor-pointer flex items-center justify-between group ${swiperConfig.useAlternatingColors ? 'border-primary bg-primary/5' : 'border-slate-100 bg-white hover:border-slate-200'}`}>
+                                                    <div className="flex items-center gap-3">
+                                                        <RefreshCw className={`w-4 h-4 ${swiperConfig.useAlternatingColors ? 'text-primary' : 'text-slate-400'}`} />
+                                                        <span className={`text-xs font-bold ${swiperConfig.useAlternatingColors ? 'text-slate-900' : 'text-slate-500 group-hover:text-slate-700'}`}>{locale === 'ar' ? 'تفعيل التبادل' : 'Enable Swapping'}</span>
+                                                    </div>
+                                                    <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all ${swiperConfig.useAlternatingColors ? 'border-primary bg-primary' : 'border-slate-300'}`}>
+                                                        {swiperConfig.useAlternatingColors && <Check className="w-2.5 h-2.5 text-white" />}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-3">
+                                                <label className="text-xs font-black text-slate-400 uppercase tracking-widest block">{locale === 'ar' ? 'تبادل التخطيط (يمين/يسار)' : 'Alternating Layout'}</label>
+                                                <div onClick={() => setSwiperConfig({ ...swiperConfig, useAlternatingLayout: !swiperConfig.useAlternatingLayout })}
+                                                    className={`p-3 rounded-xl border-2 transition-all cursor-pointer flex items-center justify-between group ${swiperConfig.useAlternatingLayout ? 'border-primary bg-primary/5' : 'border-slate-100 bg-white hover:border-slate-200'}`}>
+                                                    <div className="flex items-center gap-3">
+                                                        <Move className={`w-4 h-4 ${swiperConfig.useAlternatingLayout ? 'text-primary' : 'text-slate-400'}`} />
+                                                        <span className={`text-xs font-bold ${swiperConfig.useAlternatingLayout ? 'text-slate-900' : 'text-slate-500 group-hover:text-slate-700'}`}>{locale === 'ar' ? 'تفعيل التبادل' : 'Enable Swapping'}</span>
+                                                    </div>
+                                                    <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all ${swiperConfig.useAlternatingLayout ? 'border-primary bg-primary' : 'border-slate-300'}`}>
+                                                        {swiperConfig.useAlternatingLayout && <Check className="w-2.5 h-2.5 text-white" />}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Help Note for Alternating Layout */}
+                                            <div className="md:col-span-2 p-4 bg-amber-50 border border-amber-200 rounded-2xl animate-in fade-in slide-in-from-top-2">
+                                                <div className="flex items-start gap-3">
+                                                    <Zap className="w-5 h-5 text-amber-600 mt-1 shrink-0" />
+                                                    <div className="space-y-1">
+                                                        <p className="text-xs font-bold text-amber-900">
+                                                            {locale === 'ar' ? 'ملاحظة لتفعيل تبادل التخطيط:' : 'Note for Alternating Layout:'}
+                                                        </p>
+                                                        <p className="text-[11px] text-amber-800 leading-relaxed">
+                                                            {locale === 'ar'
+                                                                ? 'لتفعيل ميزة تبديل التخطيط (يمين/يسار)، يجب أن يحتوي كود HTML للبطاقة على كلاسات flex القياسية مثل flex-row أو md:flex-row. سيقوم النظام بتحويلها تلقائياً إلى flex-row-reverse في البطاقات الزوجية.'
+                                                                : 'To enable alternating layout (left/right), your card HTML must use standard flex classes like flex-row or md:flex-row. The system will automatically convert them to flex-row-reverse for even-indexed cards.'}
+                                                        </p>
+                                                    </div>
+                                                </div>
                                             </div>
                                             <div className="space-y-3">
                                                 <label className="text-xs font-black text-slate-400 uppercase tracking-widest block">{locale === 'ar' ? 'محاذاة الترقيم' : 'Pagination Alignment'}</label>

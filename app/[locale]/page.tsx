@@ -8,6 +8,7 @@ import { getLocalizedName, getContentSnippet } from "@/app/utils/locale";
 import { sanitizeHtml } from "@/app/utils/sanitize";
 import DynamicSwiper from "@/app/components/DynamicSwiper";
 import DynamicGrid from "@/app/components/DynamicGrid";
+import StaticSnippet from "@/app/components/StaticSnippet";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -79,7 +80,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                 ) : (item.type === 'DYNAMIC_GRID') ? (
                   <DynamicGrid key={item.id} snippet={item} />
                 ) : (
-                  <div key={item.id} dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.htmlContent) }} />
+                  <StaticSnippet key={item.id} htmlContent={item.htmlContent} snippet={item} />
                 )
               ))}
             </div>
@@ -97,7 +98,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
               ) : (item.type === 'DYNAMIC_GRID') ? (
                 <DynamicGrid key={item.id} snippet={item} />
               ) : (
-                <div key={item.id} dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.htmlContent) }} />
+                <StaticSnippet key={item.id} htmlContent={item.htmlContent} snippet={item} />
               )
             ))}
           </div>
@@ -108,7 +109,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       // Fallback for simple HTML string content
       const contentStr = typeof page.content === 'string' ? page.content : String(page.content);
       if (contentStr) {
-        contentToRender = <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(contentStr) }} />;
+        contentToRender = <StaticSnippet htmlContent={contentStr} />;
         isEmpty = false;
       }
     }
@@ -129,7 +130,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             footerToRender = (
               <div className="flex flex-col">
                 {localizedContent.map((item: any) => (
-                  <div key={item.id} dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.htmlContent) }} />
+                  <StaticSnippet key={item.id} htmlContent={item.htmlContent} snippet={item} />
                 ))}
               </div>
             );
@@ -140,7 +141,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           footerToRender = (
             <div className="flex flex-col">
               {parsed.map((item: any) => (
-                <div key={item.id} dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.htmlContent) }} />
+                <StaticSnippet key={item.id} htmlContent={item.htmlContent} snippet={item} />
               ))}
             </div>
           );
@@ -149,7 +150,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         // Fallback for simple HTML string content
         const contentStr = typeof footer.content === 'string' ? footer.content : String(footer.content);
         if (contentStr) {
-          footerToRender = <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(contentStr) }} />;
+          footerToRender = <StaticSnippet htmlContent={contentStr} />;
         }
       }
     }

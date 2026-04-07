@@ -142,9 +142,29 @@ export default function DynamicGrid({
             ? data.slice(0, displayCount)
             : data.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage));
 
-    const renderSlide = (item: any) => {
+    const renderSlide = (item: any, index: number = 0) => {
         if (!item) return null;
         let content = htmlContent;
+
+        // Alternating colors feature
+        if (config.useAlternatingColors && index % 2 === 1) {
+            // Triple replacement to swap primary and secondary classes
+            // We use a temporary prefix to avoid double-replacing
+            content = content
+                .split('primary').join('TMP_SWAP_PLACEHOLDER')
+                .split('secondary').join('primary')
+                .split('TMP_SWAP_PLACEHOLDER').join('secondary');
+        }
+
+        // Alternating layout feature
+        if (config.useAlternatingLayout && index % 2 === 1) {
+            // Robust regex to swap flex-row and flex-row-reverse for any prefix (md:, lg:, etc.)
+            content = content.replace(/\b([\w:]+)?flex-row(-reverse)?\b/g, (match, prefix, suffix) => {
+                const p = prefix || '';
+                return suffix ? `${p}flex-row` : `${p}flex-row-reverse`;
+            });
+        }
+
         if (isInternal) {
             const title = (locale === 'ar' && item.titleAr) ? item.titleAr : item.title;
             const description = (locale === 'ar' && item.descriptionAr) ? item.descriptionAr : item.description;
@@ -217,7 +237,7 @@ export default function DynamicGrid({
         return (
             <section className={`${sectionPaddingClass} transition-all duration-500`}>
                 <div className={isFullWidth ? 'w-full' : 'container mx-auto px-4'}>
-                    {renderSlide(data[0])}
+                    {renderSlide(data[0], 0)}
                 </div>
             </section>
         );
@@ -312,7 +332,7 @@ export default function DynamicGrid({
                         gap: `${config.spaceBetween ?? 30}px`
                     }}
                 >
-                    {paginatedData.map(item => renderSlide(item))}
+                    {paginatedData.map((item, idx) => renderSlide(item, idx))}
                 </div>
 
                 {renderPagination()}
