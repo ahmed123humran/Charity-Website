@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createSnippetSchema } from '@/app/utils/validiton';
 import prisma from '@/app/utils/db';
 import { getServerUser } from '@/app/utils/auth';
-import { Role } from '@prisma/client';
+import { Role, Prisma } from '@prisma/client';
 import { logActivity } from '@/app/utils/logger';
 
 /**
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
         }
 
         const newSnippet = await prisma.snippet.create({
-            data: validation.data
+            data: validation.data as Prisma.SnippetUncheckedCreateInput
         });
 
         await logActivity({

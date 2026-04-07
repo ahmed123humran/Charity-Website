@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { updateSnippetSchema } from '@/app/utils/validiton';
 import prisma from '@/app/utils/db';
 import { getServerUser } from '@/app/utils/auth';
-import { Role } from '@prisma/client';
+import { Role, Prisma } from '@prisma/client';
 import { logActivity } from '@/app/utils/logger';
 
 interface Props {
@@ -60,7 +60,7 @@ export async function PUT(request: NextRequest, { params }: Props) {
 
         const updatedSnippet = await prisma.snippet.update({
             where: { id },
-            data: validation.data
+            data: validation.data as Prisma.SnippetUncheckedUpdateInput
         });
 
         await logActivity({
