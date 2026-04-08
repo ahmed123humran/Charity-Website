@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import DynamicSwiper from '@/app/components/DynamicSwiper';
 import DynamicGrid from '@/app/components/DynamicGrid';
+import StaticSnippet from '@/app/components/StaticSnippet';
 import Header from '@/app/components/Header';
 import Footer from '@/app/components/Footer';
 import prisma from '@/app/utils/db';
@@ -109,7 +110,7 @@ export default async function DynamicPage({ params }: Props) {
                             ) : (item.type === 'DYNAMIC_GRID') ? (
                                 <DynamicGrid key={item.id} snippet={item} dynamicId={dynamicId} />
                             ) : (
-                                <div key={item.id} dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.htmlContent) }} />
+                                <StaticSnippet key={item.id} htmlContent={item.htmlContent} snippet={item} />
                             )
                         ))}
                     </div>
@@ -123,17 +124,17 @@ export default async function DynamicPage({ params }: Props) {
                             ) : (item.type === 'DYNAMIC_GRID') ? (
                                 <DynamicGrid key={item.id} snippet={item} dynamicId={dynamicId} />
                             ) : (
-                                <div key={item.id} dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.htmlContent) }} />
+                                <StaticSnippet key={item.id} htmlContent={item.htmlContent} snippet={item} />
                             )
                         ))}
                     </div>
                 );
             } else {
-                contentToRender = <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(contentStr) }} />;
+                contentToRender = <StaticSnippet htmlContent={contentStr} />;
             }
         } catch (e) {
             const contentStr = typeof page.content === 'string' ? page.content : String(page.content);
-            contentToRender = <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(contentStr) }} />;
+            contentToRender = <StaticSnippet htmlContent={contentStr} />;
         }
     }
 
@@ -164,7 +165,7 @@ export default async function DynamicPage({ params }: Props) {
                 footerToRender = (
                     <div className="flex flex-col">
                         {localizedContent.map((item: any) => (
-                            <div key={item.id} dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.htmlContent) }} />
+                            <StaticSnippet key={item.id} htmlContent={item.htmlContent} snippet={item} />
                         ))}
                     </div>
                 );
@@ -172,12 +173,12 @@ export default async function DynamicPage({ params }: Props) {
                 footerToRender = (
                     <div className="flex flex-col">
                         {parsed.map((item: any) => (
-                            <div key={item.id} dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.htmlContent) }} />
+                            <StaticSnippet key={item.id} htmlContent={item.htmlContent} snippet={item} />
                         ))}
                     </div>
                 );
             } else {
-                footerToRender = <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(contentStr) }} />;
+                footerToRender = <StaticSnippet htmlContent={contentStr} />;
             }
         } catch (e) {
             // Optionally handle plain HTML string for footer

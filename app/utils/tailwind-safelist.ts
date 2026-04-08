@@ -47,7 +47,7 @@ export const dynamicTailwindSafelist = [
     'hover:-translate-y-1', 'backdrop-blur-sm', 'w-full', 'h-full', 'object-cover', 'flex', 'items-center', 'overflow-hidden',
     'pointer-events-none', 'transform', '-rotate-45', 'rtl:rotate-180',
     'transition-all', 'transition-colors', 'transition-transform', 'duration-300', 'duration-500',
-    'group', 'group-hover:-translate-x-1',
+    'group', 'group-hover:-translate-x-1', 'flex-row-reverse', 'md:flex-row-reverse', 'lg:flex-row-reverse', 'xl:flex-row-reverse',
 
     // Borders & Shapes
     'border', 'border-2', 'border-4', 'border-gray-100', 'border-gray-200', 'border-b', 'border-t', 'border-r-4', 'border-white', 'border-white/10', 'border-white/30', 'border-none',
@@ -58,6 +58,19 @@ export const dynamicTailwindSafelist = [
 
     // Widths (Fractional)
     'w-1/2', 'w-1/3', 'w-2/3', 'w-1/4', 'w-2/4', 'w-3/4', 'w-1/5', 'w-2/5', 'w-3/5', 'w-4/5', 'w-1/6', 'w-2/6', 'w-3/6', 'w-4/6', 'w-5/6', 'w-1/12', 'w-2/12', 'w-3/12', 'w-4/12', 'w-5/12', 'w-6/12', 'w-7/12', 'w-8/12', 'w-9/12', 'w-10/12', 'w-11/12',
+
+    // Responsive Widths (sm)
+    'sm:w-1/2', 'sm:w-1/3', 'sm:w-2/3', 'sm:w-1/4', 'sm:w-2/4', 'sm:w-3/4', 'sm:w-1/5', 'sm:w-2/5', 'sm:w-3/5', 'sm:w-4/5', 'sm:w-1/6', 'sm:w-2/6', 'sm:w-3/6', 'sm:w-4/6', 'sm:w-5/6', 'sm:w-1/12', 'sm:w-2/12', 'sm:w-3/12', 'sm:w-4/12', 'sm:w-5/12', 'sm:w-6/12', 'sm:w-7/12', 'sm:w-8/12', 'sm:w-9/12', 'sm:w-10/12', 'sm:w-11/12',
+
+    // Responsive Widths (md)
+    'md:w-1/2', 'md:w-1/3', 'md:w-2/3', 'md:w-1/4', 'md:w-2/4', 'md:w-3/4', 'md:w-1/5', 'md:w-2/5', 'md:w-3/5', 'md:w-4/5', 'md:w-1/6', 'md:w-2/6', 'md:w-3/6', 'md:w-4/6', 'md:w-5/6', 'md:w-1/12', 'md:w-2/12', 'md:w-3/12', 'md:w-4/12', 'md:w-5/12', 'md:w-6/12', 'md:w-7/12', 'md:w-8/12', 'md:w-9/12', 'md:w-10/12', 'md:w-11/12',
+    'md:h-auto ',
+
+    // Responsive Widths (lg)
+    'lg:w-1/2', 'lg:w-1/3', 'lg:w-2/3', 'lg:w-1/4', 'lg:w-2/4', 'lg:w-3/4', 'lg:w-1/5', 'lg:w-2/5', 'lg:w-3/5', 'lg:w-4/5', 'lg:w-1/6', 'lg:w-2/6', 'lg:w-3/6', 'lg:w-4/6', 'lg:w-5/6', 'lg:w-1/12', 'lg:w-2/12', 'lg:w-3/12', 'lg:w-4/12', 'lg:w-5/12', 'lg:w-6/12', 'lg:w-7/12', 'lg:w-8/12', 'lg:w-9/12', 'lg:w-10/12', 'lg:w-11/12',
+
+    // Responsive Widths (xl)
+    'xl:w-1/2', 'xl:w-1/3', 'xl:w-2/3', 'xl:w-1/4', 'xl:w-2/4', 'xl:w-3/4', 'xl:w-1/5', 'xl:w-2/5', 'xl:w-3/5', 'xl:w-4/5', 'xl:w-1/6', 'xl:w-2/6', 'xl:w-3/6', 'xl:w-4/6', 'xl:w-5/6', 'xl:w-1/12', 'xl:w-2/12', 'xl:w-3/12', 'xl:w-4/12', 'xl:w-5/12', 'xl:w-6/12', 'xl:w-7/12', 'xl:w-8/12', 'xl:w-9/12', 'xl:w-10/12', 'xl:w-11/12',
 
     // Widths (Fixed)
     'w-screen', 'w-min', 'w-max', 'w-fit', 'w-0', 'w-px', 'w-1', 'w-2', 'w-3', 'w-4', 'w-5', 'w-6', 'w-8', 'w-10', 'w-12', 'w-16', 'w-20', 'w-24', 'w-32', 'w-40', 'w-48', 'w-56', 'w-64', 'w-72', 'w-80', 'w-96',

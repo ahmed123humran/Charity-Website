@@ -16,7 +16,6 @@ import toast from 'react-hot-toast';
 import EditorTour from '@/app/components/EditorTour';
 import ColorInput from '@/app/components/ColorInput';
 import { sanitizeHtml } from '@/app/utils/sanitize';
-
 import ConfirmDialog from '@/app/components/ConfirmDialog';
 
 interface Snippet {
@@ -35,7 +34,7 @@ interface Footer {
 }
 
 interface DroppedSnippet {
-    id: string; // unique instance id
+    id: string;
     snippetId: string;
     htmlContent: string;
     name: string;
@@ -64,13 +63,8 @@ const StableSnippet = memo(({
         />
     );
 }, (prev, next) => {
-    // ALWAYS re-render if preview mode changes to ensure outlines disappear/appear correctly
     if (prev.previewMode !== next.previewMode) return false;
-
-    // CRITICAL: If the footer is actively being edited, we NEVER re-render it from state
-    // This allows the user to type freely without React overwriting the DOM nodes
     if (next.isBeingEdited) return true;
-
     return prev.item.htmlContent === next.item.htmlContent &&
         prev.isActive === next.isActive;
 });
@@ -91,6 +85,7 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
     const [editorLocale, setEditorLocale] = useState('en');
     const [previewMode, setPreviewMode] = useState(false);
     const [showLeftPanel, setShowLeftPanel] = useState(true);
+    const [showRightPanel, setShowRightPanel] = useState(true);
 
     // Dialog state
     const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
@@ -130,6 +125,12 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
             await Promise.all([fetchFooter(id), fetchSnippets()]);
         };
         init();
+
+        // Responsive initialization: close sidebars on small screens
+        if (window.innerWidth < 1024) {
+            setShowLeftPanel(false);
+            setShowRightPanel(false);
+        }
     }, [params]);
 
     const fetchFooter = async (id: string) => {
@@ -161,7 +162,7 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
             const res = await fetch('/api/snippets');
             if (res.ok) {
                 const data = await res.json();
-                setSnippets(data);
+                setSnippets(data.filter((s: Snippet) => s.category === 'Footer'));
             }
         } catch (error) { console.error('Failed to fetch snippets', error); }
         finally { setLoading(false); }
@@ -211,26 +212,41 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
         if (!snippetData) return;
         try {
             const snippet: Snippet = JSON.parse(snippetData);
-            const newSnippet: DroppedSnippet = {
-                id: crypto.randomUUID(),
-                snippetId: snippet.id,
-                htmlContent: snippet.htmlContent,
-                name: snippet.name
-            };
-            const dropIndex = dragOverIndex !== null ? dragOverIndex : droppedSnippets.length;
-            setDroppedSnippets(prev => {
-                const newList = [...prev];
-                newList.splice(dropIndex, 0, newSnippet);
-                return newList;
-            });
+            addSnippet(snippet);
         } catch (err) { console.error('Drop failed', err); }
         setDragOverIndex(null);
+    };
+
+    const addSnippet = (snippet: Snippet, index?: number) => {
+        const newSnippet: DroppedSnippet = {
+            id: crypto.randomUUID(),
+            snippetId: snippet.id,
+            htmlContent: snippet.htmlContent,
+            name: snippet.name
+        };
+        const dropIndex = index !== undefined ? index : (dragOverIndex !== null ? dragOverIndex : droppedSnippets.length);
+        setDroppedSnippets(prev => {
+            const newList = [...prev];
+            newList.splice(dropIndex, 0, newSnippet);
+            return newList;
+        });
+
+        if (window.innerWidth < 1024) {
+            setShowRightPanel(false);
+            toast.success(editorT('snippetAdded'));
+        }
+    };
+
+    const handleSnippetClick = (snippet: Snippet) => {
+        if (previewMode) return;
+        if (window.innerWidth < 1024) {
+            addSnippet(snippet);
+        }
     };
 
     const commitChanges = (id: string) => {
         const wrapper = document.getElementById(`snippet-content-${id}`);
         if (wrapper) {
-            // Clean a CLONE so the live DOM keeps its visual outline for the user
             const clone = wrapper.cloneNode(true) as HTMLElement;
             clone.querySelectorAll('*').forEach(el => {
                 const htmlEl = el as HTMLElement;
@@ -360,7 +376,6 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
         return 'text';
     };
 
-
     type StyleHandler = (el: HTMLElement, value?: string) => void;
 
     const STYLE_HANDLERS: Record<ElementKind, Partial<Record<StyleCommand, StyleHandler>>> = {
@@ -371,7 +386,6 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
             textAlign: (el, v) => el.style.textAlign = v || '',
             borderRadius: (el, v) => el.style.borderRadius = v || '',
         },
-
         svg: {
             fontSize: (el, v) => {
                 el.setAttribute('width', v || '24px');
@@ -381,19 +395,16 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
             backgroundColor: (el, v) => el.style.backgroundColor = v || 'transparent',
             borderRadius: (el, v) => el.style.borderRadius = v || '0px',
         },
-
         img: {
             borderRadius: (el, v) => el.style.borderRadius = v || '',
             objectFit: (el, v) => el.style.objectFit = v || 'cover',
         },
-
         video: {
             borderRadius: (el, v) => el.style.borderRadius = v || '',
             objectFit: (el, v) => el.style.objectFit = v || 'cover',
             aspectRatio: (el, v) => el.style.aspectRatio = v || '',
         },
     };
-
 
     const applyStyle = (command: StyleCommand, value?: string) => {
         const el = activeElementRef.current;
@@ -482,23 +493,19 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
         reader.onload = () => {
             let svgText = reader.result as string;
 
-            // 🔐 تنظيف مبدئي
             svgText = svgText
                 .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, '')
                 .replace(/on\w+="[^"]*"/g, '');
 
-            // 🎯 تأكد من الخصائص المهمة
             if (!svgText.includes('viewBox')) {
                 console.warn('SVG بدون viewBox قد لا يتجاوب جيدًا');
             }
 
-            // 🎨 إجبار التحكم باللون
             svgText = svgText.replace(
                 /<svg([^>]+)>/,
                 `<svg$1 fill="currentColor" width="24" height="24" style="color:inherit">`
             );
 
-            // 🔄 استبدال العنصر الحالي
             if (activeElementRef.current) {
                 activeElementRef.current.outerHTML = svgText;
                 commitChanges(activeSnippetId!);
@@ -610,9 +617,30 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                         {previewMode ? <EyeOff className="w-3.5 h-3.5 cursor-pointer" /> : <Eye className="w-3.5 h-3.5" />} <span className="hidden sm:inline">{previewMode ? editorT('exitPreview') : editorT('preview')}</span>
                     </button>
                     {!previewMode && (
-                        <button onClick={() => setShowLeftPanel(!showLeftPanel)} className={`p-2 rounded-lg text-xs font-bold transition-all lg:hidden cursor-pointer ${showLeftPanel ? 'bg-primary text-white' : 'hover:bg-slate-800 text-slate-400'}`} title="Style panel">
-                            {locale === 'ar' ? <PanelRight className="w-3.5 h-3.5 cursor-pointer" /> : <PanelLeft className="w-3.5 h-3.5" />}
-                        </button>
+                        <>
+                            <button
+                                id="editor-left-panel-toggle"
+                                onClick={() => {
+                                    setShowLeftPanel(!showLeftPanel);
+                                    if (!showLeftPanel && window.innerWidth < 1024) setShowRightPanel(false);
+                                }}
+                                className={`p-2 rounded-lg text-xs font-bold transition-all hidden lg:flex cursor-pointer ${showLeftPanel ? 'bg-primary text-white' : 'hover:bg-slate-800 text-slate-400'}`}
+                                title="Style panel"
+                            >
+                                {locale === 'ar' ? <PanelRight className="w-3.5 h-3.5 cursor-pointer" /> : <PanelLeft className="w-3.5 h-3.5" />}
+                            </button>
+                            <button
+                                id="editor-right-panel-toggle"
+                                onClick={() => {
+                                    setShowRightPanel(!showRightPanel);
+                                    if (!showRightPanel && window.innerWidth < 1024) setShowLeftPanel(false);
+                                }}
+                                className={`p-2 rounded-lg text-xs font-bold transition-all lg:hidden cursor-pointer ${showRightPanel ? 'bg-primary text-white' : 'hover:bg-slate-800 text-slate-400'}`}
+                                title="Snippets panel"
+                            >
+                                {locale === 'ar' ? <PanelLeft className="w-3.5 h-3.5 cursor-pointer" /> : <PanelRight className="w-3.5 h-3.5" />}
+                            </button>
+                        </>
                     )}
                 </div>
                 <div className="flex items-center gap-3 sm:gap-6 shrink-0">
@@ -637,13 +665,13 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                 <div
                     id="editor-sidebar"
                     className={`bg-white border-slate-200 overflow-y-auto flex flex-col transition-all duration-300 absolute lg:relative h-[calc(100vh-3.5rem)] z-[60] w-72 lg:w-72 start-0 border-r lg:border-r 
-                            ${previewMode
+                        ${previewMode
                             ? 'ltr:-translate-x-full rtl:translate-x-full lg:ltr:-ml-72 lg:rtl:-mr-72'
                             : showLeftPanel
                                 ? 'translate-x-0 lg:ml-0 lg:mr-0'
                                 : 'ltr:-translate-x-full rtl:translate-x-full lg:translate-x-0 lg:ltr:-ml-72 lg:rtl:-mr-72 hidden lg:flex'
                         }
-                            max-lg:w-full sm:max-lg:w-80 max-lg:shadow-2xl`}
+                        max-lg:w-full sm:max-lg:w-80 max-lg:shadow-2xl`}
                 >
                     <div className="p-4 border-b border-slate-100 flex items-center justify-between">
                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{editorT('styleDesigner')}</span>
@@ -661,7 +689,7 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                         </div>
 
                         <div className="space-y-4">
-                            {(!['img', 'video'].includes(activeTagName)) && (
+                            {(!['img', 'video'].includes(activeTagName!)) && (
                                 <div>
                                     <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                                         <TypeIcon className="w-3 h-3" /> {editorT('typography')}
@@ -784,7 +812,7 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                                     </label>
                                 </div>
                             )}
-                            {(!['img', 'svg', 'video'].includes(activeTagName)) && (
+                            {(!['img', 'svg', 'video'].includes(activeTagName!)) && (
                                 <div className="grid grid-cols-4 gap-1 p-1 bg-slate-100 rounded-xl">
                                     <button onMouseDown={(e) => { e.preventDefault(); applyStyle('textAlign', 'left'); }} className={`p-2 rounded-lg flex justify-center transition-all ${activeStyles.textAlign.includes('left') ? 'bg-white shadow-sm text-primary' : 'text-slate-400'}`}><AlignLeft className="w-4 h-4 cursor-pointer" /></button>
                                     <button onMouseDown={(e) => { e.preventDefault(); applyStyle('textAlign', 'center'); }} className={`p-2 rounded-lg flex justify-center transition-all ${activeStyles.textAlign.includes('center') ? 'bg-white shadow-sm text-primary' : 'text-slate-400'}`}><AlignCenter className="w-4 h-4 cursor-pointer" /></button>
@@ -792,7 +820,7 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                                     <button onMouseDown={(e) => { e.preventDefault(); applyStyle('textAlign', 'justify'); }} className={`p-2 rounded-lg flex justify-center transition-all ${activeStyles.textAlign.includes('justify') ? 'bg-white shadow-sm text-primary' : 'text-slate-400'}`}><Layout className="w-4 h-4 cursor-pointer" /></button>
                                 </div>
                             )}
-                            {(!['img', 'video'].includes(activeTagName)) && (
+                            {(!['img', 'video'].includes(activeTagName!)) && (
                                 <div className="space-y-3">
                                     <span className="text-[10px] font-bold text-slate-500 uppercase px-1">{editorT('textColor')}</span>
                                     <div className="space-y-3">
@@ -806,7 +834,7 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                             )}
                         </div>
 
-                        {(!['video'].includes(activeTagName)) && (
+                        {(!['video'].includes(activeTagName!)) && (
                             <div className="space-y-4 pt-4 border-t border-slate-100">
                                 <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2"><PaintBucket className="w-3 h-3" /> {editorT('background')}</div>
                                 <div className="space-y-3">
@@ -824,8 +852,8 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                     </div>
                 </div>
 
-                <div className="flex-1 overflow-hidden flex flex-col items-center p-4 sm:p-8 bg-[#E2E8F0]">
-                    <div className="flex gap-4 mb-4 bg-white p-1 rounded-xl shadow-sm border border-slate-200">
+                <div className="flex-1 overflow-hidden flex flex-col items-center p-4 sm:p-8 bg-[#E2E8F0] relative">
+                    <div className="flex gap-4 mb-4 bg-white p-1 rounded-xl shadow-sm border border-slate-200 z-10">
                         <button className="p-2 text-primary bg-primary/10 rounded-lg cursor-pointer"><Monitor className="w-4 h-4" /></button>
                         <button className="p-2 text-slate-400 rounded-lg cursor-pointer"><Smartphone className="w-4 h-4" /></button>
                     </div>
@@ -838,29 +866,71 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                         className={`w-full bg-white shadow-2xl rounded-2xl overflow-y-auto scroll-smooth transition-all duration-500 relative min-h-[600px] ${previewMode ? 'ring-0' : 'ring-1 ring-slate-300'}`}
                     >
                         <div className="flex flex-col min-h-full">
-                            {droppedSnippets.map((item, index) => (
-                                <div key={item.id} className="group relative">
-                                    {!previewMode && (
-                                        <div className="absolute top-4 right-4 hidden group-hover:flex items-center gap-1.5 bg-[#1E293B] text-white px-2 py-1 rounded-xl z-50 shadow-2xl border border-white/10 scale-90 opacity-90 transition-all">
-                                            <button onClick={() => moveSnippet(index, 'up')} className="p-1.5 hover:bg-slate-700 rounded-lg cursor-pointer"><Move className="w-3.5 h-3.5 rotate-180" /></button>
-                                            <button onClick={() => moveSnippet(index, 'down')} className="p-1.5 hover:bg-slate-700 rounded-lg cursor-pointer"><Move className="w-3.5 h-3.5" /></button>
-                                            <button onClick={() => { const newList = [...droppedSnippets]; newList.splice(index + 1, 0, { ...item, id: crypto.randomUUID() }); setDroppedSnippets(newList); }} className="p-1.5 hover:bg-slate-700 rounded-lg cursor-pointer"><Copy className="w-3.5 h-3.5" /></button>
-                                            <button onClick={() => setDeleteIndex(index)} className="p-1.5 hover:bg-red-900 rounded-lg cursor-pointer"><Trash2 className="w-3.5 h-3.5" /></button>
-                                        </div>
-                                    )}
-                                    <StableSnippet
-                                        item={item}
-                                        isActive={activeSnippetId === item.id}
-                                        previewMode={previewMode}
-                                        onContentClick={handleContentClick}
-                                        isBeingEdited={activeSnippetId === item.id && activeElementRef.current !== null}
-                                    />
+                            {droppedSnippets.map((item, index) => {
+                                const isActive = activeSnippetId === item.id;
+                                return (
+                                    <div key={item.id} className="group relative">
+                                        {!previewMode && (
+                                            <div className="absolute top-4 right-4 hidden group-hover:flex items-center gap-1.5 bg-[#1E293B] text-white px-2 py-1 rounded-xl z-50 shadow-2xl border border-white/10 scale-90 opacity-90 transition-all">
+                                                <button onClick={() => moveSnippet(index, 'up')} className="p-1.5 hover:bg-slate-700 rounded-lg cursor-pointer"><Move className="w-3.5 h-3.5 rotate-180" /></button>
+                                                <button onClick={() => moveSnippet(index, 'down')} className="p-1.5 hover:bg-slate-700 rounded-lg cursor-pointer"><Move className="w-3.5 h-3.5" /></button>
+                                                <button onClick={() => { const newList = [...droppedSnippets]; newList.splice(index + 1, 0, { ...item, id: crypto.randomUUID() }); setDroppedSnippets(newList); }} className="p-1.5 hover:bg-slate-700 rounded-lg cursor-pointer"><Copy className="w-3.5 h-3.5" /></button>
+                                                <button onClick={() => setDeleteIndex(index)} className="p-1.5 hover:bg-red-900 rounded-lg cursor-pointer"><Trash2 className="w-3.5 h-3.5" /></button>
+                                            </div>
+                                        )}
+
+                                        <StableSnippet
+                                            item={item}
+                                            isActive={isActive}
+                                            previewMode={previewMode}
+                                            onContentClick={handleContentClick}
+                                            isBeingEdited={isActive && activeElementRef.current !== null}
+                                        />
+                                    </div>
+                                )
+                            })}
+                            {!previewMode && (
+                                <div
+                                    onDragOver={(e) => handleDragOver(e, droppedSnippets.length)}
+                                    className={`h-40 border-2 border-dashed border-slate-300 m-8 rounded-3xl flex flex-col items-center justify-center transition-all gap-3 ${dragOverIndex === droppedSnippets.length ? 'bg-primary/10 border-primary' : 'bg-white hover:bg-slate-50'}`}
+                                >
+                                    <Plus className={`w-10 h-10 ${dragOverIndex === droppedSnippets.length ? 'text-primary' : 'text-slate-200'}`} />
+                                    <span className="text-xs font-black text-slate-400 uppercase tracking-widest">{editorT('dropNewSection')}</span>
                                 </div>
-                            ))}
+                            )}
                         </div>
                     </div>
                 </div>
 
+                {/* Mobile overlay for right panel */}
+                {showRightPanel && !previewMode && (
+                    <div className="fixed inset-0 bg-black/30 z-30 lg:hidden" onClick={() => setShowRightPanel(false)} />
+                )}
+                <div
+                    id="editor-right-sidebar"
+                    className={`bg-white border-l border-slate-200 overflow-y-auto transition-all duration-300 absolute lg:relative h-[calc(100vh-3.5rem)] z-[60] w-80 end-0 
+                        ${previewMode
+                            ? 'ltr:translate-x-full rtl:-translate-x-full lg:ltr:-mr-80 lg:rtl:-ml-80'
+                            : showRightPanel
+                                ? 'translate-x-0 lg:mr-0 lg:ml-0'
+                                : 'ltr:translate-x-full rtl:-translate-x-full lg:translate-x-0 lg:ltr:-mr-80 lg:rtl:-ml-80 hidden lg:block'
+                        }`}
+                >
+                    <div className="p-4 border-b border-slate-100 text-[10px] font-black text-slate-400 uppercase tracking-widest">{editorT('snippetsLibrary')}</div>
+                    <div id="editor-snippets" className="p-4 space-y-3">
+                        {snippets.map(s => (
+                            <div
+                                key={s.id}
+                                draggable
+                                onDragStart={(e) => handleDragStart(e, s)}
+                                onClick={() => { if (window.innerWidth < 1024) handleSnippetClick(s); }}
+                                className="p-4 bg-white border border-slate-200 rounded-2xl cursor-pointer lg:cursor-grab hover:border-primary/70 hover:shadow-lg active:scale-95 transition-all group overflow-hidden"
+                            >
+                                <div className="text-xs font-black text-slate-800 uppercase group-hover:text-primary">{locale === 'ar' && s.nameAr ? s.nameAr : s.name}</div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
             </div>
 
             <ConfirmDialog
