@@ -191,6 +191,8 @@ export default function DynamicGrid({
             content = content.split('{{linkText}}').join(String(linkText));
             content = content.split('{{icon}}').join(String(item.icon || ''));
             content = content.split('{{id}}').join(String(item.id || ''));
+            const htmlContentVal = (locale === 'ar' && item.htmlContentAr) ? item.htmlContentAr : (item.htmlContent || '');
+            content = content.split('{{htmlContent}}').join(String(htmlContentVal));
         } else if (fieldMapping && Array.isArray(fieldMapping)) {
             fieldMapping.forEach(mapping => {
                 const placeholder = `{{${mapping.placeholder}}}`;

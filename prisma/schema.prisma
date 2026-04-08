@@ -146,6 +146,8 @@ model DynamicContent {
   tag           String?
   tagAr         String?
   icon          String?
+  htmlContent   String?
+  htmlContentAr String?
   isPublished   Boolean         @default(true)
   category      ContentCategory @relation(fields: [categoryId], references: [id])
   createdAt     DateTime        @default(now())

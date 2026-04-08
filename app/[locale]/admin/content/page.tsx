@@ -11,6 +11,7 @@ import ConfirmDialog from '@/app/components/ConfirmDialog';
 import toast from 'react-hot-toast';
 import { useAppSelector } from '@/app/store/hooks';
 import DatePicker from '@/app/components/DatePicker';
+import RichTextEditor from '@/app/components/RichTextEditor';
 
 interface ContentCategory {
     id: string;
@@ -34,6 +35,8 @@ interface DynamicContent {
     tag: string | null;
     tagAr: string | null;
     icon: string | null;
+    htmlContent: string | null;
+    htmlContentAr: string | null;
     isPublished: boolean;
     category: ContentCategory;
 }
@@ -73,6 +76,8 @@ export default function ContentManagement() {
     const [contentTag, setContentTag] = useState('');
     const [contentTagAr, setContentTagAr] = useState('');
     const [icon, setIcon] = useState('');
+    const [htmlContent, setHtmlContent] = useState('');
+    const [htmlContentAr, setHtmlContentAr] = useState('');
     const [isPublished, setIsPublished] = useState(true);
 
     const [catName, setCatName] = useState('');
@@ -155,6 +160,8 @@ export default function ContentManagement() {
                     tag: contentTag || undefined,
                     tagAr: contentTagAr || undefined,
                     icon: icon || undefined,
+                    htmlContent: htmlContent || undefined,
+                    htmlContentAr: htmlContentAr || undefined,
                     isPublished,
                 }),
             });
@@ -284,6 +291,8 @@ export default function ContentManagement() {
         setContentTag(item.tag || '');
         setContentTagAr(item.tagAr || '');
         setIcon(item.icon || '');
+        setHtmlContent(item.htmlContent || '');
+        setHtmlContentAr(item.htmlContentAr || '');
         setIsPublished(item.isPublished ?? true);
         setCurrentContentId(item.id);
         setIsEditingContent(true);
@@ -304,7 +313,8 @@ export default function ContentManagement() {
         setContentFormErrors(false);
         setTitle(''); setTitleAr(''); setDescription(''); setDescriptionAr(''); setImage(''); setImages([]); setSelectedCategoryId('');
         setPublishDate(new Date().toISOString().split('T')[0]);
-        setLinkUrl(''); setLinkText(''); setLinkTextAr(''); setContentTag(''); setContentTagAr(''); setIcon(''); setIsPublished(true);
+        setLinkUrl(''); setLinkText(''); setLinkTextAr(''); setContentTag(''); setContentTagAr(''); setIcon('');
+        setHtmlContent(''); setHtmlContentAr(''); setIsPublished(true);
     };
 
     const closeCategoryModal = () => {
@@ -634,6 +644,29 @@ export default function ContentManagement() {
                                     </div>
                                 )}
                             </div>
+
+                            {/* HTML Content AR */}
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">{t('htmlContent')} (AR)</label>
+                                <RichTextEditor
+                                    value={htmlContentAr}
+                                    onChange={setHtmlContentAr}
+                                    dir="rtl"
+                                    placeholder="اكتب المحتوى هنا..."
+                                />
+                            </div>
+
+                            {/* HTML Content EN */}
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">{t('htmlContent')} (EN)</label>
+                                <RichTextEditor
+                                    value={htmlContent}
+                                    onChange={setHtmlContent}
+                                    dir="ltr"
+                                    placeholder="Write content here..."
+                                />
+                            </div>
+
                             <div className="flex items-center gap-3 pt-2">
                                 <button type="button" onClick={() => setIsPublished(!isPublished)} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${isPublished ? 'bg-green-500' : 'bg-slate-300'}`}>
                                     <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${isPublished ? 'ltr:translate-x-6 rtl:-translate-x-6' : 'ltr:translate-x-1 rtl:-translate-x-1'}`} />

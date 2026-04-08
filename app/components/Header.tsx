@@ -51,13 +51,13 @@ export default async function Header() {
                         <div className="hidden sm:block">
                             <LanguageSwitcher />
                         </div>
-                        <Link
+                        {/* <Link
                             href="/login"
                             className="hidden xl:flex items-center gap-2 text-white px-5 py-2.5 rounded-full font-bold transition-all hover:scale-105 active:scale-95 shadow-lg bg-primary shadow-primary-glow text-sm"
                         >
                             <LogIn className="w-4 h-4" />
                             {t('signIn')}
-                        </Link>
+                        </Link> */}
                         <div className="lg:hidden flex items-center gap-3">
                             <div className="sm:hidden">
                                 <LanguageSwitcher />
