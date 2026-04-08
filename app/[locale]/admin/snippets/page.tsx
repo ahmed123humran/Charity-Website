@@ -36,6 +36,7 @@ export default function SnippetsManagement() {
     const commonT = useTranslations('Common');
     const locale = useLocale();
     const { role: userRole } = useAppSelector((state) => state.user);
+    const { logo: websiteLogo } = useAppSelector((state) => state.website);
     const [snippets, setSnippets] = useState<Snippet[]>([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
@@ -95,12 +96,49 @@ export default function SnippetsManagement() {
         fetchCategories();
     }, []);
 
+    // Visually replace {{logo}} in the preview DOM without modifying htmlContent state
+    useEffect(() => {
+        if (!previewRef.current || activeTab !== 'design' || viewMode !== 'visual') return;
+
+        // Use a slight timeout to ensure DOM is fully rendered by dangerouslySetInnerHTML
+        const timeoutId = setTimeout(() => {
+            if (!previewRef.current) return;
+            const images = previewRef.current.querySelectorAll('img');
+            images.forEach((img: HTMLImageElement) => {
+                const src = img.getAttribute('src');
+                if (src === '{{logo}}') {
+                    const FALLBACK_LOGO = "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='3' width='18' height='18' rx='2' ry='2'%3E%3C/rect%3E%3Ccircle cx='8.5' cy='8.5' r='1.5'%3E%3C/circle%3E%3Cpolyline points='21 15 16 10 5 21'%3E%3C/polyline%3E%3C/svg%3E";
+                    img.setAttribute('data-template-src', '{{logo}}');
+                    img.src = websiteLogo || FALLBACK_LOGO;
+                }
+            });
+        }, 50);
+
+        return () => clearTimeout(timeoutId);
+    }, [htmlContent, websiteLogo, activeTab, viewMode]);
+
     const fetchCategories = async () => {
         try {
             const res = await fetch('/api/content-categories');
             const data = await res.json();
             setCategories(Array.isArray(data) ? data : []);
         } catch (error) { }
+    };
+
+    const getCleanHtml = () => {
+        if (!previewRef.current) return '';
+        const clone = previewRef.current.cloneNode(true) as HTMLElement;
+        // Restore dynamic logo variables before saving
+        clone.querySelectorAll('img[data-template-src]').forEach(img => {
+            img.setAttribute('src', img.getAttribute('data-template-src') || '');
+            img.removeAttribute('data-template-src');
+        });
+        clone.querySelectorAll('*').forEach(el => {
+            (el as HTMLElement).style.outline = '';
+            (el as HTMLElement).style.outlineOffset = '';
+            el.removeAttribute('contenteditable');
+        });
+        return clone.innerHTML;
     };
 
     const fetchSnippets = async () => {
@@ -116,13 +154,7 @@ export default function SnippetsManagement() {
         e.preventDefault();
         let finalContent = htmlContent;
         if (viewMode === 'visual' && previewRef.current) {
-            const clone = previewRef.current.cloneNode(true) as HTMLElement;
-            clone.querySelectorAll('*').forEach(el => {
-                (el as HTMLElement).style.outline = '';
-                (el as HTMLElement).style.outlineOffset = '';
-                el.removeAttribute('contenteditable');
-            });
-            finalContent = clone.innerHTML;
+            finalContent = getCleanHtml();
         }
 
         try {
@@ -303,7 +335,7 @@ export default function SnippetsManagement() {
             const handleBlur = () => {
                 target.contentEditable = 'false';
                 target.style.outline = '';
-                if (previewRef.current) setHtmlContent(previewRef.current.innerHTML);
+                if (previewRef.current) setHtmlContent(getCleanHtml());
                 target.removeEventListener('blur', handleBlur);
             };
             target.addEventListener('blur', handleBlur);

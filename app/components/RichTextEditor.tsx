@@ -134,6 +134,8 @@ const MenuBar = ({ editor, onDropdownChange }: { editor: any, onDropdownChange: 
         };
     }, [activeDropdown, onDropdownChange]);
 
+    if (!editor) return null;
+
     const handleDropdownToggle = (index: number) => {
         const isOpen = activeDropdown === index;
         setActiveDropdown(isOpen ? null : index);
@@ -201,6 +203,7 @@ const MenuBar = ({ editor, onDropdownChange }: { editor: any, onDropdownChange: 
     };
 
     const getListType = () => {
+        if (!editor) return null;
         if (editor.isActive('bulletList')) return 'bulletList';
         if (editor.isActive('orderedList')) return 'orderedList';
         return null;

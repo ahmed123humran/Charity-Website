@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, memo } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from '@/navigation';
+import { useAppSelector } from '@/app/store/hooks';
 import {
     Save, ArrowLeft, ArrowRight, Plus, Move, Trash2, Layout, Type, LinkIcon,
     Image as ImageIcon, Copy, MousePointer2, X, FilePlay,
@@ -73,6 +74,7 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
     const t = useTranslations('Admin');
     const editorT = useTranslations('Editor');
     const commonT = useTranslations('Common');
+    const { logo: websiteLogo } = useAppSelector((state) => state.website);
     const router = useRouter();
     const locale = useLocale();
 
@@ -132,6 +134,22 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
             setShowRightPanel(false);
         }
     }, [params]);
+
+    // Visually replace {{logo}} in the Canvas preview DOM without modifying droppedSnippets state
+    useEffect(() => {
+        const wrappers = document.querySelectorAll('[id^="snippet-content-"]');
+        wrappers.forEach(wrapper => {
+            const images = wrapper.querySelectorAll('img');
+            images.forEach((img: HTMLImageElement) => {
+                const src = img.getAttribute('src');
+                if (src === '{{logo}}') {
+                    const FALLBACK_LOGO = "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='3' width='18' height='18' rx='2' ry='2'%3E%3C/rect%3E%3Ccircle cx='8.5' cy='8.5' r='1.5'%3E%3C/circle%3E%3Cpolyline points='21 15 16 10 5 21'%3E%3C/polyline%3E%3C/svg%3E";
+                    img.setAttribute('data-template-src', '{{logo}}');
+                    img.src = websiteLogo || FALLBACK_LOGO;
+                }
+            });
+        });
+    }, [droppedSnippets, websiteLogo]);
 
     const fetchFooter = async (id: string) => {
         try {
@@ -247,7 +265,13 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
     const commitChanges = (id: string) => {
         const wrapper = document.getElementById(`snippet-content-${id}`);
         if (wrapper) {
+            // Clean a CLONE so the live DOM keeps its visual outline for the user
             const clone = wrapper.cloneNode(true) as HTMLElement;
+            // Restore dynamic logo variables before saving
+            clone.querySelectorAll('img[data-template-src]').forEach(img => {
+                img.setAttribute('src', img.getAttribute('data-template-src') || '');
+                img.removeAttribute('data-template-src');
+            });
             clone.querySelectorAll('*').forEach(el => {
                 const htmlEl = el as HTMLElement;
                 htmlEl.style.removeProperty('outline');
