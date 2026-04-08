@@ -2,9 +2,10 @@
 
 import React from 'react';
 import { useRouter } from '@/navigation';
-import { useAppDispatch } from '@/app/store/hooks';
+import { useAppDispatch, useAppSelector } from '@/app/store/hooks';
 import { openModal, closeModal } from '@/app/store/slices/dynamicModalSlice';
 import { sanitizeHtml } from '@/app/utils/sanitize';
+import { useLocale } from 'next-intl';
 
 interface StaticSnippetProps {
     htmlContent: string;
@@ -19,6 +20,8 @@ interface StaticSnippetProps {
 export default function StaticSnippet({ htmlContent, snippet }: StaticSnippetProps) {
     const router = useRouter();
     const dispatch = useAppDispatch();
+    const { name, logo } = useAppSelector((state) => state.website);
+    const locale = useLocale();
 
     const handleClick = (e: React.MouseEvent) => {
         const target = e.target as HTMLElement;
@@ -59,10 +62,17 @@ export default function StaticSnippet({ htmlContent, snippet }: StaticSnippetPro
         }
     };
 
+    // Replace dynamic variables in the static HTML
+    const websiteName = name ? (typeof name === 'string' ? name : (name as any)[locale] || (name as any)['ar'] || '') : '';
+    const FALLBACK_LOGO = "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='3' width='18' height='18' rx='2' ry='2'%3E%3C/rect%3E%3Ccircle cx='8.5' cy='8.5' r='1.5'%3E%3C/circle%3E%3Cpolyline points='21 15 16 10 5 21'%3E%3C/polyline%3E%3C/svg%3E";
+    const processedHtml = htmlContent
+        .replace(/{{logo}}/g, logo || FALLBACK_LOGO)
+        .replace(/{{name}}/g, websiteName);
+
     return (
         <div
             onClick={handleClick}
-            dangerouslySetInnerHTML={{ __html: sanitizeHtml(htmlContent) }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(processedHtml) }}
         />
     );
 }

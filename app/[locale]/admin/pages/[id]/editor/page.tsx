@@ -211,7 +211,7 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
             const res = await fetch('/api/snippets');
             if (res.ok) {
                 const data = await res.json();
-                setSnippets(data);
+                setSnippets(Array.isArray(data) ? data.filter((s: Snippet) => s.category !== 'Footer') : []);
             }
         } catch (error) { console.error('Failed to fetch snippets', error); }
         finally { setLoading(false); }
