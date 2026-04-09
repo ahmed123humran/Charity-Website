@@ -74,9 +74,10 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
     const t = useTranslations('Admin');
     const editorT = useTranslations('Editor');
     const commonT = useTranslations('Common');
-    const { logo: websiteLogo } = useAppSelector((state) => state.website);
     const router = useRouter();
     const locale = useLocale();
+    const { logo: websiteLogo, name: websiteStoreName } = useAppSelector((state) => state.website);
+    const websiteName = websiteStoreName ? (typeof websiteStoreName === 'string' ? websiteStoreName : (websiteStoreName as any)[locale] || (websiteStoreName as any)['ar'] || '') : '';
 
     const [footer, setFooter] = useState<Footer | null>(null);
     const [snippets, setSnippets] = useState<Snippet[]>([]);
@@ -135,10 +136,11 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
         }
     }, [params]);
 
-    // Visually replace {{logo}} in the Canvas preview DOM without modifying droppedSnippets state
+    // Visually replace {{logo}} and {{name}} in the Canvas preview DOM without modifying droppedSnippets state
     useEffect(() => {
         const wrappers = document.querySelectorAll('[id^="snippet-content-"]');
         wrappers.forEach(wrapper => {
+            // 1. Replace Logos
             const images = wrapper.querySelectorAll('img');
             images.forEach((img: HTMLImageElement) => {
                 const src = img.getAttribute('src');
@@ -148,8 +150,25 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                     img.src = websiteLogo || FALLBACK_LOGO;
                 }
             });
+
+            // 2. Replace Names (Text replacement)
+            const walk = document.createTreeWalker(wrapper, NodeFilter.SHOW_TEXT, null);
+            let node;
+            const nodesToReplace: { node: Text, parent: HTMLElement }[] = [];
+
+            while (node = walk.nextNode()) {
+                if (node.textContent?.includes('{{name}}')) {
+                    nodesToReplace.push({ node: node as Text, parent: node.parentElement as HTMLElement });
+                }
+            }
+
+            nodesToReplace.forEach(({ node, parent }) => {
+                const originalText = node.textContent || '';
+                parent.setAttribute('data-template-text', originalText);
+                node.textContent = originalText.replace(/{{name}}/g, websiteName || 'Website Name');
+            });
         });
-    }, [droppedSnippets, websiteLogo]);
+    }, [droppedSnippets, websiteLogo, websiteName]);
 
     const fetchFooter = async (id: string) => {
         try {
@@ -272,6 +291,11 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                 img.setAttribute('src', img.getAttribute('data-template-src') || '');
                 img.removeAttribute('data-template-src');
             });
+            // Restore dynamic name variables
+            clone.querySelectorAll('[data-template-text]').forEach(el => {
+                el.textContent = el.getAttribute('data-template-text');
+                el.removeAttribute('data-template-text');
+            });
             clone.querySelectorAll('*').forEach(el => {
                 const htmlEl = el as HTMLElement;
                 htmlEl.style.removeProperty('outline');
@@ -375,6 +399,25 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                 target.style.outline = '2px solid #3b82f6';
                 target.style.outlineOffset = '2px';
                 target.focus();
+
+                // Prevent duplicate listeners and rich text pasting
+                if (!(target as any)._hasPasteHandler) {
+                    (target as any)._hasPasteHandler = true;
+                    const handlePaste = (e: ClipboardEvent) => {
+                        e.preventDefault();
+                        const text = e.clipboardData?.getData('text/plain') || '';
+                        document.execCommand('insertText', false, text);
+                    };
+
+                    target.addEventListener('paste', handlePaste as any);
+
+                    const handleBlur = () => {
+                        target.removeEventListener('paste', handlePaste as any);
+                        (target as any)._hasPasteHandler = false;
+                        target.removeEventListener('blur', handleBlur);
+                    };
+                    target.addEventListener('blur', handleBlur);
+                }
             }
         } else {
             target.style.outline = '2px solid #3b82f6';

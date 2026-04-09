@@ -146,25 +146,6 @@ export default function DynamicGrid({
         if (!item) return null;
         let content = htmlContent;
 
-        // Alternating colors feature
-        if (config.useAlternatingColors && index % 2 === 1) {
-            // Triple replacement to swap primary and secondary classes
-            // We use a temporary prefix to avoid double-replacing
-            content = content
-                .split('primary').join('TMP_SWAP_PLACEHOLDER')
-                .split('secondary').join('primary')
-                .split('TMP_SWAP_PLACEHOLDER').join('secondary');
-        }
-
-        // Alternating layout feature
-        if (config.useAlternatingLayout && index % 2 === 1) {
-            // Robust regex to swap flex-row and flex-row-reverse for any prefix (md:, lg:, etc.)
-            content = content.replace(/\b([\w:]+)?flex-row(-reverse)?\b/g, (match, prefix, suffix) => {
-                const p = prefix || '';
-                return suffix ? `${p}flex-row` : `${p}flex-row-reverse`;
-            });
-        }
-
         if (isInternal) {
             const title = (locale === 'ar' && item.titleAr) ? item.titleAr : item.title;
             const description = (locale === 'ar' && item.descriptionAr) ? item.descriptionAr : item.description;
@@ -201,6 +182,22 @@ export default function DynamicGrid({
             });
         }
 
+        // Alternating features (Colors & Layout) - Applied AFTER variable injection
+        if (index % 2 === 1) {
+            if (config.useAlternatingColors) {
+                content = content
+                    .split('primary').join('TMP_SWAP')
+                    .split('secondary').join('primary')
+                    .split('TMP_SWAP').join('secondary');
+            }
+            if (config.useAlternatingLayout) {
+                content = content.replace(/\b([\w:]+)?flex-row(-reverse)?\b/g, (match, prefix, suffix) => {
+                    const p = prefix || '';
+                    return suffix ? `${p}flex-row` : `${p}flex-row-reverse`;
+                });
+            }
+        }
+
         const handleClick = (e: React.MouseEvent) => {
             const target = e.target as HTMLElement;
             const link = target.closest('a');
@@ -232,7 +229,14 @@ export default function DynamicGrid({
             }
         };
 
-        return <div key={item.id} onClick={handleClick} dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }} />;
+        return (
+            <div
+                key={item.id}
+                onClick={handleClick}
+                className={`prose prose-slate max-w-none ${locale === 'ar' ? 'rtl-content' : ''}`}
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }}
+            />
+        );
     };
 
     if (singleRecordOnly || ((isPreview || dynamicId) && swiperConfig?.isDetailView)) {

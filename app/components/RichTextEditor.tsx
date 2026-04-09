@@ -91,6 +91,17 @@ const BlockStyle = Extension.create({
                             };
                         },
                     },
+                    markerColor: {
+                        default: null,
+                        parseHTML: element => element.getAttribute('data-marker-color'),
+                        renderHTML: attributes => {
+                            if (!attributes.markerColor) return {};
+                            return {
+                                'data-marker-color': attributes.markerColor,
+                                style: `--marker-color: ${attributes.markerColor};`
+                            };
+                        },
+                    },
                 },
             },
         ];
@@ -185,7 +196,7 @@ const MenuBar = ({ editor, onDropdownChange }: { editor: any, onDropdownChange: 
                 .run();
         } else {
             const newAttrs = {
-                border: '2px solid ' + (themeColor || '#3b82f6'),
+                border: '2px solid var(--primary-color)',
             };
             editor.chain().focus()
                 .updateAttributes('paragraph', newAttrs)
@@ -223,6 +234,13 @@ const MenuBar = ({ editor, onDropdownChange }: { editor: any, onDropdownChange: 
         editor.chain().focus().updateAttributes(type, { columnGap: gap }).run();
     };
 
+    const updateMarkerColor = (color: string | null) => {
+        if (!editor) return;
+        const type = getListType();
+        if (!type) return;
+        editor.chain().focus().updateAttributes(type, { markerColor: color }).run();
+    };
+
     const buttons = [
         { icon: <Bold className="w-4 h-4" />, action: () => editor.chain().focus().toggleBold().run(), active: 'bold', title: 'عريض' },
         { icon: <Italic className="w-4 h-4" />, action: () => editor.chain().focus().toggleItalic().run(), active: 'italic', title: 'مائل' },
@@ -236,8 +254,8 @@ const MenuBar = ({ editor, onDropdownChange }: { editor: any, onDropdownChange: 
                 <div className="flex flex-col gap-2 p-3 bg-white border border-slate-200 rounded-xl shadow-xl animate-scale-in min-w-[140px]">
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider text-right">ألوان الهوية</span>
                     <div className="flex gap-2 justify-end">
-                        <button onClick={() => setTextColor(themeColor || '#000')} className="w-9 h-9 rounded-lg border-2 border-slate-100 shadow-sm transition-transform hover:scale-110" style={{ backgroundColor: themeColor }} title="الأساسي" />
-                        <button onClick={() => setTextColor(secondaryColor || '#000')} className="w-9 h-9 rounded-lg border-2 border-slate-100 shadow-sm transition-transform hover:scale-110" style={{ backgroundColor: secondaryColor }} title="الثانوي" />
+                        <button onClick={() => setTextColor('var(--primary-color)')} className="w-9 h-9 rounded-lg border-2 border-slate-100 shadow-sm transition-transform hover:scale-110" style={{ backgroundColor: themeColor }} title="الأساسي" />
+                        <button onClick={() => setTextColor('var(--secondary-color)')} className="w-9 h-9 rounded-lg border-2 border-slate-100 shadow-sm transition-transform hover:scale-110" style={{ backgroundColor: secondaryColor }} title="الثانوي" />
                     </div>
                     <div className="h-px bg-slate-100" />
                     <div className="flex flex-col gap-1 items-stretch">
@@ -266,8 +284,8 @@ const MenuBar = ({ editor, onDropdownChange }: { editor: any, onDropdownChange: 
                 <div className="flex flex-col gap-2 p-3 bg-white border border-slate-200 rounded-xl shadow-xl animate-scale-in min-w-[140px]">
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider text-right">ألوان الهوية</span>
                     <div className="flex gap-2 justify-end">
-                        <button onClick={() => setHighlightColor(themeColor || '#fff')} className="w-9 h-9 rounded-lg border-2 border-slate-100 shadow-sm transition-transform hover:scale-110" style={{ backgroundColor: themeColor }} />
-                        <button onClick={() => setHighlightColor(secondaryColor || '#fff')} className="w-9 h-9 rounded-lg border-2 border-slate-100 shadow-sm transition-transform hover:scale-110" style={{ backgroundColor: secondaryColor }} />
+                        <button onClick={() => setHighlightColor('var(--primary-color)')} className="w-9 h-9 rounded-lg border-2 border-slate-100 shadow-sm transition-transform hover:scale-110" style={{ backgroundColor: themeColor }} />
+                        <button onClick={() => setHighlightColor('var(--secondary-color)')} className="w-9 h-9 rounded-lg border-2 border-slate-100 shadow-sm transition-transform hover:scale-110" style={{ backgroundColor: secondaryColor }} />
                     </div>
                     <div className="h-px bg-slate-100" />
                     <div className="flex flex-col gap-1 items-stretch">
@@ -297,15 +315,41 @@ const MenuBar = ({ editor, onDropdownChange }: { editor: any, onDropdownChange: 
         {
             icon: <Columns className="w-4 h-4" />,
             dropdown: true,
-            title: 'أعمدة القائمة',
+            title: 'إعدادات القائمة',
             content: (() => {
                 const listType = editor.isActive('bulletList') ? 'bulletList' : (editor.isActive('orderedList') ? 'orderedList' : null);
                 const attrs = listType ? editor.getAttributes(listType) : {};
                 const currentCols = attrs.columns;
                 const currentGap = attrs.columnGap || '16px';
+                const currentMarkerColor = attrs.markerColor;
 
                 return (
-                    <div className="flex flex-col gap-1 p-3 bg-white border border-slate-200 rounded-xl shadow-xl animate-scale-in min-w-[170px]" onMouseDown={(e) => e.stopPropagation()}>
+                    <div className="flex flex-col gap-1 p-3 bg-white border border-slate-200 rounded-xl shadow-xl animate-scale-in min-w-[190px]" onMouseDown={(e) => e.stopPropagation()}>
+                        {/* Marker Color Section */}
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider text-right px-1 pb-1">لون الترقيم/النقطة</span>
+                        <div className="flex gap-2 items-center justify-end mb-2">
+                            <div className="flex gap-1">
+                                <button onClick={() => updateMarkerColor('var(--primary-color)')} className="w-7 h-7 rounded-lg border border-slate-200" style={{ backgroundColor: themeColor }} />
+                                <button onClick={() => updateMarkerColor('var(--secondary-color)')} className="w-7 h-7 rounded-lg border border-slate-200" style={{ backgroundColor: secondaryColor }} />
+                            </div>
+                            <div className="flex-1 flex items-center justify-center p-1 rounded-lg bg-gradient-to-r from-teal-400 to-emerald-400 overflow-hidden relative min-h-[28px] border border-slate-200/20 shadow-sm">
+                                <input
+                                    type="color"
+                                    onMouseDown={(e) => e.stopPropagation()}
+                                    onChange={(e) => updateMarkerColor(e.target.value)}
+                                    value={currentMarkerColor || '#000000'}
+                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                />
+                                <div className="flex items-center gap-1 z-0">
+                                    <Palette className="w-3 h-3 text-white" />
+                                    <span className="text-[9px] text-white font-bold drop-shadow-sm">لون حر</span>
+                                </div>
+                            </div>
+                            <button onClick={() => updateMarkerColor(null)} className="text-[9px] text-red-500 underline font-bold px-1">حذف</button>
+                        </div>
+
+                        <div className="h-px bg-slate-100 my-1" />
+
                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider text-right px-1 pb-1">عدد الأعمدة</span>
                         <button
                             onClick={() => { updateListColumns(null); setActiveDropdown(null); onDropdownChange(false); }}
@@ -319,7 +363,9 @@ const MenuBar = ({ editor, onDropdownChange }: { editor: any, onDropdownChange: 
                             onClick={() => { updateListColumns(3); }}
                             className={`text-xs px-3 py-2 rounded-lg text-right transition-colors font-bold ${currentCols === 3 ? 'bg-primary text-white shadow-sm' : 'hover:bg-slate-100 text-slate-700'}`}
                         >3 أعمدة</button>
+
                         <div className="h-px bg-slate-100 my-1" />
+
                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider text-right px-1 pb-1">المسافة العمودية بين الصفوف</span>
                         <div className="flex gap-1 px-1 flex-wrap" dir="rtl">
                             <button
@@ -410,8 +456,8 @@ const MenuBar = ({ editor, onDropdownChange }: { editor: any, onDropdownChange: 
                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider text-right">لون خلفية الفقرة</span>
                         <div className="flex gap-2 items-center justify-end">
                             <div className="flex gap-1">
-                                <button onClick={() => setBlockBgColor(themeColor || '#fff')} className="w-7 h-7 rounded-lg border border-slate-200" style={{ backgroundColor: themeColor }} />
-                                <button onClick={() => setBlockBgColor(secondaryColor || '#fff')} className="w-7 h-7 rounded-lg border border-slate-200" style={{ backgroundColor: secondaryColor }} />
+                                <button onClick={() => setBlockBgColor('var(--primary-color)')} className="w-7 h-7 rounded-lg border border-slate-200" style={{ backgroundColor: themeColor }} />
+                                <button onClick={() => setBlockBgColor('var(--secondary-color)')} className="w-7 h-7 rounded-lg border border-slate-200" style={{ backgroundColor: secondaryColor }} />
                             </div>
                             <div className="flex-1 flex items-center justify-center p-1.5 rounded-lg bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 overflow-hidden relative min-h-[28px] border border-slate-200/20 shadow-sm">
                                 <input
@@ -597,6 +643,14 @@ export default function RichTextEditor({ value, onChange, placeholder = 'ابد�
                 .prose hr {
                     margin-top: 1em !important;
                     margin-bottom: 1em !important;
+                }
+                .prose ul::marker, .prose ol::marker {
+                    color: var(--marker-color, inherit) !important;
+                    font-weight: bold;
+                }
+                /* Specific override for Tailwind Typography to ensure our marker color wins */
+                .prose :where(ul, ol):not(:where([class~="not-prose"] *)) li::marker {
+                    color: var(--marker-color, inherit) !important;
                 }
                 .tiptap [style*="width: fit-content"] {
                     display: table; /* Using table instead of inline-block to preserve block characteristics while fitting content */
