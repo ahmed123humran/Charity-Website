@@ -255,7 +255,7 @@ export default function DynamicSwiper({
         return (
             <div
                 onClick={handleClick}
-                className={`prose prose-slate max-w-none ${locale === 'ar' ? 'rtl-content' : ''}`}
+                className={`max-w-none ${locale === 'ar' ? 'rtl-content' : ''}`}
                 dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }}
             />
         );

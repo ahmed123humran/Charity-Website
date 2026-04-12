@@ -587,7 +587,9 @@ export default function RichTextEditor({ value, onChange, placeholder = 'ابد�
         content: value,
         immediatelyRender: false,
         onUpdate: ({ editor }) => {
-            onChange(editor.getHTML());
+            const html = editor.getHTML();
+            // Wrap the final value in a prose container for storage
+            onChange(`<div class="prose prose-slate max-w-none">${html}</div>`);
         },
         editorProps: {
             attributes: {
@@ -599,8 +601,19 @@ export default function RichTextEditor({ value, onChange, placeholder = 'ابد�
 
     // Update editor content when value changes from outside (e.g. on edit)
     useEffect(() => {
-        if (editor && value !== editor.getHTML()) {
-            editor.commands.setContent(value);
+        if (editor && value) {
+            // Strip the prose wrapper if present before setting content to editor
+            const wrapperStart = '<div class="prose prose-slate max-w-none">';
+            const wrapperEnd = '</div>';
+
+            let cleanValue = value;
+            if (value.startsWith(wrapperStart) && value.endsWith(wrapperEnd)) {
+                cleanValue = value.slice(wrapperStart.length, -wrapperEnd.length);
+            }
+
+            if (cleanValue !== editor.getHTML()) {
+                editor.commands.setContent(cleanValue);
+            }
         }
     }, [value, editor]);
 

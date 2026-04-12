@@ -233,7 +233,7 @@ export default function DynamicGrid({
             <div
                 key={item.id}
                 onClick={handleClick}
-                className={`prose prose-slate max-w-none ${locale === 'ar' ? 'rtl-content' : ''}`}
+                className={`max-w-none ${locale === 'ar' ? 'rtl-content' : ''}`}
                 dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }}
             />
         );
