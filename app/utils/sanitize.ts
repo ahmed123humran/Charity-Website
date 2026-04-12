@@ -13,6 +13,9 @@ export function sanitizeHtml(html: string): string {
         ADD_TAGS: ['iframe'],
         // Explicitly allow data URIs for media
         ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|cid|xmpp|data):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
+        // Allow style attributes for Tailwind inline styles
+        ALLOW_DATA_ATTR: true,
+        // Allow modern CSS properties and custom variables
         ADD_ATTR: [
             'allow',
             'allowfullscreen',
@@ -20,6 +23,10 @@ export function sanitizeHtml(html: string): string {
             'scrolling',
             'target',
             'loading',
+            // Custom Layout Attributes
+            'data-columns',
+            'data-column-gap',
+            'data-marker-color',
             // SVG attributes
             'viewBox',
             'fill',
@@ -43,8 +50,6 @@ export function sanitizeHtml(html: string): string {
             'transform',
             'xmlns',
         ],
-        // Allow style attributes for Tailwind inline styles
-        ALLOW_DATA_ATTR: true,
         // Allow class attributes for Tailwind CSS
         ALLOWED_ATTR: [
             'class',
@@ -74,7 +79,6 @@ export function sanitizeHtml(html: string): string {
             'role',
             'tabindex',
             'data-*',
-            // Already added via ADD_ATTR but being explicit
             'target',
             'loading',
             'allow',

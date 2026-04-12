@@ -162,7 +162,7 @@ export default function DynamicSwiper({
         return null;
     }
 
-    const renderSlide = (item: any) => {
+    const renderSlide = (item: any, index: number = 0) => {
         if (!item) return null;
         let content = htmlContent;
         if (isInternal) {
@@ -200,6 +200,23 @@ export default function DynamicSwiper({
                 content = content.split(placeholder).join(String(value));
             });
         }
+
+        // Alternating features (Colors & Layout) - Applied AFTER variable injection
+        if (index % 2 === 1) {
+            if (config.useAlternatingColors) {
+                content = content
+                    .split('primary').join('TMP_SWAP')
+                    .split('secondary').join('primary')
+                    .split('TMP_SWAP').join('secondary');
+            }
+            if (config.useAlternatingLayout) {
+                content = content.replace(/\b([\w:]+)?flex-row(-reverse)?\b/g, (match, prefix, suffix) => {
+                    const p = prefix || '';
+                    return suffix ? `${p}flex-row` : `${p}flex-row-reverse`;
+                });
+            }
+        }
+
         // Handle interal navigation for <a> tags to prevent full page reloads
         const handleClick = (e: React.MouseEvent) => {
             const target = e.target as HTMLElement;
@@ -235,7 +252,13 @@ export default function DynamicSwiper({
             }
         };
 
-        return <div onClick={handleClick} dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }} />;
+        return (
+            <div
+                onClick={handleClick}
+                className={`prose prose-slate max-w-none ${locale === 'ar' ? 'rtl-content' : ''}`}
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }}
+            />
+        );
     };
 
     const NavIcon = ({ type, side }: { type: string, side: 'left' | 'right' }) => {
@@ -297,7 +320,7 @@ export default function DynamicSwiper({
                     >
                         {data.map((item, index) => (
                             <SwiperSlide key={index}>
-                                {renderSlide(item)}
+                                {renderSlide(item, index)}
                             </SwiperSlide>
                         ))}
                     </Swiper>

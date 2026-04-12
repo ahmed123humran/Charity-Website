@@ -13,6 +13,7 @@ import toast from 'react-hot-toast';
 import { useAppSelector } from '@/app/store/hooks';
 import SnippetsTour from '@/app/components/SnippetsTour';
 import { sanitizeHtml } from '@/app/utils/sanitize';
+import StaticSnippet from '@/app/components/StaticSnippet';
 import DynamicSwiper from '@/app/components/DynamicSwiper';
 import DynamicGrid from '@/app/components/DynamicGrid';
 
@@ -36,7 +37,8 @@ export default function SnippetsManagement() {
     const commonT = useTranslations('Common');
     const locale = useLocale();
     const { role: userRole } = useAppSelector((state) => state.user);
-    const { logo: websiteLogo } = useAppSelector((state) => state.website);
+    const { logo: websiteLogo, name: websiteStoreName } = useAppSelector((state) => state.website);
+    const websiteName = websiteStoreName ? (typeof websiteStoreName === 'string' ? websiteStoreName : (websiteStoreName as any)[locale] || (websiteStoreName as any)['ar'] || '') : '';
     const [snippets, setSnippets] = useState<Snippet[]>([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
@@ -96,13 +98,15 @@ export default function SnippetsManagement() {
         fetchCategories();
     }, []);
 
-    // Visually replace {{logo}} in the preview DOM without modifying htmlContent state
+    // Visually replace {{logo}} and {{name}} in the preview DOM without modifying htmlContent state
     useEffect(() => {
         if (!previewRef.current || activeTab !== 'design' || viewMode !== 'visual') return;
 
         // Use a slight timeout to ensure DOM is fully rendered by dangerouslySetInnerHTML
         const timeoutId = setTimeout(() => {
             if (!previewRef.current) return;
+
+            // 1. Replace Logos
             const images = previewRef.current.querySelectorAll('img');
             images.forEach((img: HTMLImageElement) => {
                 const src = img.getAttribute('src');
@@ -112,10 +116,27 @@ export default function SnippetsManagement() {
                     img.src = websiteLogo || FALLBACK_LOGO;
                 }
             });
+
+            // 2. Replace Names (Text replacement)
+            const walk = document.createTreeWalker(previewRef.current, NodeFilter.SHOW_TEXT, null);
+            let node;
+            const nodesToReplace: { node: Text, parent: HTMLElement }[] = [];
+
+            while (node = walk.nextNode()) {
+                if (node.textContent?.includes('{{name}}')) {
+                    nodesToReplace.push({ node: node as Text, parent: node.parentElement as HTMLElement });
+                }
+            }
+
+            nodesToReplace.forEach(({ node, parent }) => {
+                const originalText = node.textContent || '';
+                parent.setAttribute('data-template-text', originalText);
+                node.textContent = originalText.replace(/{{name}}/g, websiteName || 'Website Name');
+            });
         }, 50);
 
         return () => clearTimeout(timeoutId);
-    }, [htmlContent, websiteLogo, activeTab, viewMode]);
+    }, [htmlContent, websiteLogo, websiteName, activeTab, viewMode]);
 
     const fetchCategories = async () => {
         try {
@@ -132,6 +153,11 @@ export default function SnippetsManagement() {
         clone.querySelectorAll('img[data-template-src]').forEach(img => {
             img.setAttribute('src', img.getAttribute('data-template-src') || '');
             img.removeAttribute('data-template-src');
+        });
+        // Restore dynamic name variables
+        clone.querySelectorAll('[data-template-text]').forEach(el => {
+            el.textContent = el.getAttribute('data-template-text');
+            el.removeAttribute('data-template-text');
         });
         clone.querySelectorAll('*').forEach(el => {
             (el as HTMLElement).style.outline = '';
@@ -376,7 +402,9 @@ export default function SnippetsManagement() {
                                             <DynamicGrid snippet={s} singleRecordOnly={true} />
                                         </div>
                                     ) : (
-                                        <div className="scale-50 origin-center opacity-40 pointer-events-none w-full h-full overflow-hidden" dangerouslySetInnerHTML={{ __html: sanitizeHtml(s.htmlContent) }} />
+                                        <div className="scale-50 origin-center opacity-70 pointer-events-none w-full h-full overflow-hidden">
+                                            <StaticSnippet htmlContent={s.htmlContent} />
+                                        </div>
                                     )}
                                     <span className="absolute top-3 right-3 px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-white text-primary shadow-sm border border-indigo-100">{t(`categories.${s.category}`)}</span>
                                 </div>
