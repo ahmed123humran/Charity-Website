@@ -72,7 +72,7 @@ export default function StaticSnippet({ htmlContent, snippet }: StaticSnippetPro
     return (
         <div
             onClick={handleClick}
-            className={`prose prose-slate max-w-none ${locale === 'ar' ? 'rtl-content' : ''}`}
+            className={`max-w-none ${locale === 'ar' ? 'rtl-content' : ''}`}
             dangerouslySetInnerHTML={{ __html: sanitizeHtml(processedHtml) }}
         />
     );
