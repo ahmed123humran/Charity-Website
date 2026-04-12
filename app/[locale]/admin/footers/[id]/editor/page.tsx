@@ -654,6 +654,21 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
         commitChanges(activeSnippetId!);
     };
 
+    const handleDeleteElement = () => {
+        const el = activeElementRef.current;
+        if (!el || !activeSnippetId) return;
+
+        el.remove();
+        commitChanges(activeSnippetId);
+
+        // Reset selection
+        activeElementRef.current = null;
+        setActiveSnippetId(null);
+        setActiveTagName(null);
+
+        toast.success(commonT('deleted'));
+    };
+
     if (loading) return <div className="p-8 text-center text-slate-500 font-bold">{commonT('loading')}</div>;
 
     const swatchColors = [
@@ -750,8 +765,19 @@ export default function VisualEditor({ params }: { params: Promise<{ id: string 
                             <div className="text-[9px] text-slate-400 font-bold uppercase mb-2 text-center flex items-center justify-center gap-1">
                                 <MousePointer2 className="w-2.5 h-2.5" /> {editorT('activeElement')}
                             </div>
-                            <div className="text-center font-black text-primary text-xs py-1 px-3 bg-white border border-slate-200 rounded-lg shadow-sm uppercase">
-                                {activeTagName || editorT('none')}
+                            <div className="flex items-center gap-2">
+                                <div className="flex-1 text-center font-black text-primary text-xs py-1 px-3 bg-white border border-slate-200 rounded-lg shadow-sm uppercase truncate">
+                                    {activeTagName || editorT('none')}
+                                </div>
+                                {activeElementRef.current && (
+                                    <button
+                                        onClick={handleDeleteElement}
+                                        className="p-1.5 bg-red-50 text-red-500 hover:bg-red-500 hover:text-white border border-red-200 rounded-lg transition-all cursor-pointer shadow-sm"
+                                        title={commonT('delete')}
+                                    >
+                                        <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                )}
                             </div>
                         </div>
 
